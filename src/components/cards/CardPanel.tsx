@@ -163,7 +163,10 @@ export default function CardPanel() {
 
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "rgba(255,215,0,0.1)", background: "rgba(255,215,0,0.03)" }}>
-            <h3 className="font-heading text-sm tracking-[0.2em] neon-gold" style={{ color: "#ffd700" }}>🃏 卡牌图鉴</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="font-heading text-sm tracking-[0.2em] neon-gold" style={{ color: "#ffd700" }}>🃏 卡牌图鉴</h3>
+              {loggedIn && <span className="font-mono text-xs px-2 py-0.5 border" style={{ color: "rgba(200,200,208,0.4)", borderColor: "rgba(200,200,208,0.12)" }}>{groupKey}</span>}
+            </div>
             <div className="flex items-center gap-3">
               <span className="font-mono text-sm" style={{ color: "#ffd700" }}>🪙 {tokens}</span>
               {loggedIn && <button onClick={doDecomposeAll} className="font-mono text-[10px] px-2 py-1 border" style={{ color: "rgba(255,51,85,0.4)", borderColor: "rgba(255,51,85,0.2)" }}>一键分解</button>}
