@@ -46,7 +46,7 @@ export default function CardPanel() {
     await loadData(groupKey.trim());
     await syncUnlocked(groupKey.trim());
     const r = await checkFirstLogin(groupKey.trim());
-    if (r?.success) showToast(`🏆 成就解锁！${r.achName}`, "#ffd700");
+    if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); await loadData(groupKey.trim()); }
   };
   const handleLogout = () => {
     try { localStorage.removeItem("card-group"); } catch {}
@@ -63,7 +63,7 @@ export default function CardPanel() {
     await addCardsBulk(groupKey, cards.map(c => c.id));
     // 成就检查
     const gemCard = cards.find(c => c.type === "gem");
-    if (gemCard) checkGemCard(groupKey, gemCard.id);
+    if (gemCard) { const gr = await checkGemCard(groupKey, gemCard.id); if (gr?.success) showToast(`🏆 成就解锁！${gr.achName}`, "#ffd700"); }
     setDrawResult(cards);
     await loadData(groupKey);
     setDrawing(false);
@@ -112,7 +112,7 @@ export default function CardPanel() {
     } else {
       showToast("合成失败 · 保留1张", "#ff3355");
       const r = await checkMergeFailed(groupKey);
-      if (r?.success) showToast(`🏆 成就解锁！${r.achName}`, "#ffd700");
+      if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); await loadData(groupKey); }
     }
   };
 

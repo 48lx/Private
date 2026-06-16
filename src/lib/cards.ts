@@ -15,10 +15,10 @@ export interface CardDef {
 
 // 每张卡权重（终极2:金8:蓝30:白100）
 export const CARD_WEIGHT_BY_RARITY: Record<Rarity, number> = {
-  ultimate: 2,
-  gold: 8,
-  blue: 30,
-  white: 60,
+  ultimate: 15,
+  gold: 100,
+  blue: 300,
+  white: 700,
 };
 
 export const RARITY_LABELS: Record<Rarity, string> = {
