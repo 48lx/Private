@@ -28,7 +28,7 @@ export default function DraggableImage({
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase.from("background_positions").select("*").eq("image_key", storageKey).single();
+        const { data } = await supabase.from("background_positions").select("*").eq("image_key", storageKey).maybeSingle();
         if (data) {
           setPosX(data.pos_x); setPosY(data.pos_y); setScale(data.scale);
           posRef.current = { x: data.pos_x, y: data.pos_y, s: data.scale };
