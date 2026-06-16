@@ -45,10 +45,9 @@ export async function syncUnlocked(groupKey: string) {
 // ─── 各成就触发点 ───
 
 // 1. 受难曲 — 合成首次失败
-let mergeFailedOnce = false;
 export async function checkMergeFailed(groupKey: string): Promise<any> {
-  if (mergeFailedOnce) return;
-  mergeFailedOnce = true;
+  const already = await getProgress(groupKey, "ach-passion");
+  if (already === "1") return null;
   return await tryUnlock(groupKey, "passion");
 }
 
@@ -61,10 +60,9 @@ export async function checkTimeLogin(groupKey: string) {
 }
 
 // 3. 只有我和你的地方 — 首次登录暗号
-let firstLoginDone = false;
 export async function checkFirstLogin(groupKey: string): Promise<any> {
-  if (firstLoginDone) return;
-  firstLoginDone = true;
+  const already = await getProgress(groupKey, "ach-only-you-and-me");
+  if (already === "1") return null; // 已解锁
   return await tryUnlock(groupKey, "only-you-and-me");
 }
 
@@ -83,21 +81,18 @@ export async function checkKdaCategory(groupKey: string, categoryName: string) {
 }
 
 // 6. GLORIA — 获得任意 GEM 卡
-let gemCardOnce = false;
 export async function checkGemCard(groupKey: string, cardId: string) {
-  if (gemCardOnce) return;
+  const already = await getProgress(groupKey, "ach-gloria");
+  if (already === "1") return null;
   const card = ALL_CARDS.find(c => c.id === cardId);
-  if (card?.type === "gem") {
-    gemCardOnce = true;
-    return await tryUnlock(groupKey, "gloria");
-  }
+  if (card?.type === "gem") return await tryUnlock(groupKey, "gloria");
+  return null;
 }
 
 // 7. 让世界暂停一分钟 — 首次上传照片
-let photoUploadedOnce = false;
 export async function checkFirstPhoto(groupKey: string) {
-  if (photoUploadedOnce) return;
-  photoUploadedOnce = true;
+  const already = await getProgress(groupKey, "ach-pause-the-world");
+  if (already === "1") return null;
   return await tryUnlock(groupKey, "pause-the-world");
 }
 
