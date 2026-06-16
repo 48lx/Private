@@ -26,7 +26,7 @@ const shareTechMono = Share_Tech_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "N.E.X.U.S. // 核心在线",
+  title: "choi·夜之城——天凯枢纽",
   description: "一个专属的赛博空间",
 };
 
