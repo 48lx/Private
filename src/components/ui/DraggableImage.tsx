@@ -101,7 +101,12 @@ export default function DraggableImage({
   }, [editMode]);
 
   useEffect(() => { posRef.current = { x: posX, y: posY, s: scale }; }, [posX, posY, scale]);
-  useEffect(() => { if (!editMode || !loaded) return; const t = setTimeout(() => save(posX, posY, scale), 800); return () => clearTimeout(t); }, [posX, posY, scale, editMode, loaded]);
+  // 编辑模式下 800ms 防抖保存，退出时立即保存
+  useEffect(() => {
+    if (!loaded) return;
+    if (editMode) { const t = setTimeout(() => save(posX, posY, scale), 800); return () => clearTimeout(t); }
+    else { save(posX, posY, scale); } // 退出编辑立即存
+  }, [posX, posY, scale, editMode, loaded]);
 
   return (
     <div ref={containerRef} className={className} style={{
