@@ -54,15 +54,15 @@ export default function DraggableImage({
   }, [storageKey]);
 
   const save = async (x: string, y: string, s: number) => {
+    // 同时写 localStorage——挂载瞬读
+    localStorage.setItem(`${storageKey}-x`, x);
+    localStorage.setItem(`${storageKey}-y`, y);
+    localStorage.setItem(`${storageKey}-scale`, String(s));
     try {
       await supabase.from("background_positions").upsert({
         image_key: storageKey, pos_x: x, pos_y: y, scale: s, updated_at: new Date().toISOString(),
       }, { onConflict: "image_key" });
-    } catch {
-      localStorage.setItem(`${storageKey}-x`, x);
-      localStorage.setItem(`${storageKey}-y`, y);
-      localStorage.setItem(`${storageKey}-scale`, String(s));
-    }
+    } catch {}
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
