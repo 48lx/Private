@@ -4,6 +4,9 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { useEditMode } from "@/lib/edit-mode";
 import { supabase } from "@/lib/supabase";
 
+// 全局内存缓存——组件卸载重挂也不丢
+const memoryCache: Record<string, { x: string; y: string; s: number }> = {};
+
 interface Props {
   src: string; alt: string; className?: string; imgStyle?: React.CSSProperties;
   storageKey: string; defaultX?: string; defaultY?: string; defaultScale?: number;
@@ -19,9 +22,9 @@ export default function DraggableImage({
   const dragging = useRef(false);
   const posRef = useRef({ x: defaultX, y: defaultY, s: defaultScale });
 
-  const [posX, setPosX] = useState(defaultX);
-  const [posY, setPosY] = useState(defaultY);
-  const [scale, setScale] = useState(defaultScale);
+  const [posX, setPosX] = useState(() => memoryCache[storageKey]?.x || defaultX);
+  const [posY, setPosY] = useState(() => memoryCache[storageKey]?.y || defaultY);
+  const [scale, setScale] = useState(() => memoryCache[storageKey]?.s || defaultScale);
   const [loaded, setLoaded] = useState(false);
 
   // 从 Supabase 加载位置（fallback：localStorage）
@@ -54,7 +57,8 @@ export default function DraggableImage({
   }, [storageKey]);
 
   const save = async (x: string, y: string, s: number) => {
-    // 同时写 localStorage——挂载瞬读
+    // 内存+localStorage——挂载瞬读
+    memoryCache[storageKey] = { x, y, s };
     localStorage.setItem(`${storageKey}-x`, x);
     localStorage.setItem(`${storageKey}-y`, y);
     localStorage.setItem(`${storageKey}-scale`, String(s));
