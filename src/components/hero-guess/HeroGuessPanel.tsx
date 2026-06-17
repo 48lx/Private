@@ -47,9 +47,6 @@ export default function HeroGuessPanel({ isOpen, onClose, initialMode }: Props) 
   const [stains, setStains] = useState<string[]>([]);
   const [stainSnapshots, setStainSnapshots] = useState<string[][]>([]);
   const [uziGuessed, setUziGuessed] = useState<Set<string>>(new Set());
-  // 保存/恢复标准模式进度
-  const [savedStd, setSavedStd] = useState<{ history: typeof history; solved: boolean; retry: number } | null>(null);
-  const [savedUzi, setSavedUzi] = useState<{ history: typeof history; solved: boolean; hero: Champion | null; stains: string[]; snapshots: string[][]; guessed: Set<string> } | null>(null);
   const [tokenBalance, setTokenBalance] = useState(0);
 
   // 获取代币
@@ -72,26 +69,16 @@ export default function HeroGuessPanel({ isOpen, onClose, initialMode }: Props) 
   }, []);
 
   const enterUziMode = () => {
-    setSavedStd({ history, solved, retry: retryCount });
-    if (savedUzi) {
-      setUziMode(true); setUziHero(savedUzi.hero); setStains(savedUzi.stains);
-      setStainSnapshots(savedUzi.snapshots); setUziGuessed(savedUzi.guessed);
-      setHistory(savedUzi.history); setSolved(savedUzi.solved);
-    } else {
-      setUziMode(true);
-      const uziDay = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-      const uziIdx = (uziDay * 7919 + 3457) % champions.length;
-      setUziHero(champions[uziIdx]);
-      const initStains = pickRandom(ALL_DIMS, 5);
-      setStains(initStains); setStainSnapshots([initStains]);
-      setHistory([]); setSolved(false); setUziGuessed(new Set());
-    }
+    setUziMode(true);
+    const uziDay = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+    const uziIdx = (uziDay * 7919 + 3457) % champions.length;
+    setUziHero(champions[uziIdx]);
+    setHistory([]); setSolved(false); setUziGuessed(new Set());
+    setStains(pickRandom(ALL_DIMS, 5)); setStainSnapshots([]);
   };
   const exitUziMode = () => {
-    setSavedUzi({ history, solved, hero: uziHero, stains, snapshots: stainSnapshots, guessed: uziGuessed });
     setUziMode(false);
-    if (savedStd) { setHistory(savedStd.history); setSolved(savedStd.solved); setRetryCount(savedStd.retry); }
-    else { setHistory([]); setSolved(false); setRetryCount(0); }
+    setHistory([]); setSolved(false); setRetryCount(0);
     setUziGuessed(new Set());
   };
 
