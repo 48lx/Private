@@ -140,7 +140,7 @@ export default function HeroGuessEntrance() {
         </div>
       )}
 
-      <HeroGuessPanel isOpen={isOpen} onClose={handleClose} initialMode={panelMode}/>
+      <HeroGuessPanel key={panelMode} isOpen={isOpen} onClose={handleClose} initialMode={panelMode}/>
     </>
   );
 }
