@@ -158,7 +158,8 @@ export default function HeroGuessPanel({ isOpen, onClose, initialMode }: Props) 
       }
     } catch {}
   };
-  useEffect(() => { if (isOpen) loadProgress(); }, [isOpen, uziMode]);
+  // 模式稳定后再加载进度
+  useEffect(() => { if (isOpen) { const t = setTimeout(loadProgress, 50); return () => clearTimeout(t); } }, [isOpen, uziMode]);
   useEffect(() => { if (history.length > 0) saveProgress(history, solved, stainSnapshots); }, [history, solved, stainSnapshots]);
 
   const guessCount = history.length;
