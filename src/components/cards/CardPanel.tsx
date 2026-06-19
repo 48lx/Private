@@ -221,15 +221,15 @@ export default function CardPanel() {
 
           {/* Floating side buttons — left edge */}
           {loggedIn && (
-            <div className="absolute top-1/3 flex flex-col gap-2 z-50" style={{ left: "-36px" }}>
+            <div className="absolute top-1/3 flex flex-col gap-3 z-50" style={{ left: "-50px" }}>
               <button onClick={async () => { const c = await checkDailyCheckin(groupKey); if (c) { showToast(`📅 获得 ${ALL_CARDS.find(x=>x.id===c)?.name||c}`, "#4da8da"); await loadData(groupKey); } else { alert("今日已签到"); } }}
-                className="font-mono text-xs px-3 py-4 border cursor-pointer transition-all hover:-translate-x-4"
-                style={{ writingMode: "vertical-rl", color: "rgba(77,168,218,0.7)", borderColor: "rgba(77,168,218,0.3)", background: "rgba(13,13,36,0.95)", borderRadius: "5px 0 0 5px", width: "34px" }}>
+                className="font-mono text-sm border cursor-pointer transition-all hover:-translate-x-4"
+                style={{ writingMode: "vertical-rl", color: "rgba(77,168,218,0.7)", borderColor: "rgba(77,168,218,0.3)", background: "rgba(13,13,36,0.95)", borderRadius: "6px 0 0 6px", width: "48px", padding: "16px 10px", textAlign: "center", letterSpacing: "0.3em" }}>
                 📅签到
               </button>
               <button onClick={doDecomposeAll}
-                className="font-mono text-xs px-3 py-4 border cursor-pointer transition-all hover:-translate-x-4"
-                style={{ writingMode: "vertical-rl", color: "rgba(255,51,85,0.5)", borderColor: "rgba(255,51,85,0.25)", background: "rgba(13,13,36,0.95)", borderRadius: "5px 0 0 5px", width: "34px" }}>
+                className="font-mono text-sm border cursor-pointer transition-all hover:-translate-x-4"
+                style={{ writingMode: "vertical-rl", color: "rgba(255,51,85,0.5)", borderColor: "rgba(255,51,85,0.25)", background: "rgba(13,13,36,0.95)", borderRadius: "6px 0 0 6px", width: "48px", padding: "16px 10px", textAlign: "center", letterSpacing: "0.3em" }}>
                 一键分解
               </button>
             </div>
