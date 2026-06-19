@@ -132,10 +132,10 @@ export async function checkReturnAfterAbsence(groupKey: string) {
 
 // 12. HELL·红 — 赌约抽中红牌
 export async function checkHellRed(groupKey: string) {
-  return await tryUnlock(groupKey, "hell-red");
+  return await tryUnlock(groupKey, "hell-1");
 }
 
 // 13. HELL·黄 — 赌约抽中金牌
 export async function checkHellGold(groupKey: string) {
-  return await tryUnlock(groupKey, "hell-gold");
+  return await tryUnlock(groupKey, "hell-2");
 }

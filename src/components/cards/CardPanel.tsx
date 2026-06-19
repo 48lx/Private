@@ -101,18 +101,20 @@ export default function CardPanel() {
     }
     // 崔斯特的赌约
     else if (cardId === "twisted-gamble") {
-      if (!confirm("崔斯特的赌约\n蓝=随机蓝卡(60%) 金=妮蔻之助·金(10%) 红=-200币(20%)\n确认抽牌？")) return;
+      if (!confirm("崔斯特的赌约\n红=-200币(30%) 蓝=随机蓝卡(60%) 金=妮蔻之助·金(10%)\n确认抽牌？")) return;
       const roll = Math.random();
       await decomposeCard(groupKey, cardId, 1, 0);
-      if (roll < 0.2) { // 红
+      if (roll < 0.3) { // 红 30%
         await spendTokens(groupKey, 200);
-        checkHellRed(groupKey);showToast("💔 红牌！-200币", "#ff3355");
-      } else if (roll < 0.8) { // 蓝
-        await addCardsBulk(groupKey, ["mimic-blue"]);
-        showToast("💙 蓝牌！获得妮蔻之助·蓝", "#4da8da");
-      } else { // 金
+        checkHellRed(groupKey); showToast("💔 红牌！-200币", "#ff3355");
+      } else if (roll < 0.9) { // 蓝 60%
+        const bluePool = ALL_CARDS.filter(c => c.rarity === "blue" && !c.id.startsWith("mimic-"));
+        const picked = bluePool[Math.floor(Math.random() * bluePool.length)];
+        await addCardsBulk(groupKey, [picked.id]);
+        showToast(`💙 蓝牌！获得 ${picked.name}`, "#4da8da");
+      } else { // 金 10%
         await addCardsBulk(groupKey, ["mimic-gold"]);
-        checkHellGold(groupKey);showToast("💛 金牌！获得妮蔻之助·金", "#ffd700");
+        checkHellGold(groupKey); showToast("💛 金牌！获得妮蔻之助·金", "#ffd700");
       }
       await loadData(groupKey);
     }
