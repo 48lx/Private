@@ -219,6 +219,22 @@ export default function CardPanel() {
         <div ref={panelRef} className="relative glass-cyber border overflow-hidden flex flex-col"
           style={{ width: "min(1200px, 95vw)", height: "min(900px, 85vh)", borderColor: "rgba(255,215,0,0.15)" }}>
 
+          {/* Floating side buttons — left edge */}
+          {loggedIn && (
+            <div className="absolute -left-10 top-1/3 flex flex-col gap-2 z-50">
+              <button onClick={async () => { const c = await checkDailyCheckin(groupKey); if (c) { showToast(`📅 获得 ${ALL_CARDS.find(x=>x.id===c)?.name||c}`, "#4da8da"); await loadData(groupKey); } else { alert("今日已签到"); } }}
+                className="font-mono text-[10px] px-2 py-3 border cursor-pointer transition-all hover:-translate-x-3"
+                style={{ writingMode: "vertical-rl", color: "rgba(77,168,218,0.6)", borderColor: "rgba(77,168,218,0.2)", background: "rgba(77,168,218,0.08)", borderRadius: "4px 0 0 4px" }}>
+                📅 签到
+              </button>
+              <button onClick={doDecomposeAll}
+                className="font-mono text-[10px] px-2 py-3 border cursor-pointer transition-all hover:-translate-x-3"
+                style={{ writingMode: "vertical-rl", color: "rgba(255,51,85,0.4)", borderColor: "rgba(255,51,85,0.2)", background: "rgba(255,51,85,0.06)", borderRadius: "4px 0 0 4px" }}>
+                一键分解
+              </button>
+            </div>
+          )}
+
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "rgba(255,215,0,0.1)", background: "rgba(255,215,0,0.03)" }}>
             <div className="flex items-center gap-3">
@@ -227,7 +243,6 @@ export default function CardPanel() {
             </div>
             <div className="flex items-center gap-3">
               <span className="font-mono text-sm" style={{ color: "#ffd700" }}>🪙 {tokens}</span>
-              {loggedIn && <button onClick={doDecomposeAll} className="font-mono text-[10px] px-2 py-1 border" style={{ color: "rgba(255,51,85,0.4)", borderColor: "rgba(255,51,85,0.2)" }}>一键分解</button>}
               {loggedIn && <button onClick={handleLogout} className="font-mono text-[10px] px-2 py-1 border" style={{ color: "rgba(200,200,208,0.3)", borderColor: "rgba(200,200,208,0.1)" }}>换号</button>}
               <button onClick={() => setIsOpen(false)} className="font-mono text-lg" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
             </div>
@@ -247,14 +262,6 @@ export default function CardPanel() {
             </div>
           ) : (
             <>
-              {/* Check-in bar */}
-              <div className="text-center py-2 border-b" style={{ borderColor: "rgba(255,215,0,0.05)", background: "rgba(77,168,218,0.03)" }}>
-                <button onClick={async () => { const card = await checkDailyCheckin(groupKey); if (card) { showToast(`📅 签到获得 ${ALL_CARDS.find(c=>c.id===card)?.name||card}`, "#4da8da"); await loadData(groupKey); } else { alert("今日已签到"); } }}
-                  className="font-mono text-xs px-6 py-1.5 border cursor-pointer hover:scale-105 transition-all"
-                  style={{ color: "rgba(77,168,218,0.6)", borderColor: "rgba(77,168,218,0.2)", background: "rgba(77,168,218,0.05)" }}>
-                  📅 每日签到
-                </button>
-              </div>
               {/* Filter */}
               <div className="flex border-b" style={{ borderColor: "rgba(255,215,0,0.06)" }}>
                 {(["all", "white", "blue", "gold", "ultimate", "special"] as const).map(r =>
