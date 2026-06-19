@@ -86,11 +86,11 @@ export default function CardPanel() {
   const useSpecialCard = async (cardId: string) => {
     const card = ALL_CARDS.find(c => c.id === cardId);
     if (!card) return;
-    // 百变大咖：自选同稀有度任意卡
+    // 妮蔻之助：自选同稀有度任意卡
     if (cardId.startsWith("mimic-")) {
       const rarity = card.rarity === "ultimate" ? "ultimate" : card.rarity;
       const pool = ALL_CARDS.filter(c => c.rarity === rarity && !c.id.startsWith("mimic-"));
-      const name = prompt(`百变大咖·${RARITY_LABELS[rarity]}\n输入要兑换的英雄名：`);
+      const name = prompt(`妮蔻之助·${RARITY_LABELS[rarity]}\n输入要兑换的英雄名：`);
       if (!name) return;
       const target = pool.find(c => c.name === name || c.id.includes(name));
       if (!target) { alert("未找到该卡"); return; }
@@ -101,7 +101,7 @@ export default function CardPanel() {
     }
     // 崔斯特的赌约
     else if (cardId === "twisted-gamble") {
-      if (!confirm("崔斯特的赌约\n蓝=蓝百变(60%) 金=金百变(20%) 红=-200币(20%)\n确认抽牌？")) return;
+      if (!confirm("崔斯特的赌约\n蓝=随机蓝卡(60%) 金=妮蔻之助·金(10%) 红=-200币(20%)\n确认抽牌？")) return;
       const roll = Math.random();
       await decomposeCard(groupKey, cardId, 1, 0);
       if (roll < 0.2) { // 红
@@ -109,10 +109,10 @@ export default function CardPanel() {
         showToast("💔 红牌！-200币", "#ff3355");
       } else if (roll < 0.8) { // 蓝
         await addCardsBulk(groupKey, ["mimic-blue"]);
-        showToast("💙 蓝牌！获得百变大咖·蓝", "#4da8da");
+        showToast("💙 蓝牌！获得妮蔻之助·蓝", "#4da8da");
       } else { // 金
         await addCardsBulk(groupKey, ["mimic-gold"]);
-        showToast("💛 金牌！获得百变大咖·金", "#ffd700");
+        showToast("💛 金牌！获得妮蔻之助·金", "#ffd700");
       }
       await loadData(groupKey);
     }
