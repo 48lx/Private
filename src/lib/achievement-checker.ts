@@ -118,3 +118,24 @@ export async function checkRevelation(groupKey: string, collection: { card_id: s
   const hasAll = gemIds.every(id => collection.some(c => c.card_id === id && c.count > 0));
   if (hasAll) return await tryUnlock(groupKey, "revelation");
 }
+
+// 11. 你不是第一个离开的人 — 距上次登录超24h
+export async function checkReturnAfterAbsence(groupKey: string) {
+  const lastVisit = await getProgress(groupKey, "last-visit-time");
+  const now = Date.now();
+  await setProgress(groupKey, "last-visit-time", String(now));
+  if (lastVisit && now - parseInt(lastVisit) > 86400000) {
+    return await tryUnlock(groupKey, "not-first-leave");
+  }
+  return null;
+}
+
+// 12. HELL·红 — 赌约抽中红牌
+export async function checkHellRed(groupKey: string) {
+  return await tryUnlock(groupKey, "hell-red");
+}
+
+// 13. HELL·黄 — 赌约抽中金牌
+export async function checkHellGold(groupKey: string) {
+  return await tryUnlock(groupKey, "hell-gold");
+}

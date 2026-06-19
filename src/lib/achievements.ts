@@ -128,6 +128,33 @@ export const ACHIEVEMENTS: Achievement[] = [
     hidden: false,
     status: "testing",
   },
+  {
+    key: "not-first-leave",
+    name: "你不是第一个离开的人",
+    desc: "距离上次登录超过24小时",
+    trigger: "再次登录时距上次超过24小时",
+    reward: { type: "card", cardId: "gem-notfirstleave" },
+    hidden: false,
+    status: "testing",
+  },
+  {
+    key: "hell-red",
+    name: "HELL·红",
+    desc: "首次使用崔斯特的赌约赌中红牌",
+    trigger: "崔斯特的赌约抽中红牌(-200币)",
+    reward: { type: "card", cardId: "gem-hell-bai" },
+    hidden: false,
+    status: "testing",
+  },
+  {
+    key: "hell-gold",
+    name: "HELL·黄",
+    desc: "首次使用崔斯特的赌约赌中金牌",
+    trigger: "崔斯特的赌约抽中金牌",
+    reward: { type: "card", cardId: "gem-hell-hei" },
+    hidden: false,
+    status: "testing",
+  },
 ];
 
 // ─── 成就相关卡片 ───
@@ -147,4 +174,7 @@ export const ACHIEVEMENT_CARDS: CardDef[] = [
   { id: "gem-centrifugal", name: "离心力", rarity: "gold", type: "gem" },
   { id: "gem-skynolimit", name: "天空没有极限", rarity: "gold", type: "gem" },
   { id: "gem-revelation", name: "启示录", rarity: "ultimate", type: "gem" },
+  { id: "gem-notfirstleave", name: "你不是第一个离开的人", rarity: "blue", type: "gem" },
+  { id: "gem-hell-bai", name: "HELL·白", rarity: "blue", type: "gem" },
+  { id: "gem-hell-hei", name: "HELL·黑", rarity: "blue", type: "gem" },
 ];

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ALL_CARDS, CardDef, RARITY_LABELS, RARITY_COLORS, drawMulti, MERGE_CHAIN, UPGRADE_GROUPS, UPGRADE_NAMES, MERGE_VIDEOS, CARD_WEIGHT_BY_RARITY } from "@/lib/cards";
 import { getGroupKey, setGroupKey, getTokens, spendTokens, getCollection, addCardsBulk, mergeCards4to1, MERGE_RATES, decomposeCard } from "@/lib/card-storage";
-import { checkFirstLogin, checkMergeFailed, checkGemCard, checkFreljordComplete, checkRevelation, syncUnlocked } from "@/lib/achievement-checker";
+import { checkFirstLogin, checkMergeFailed, checkGemCard, checkFreljordComplete, checkRevelation, syncUnlocked, checkReturnAfterAbsence, checkHellRed, checkHellGold } from "@/lib/achievement-checker";
 import { checkDailyCheckin } from "@/lib/card-storage";
 
 export default function CardPanel() {
@@ -106,13 +106,13 @@ export default function CardPanel() {
       await decomposeCard(groupKey, cardId, 1, 0);
       if (roll < 0.2) { // 红
         await spendTokens(groupKey, 200);
-        showToast("💔 红牌！-200币", "#ff3355");
+        checkHellRed(groupKey);showToast("💔 红牌！-200币", "#ff3355");
       } else if (roll < 0.8) { // 蓝
         await addCardsBulk(groupKey, ["mimic-blue"]);
         showToast("💙 蓝牌！获得妮蔻之助·蓝", "#4da8da");
       } else { // 金
         await addCardsBulk(groupKey, ["mimic-gold"]);
-        showToast("💛 金牌！获得妮蔻之助·金", "#ffd700");
+        checkHellGold(groupKey);showToast("💛 金牌！获得妮蔻之助·金", "#ffd700");
       }
       await loadData(groupKey);
     }
