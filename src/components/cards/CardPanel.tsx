@@ -216,8 +216,8 @@ export default function CardPanel() {
       <div ref={overlayRef} className="fixed inset-0 z-[80] items-center justify-center"
         style={{ display: "none", background: "rgba(5,5,16,0.92)" }}
         onClick={e => { if (e.target === overlayRef.current) setIsOpen(false); }}>
-        <div ref={panelRef} className="relative glass-cyber border overflow-hidden flex flex-col"
-          style={{ width: "min(1200px, 95vw)", height: "min(900px, 85vh)", borderColor: "rgba(255,215,0,0.15)" }}>
+        <div ref={panelRef} className="relative glass-cyber border flex flex-col"
+          style={{ width: "min(1200px, 95vw)", height: "min(900px, 85vh)", borderColor: "rgba(255,215,0,0.15)", overflow: "visible" }}>
 
           {/* Floating side buttons — left edge */}
           {loggedIn && (
@@ -273,7 +273,7 @@ export default function CardPanel() {
               </div>
 
               {/* Collection */}
-              <div className="flex-1 overflow-y-auto p-4" style={{ scrollbarWidth: "thin" }}>
+              <div className="flex-1 overflow-y-auto p-4" style={{ scrollbarWidth: "thin", overflowX: "hidden" }}>
                 <div className="grid grid-cols-5 gap-2">
                   {filteredCards.map(card => {
                     const have = collectionMap.get(card.id) || 0;
