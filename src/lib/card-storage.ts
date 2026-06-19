@@ -119,6 +119,20 @@ export async function decomposeCard(groupKey: string, cardId: string, count: num
   await addTokens(groupKey, refundTokens);
 }
 
+// ─── 签到系统 ───
+export async function checkDailyCheckin(groupKey: string): Promise<string | null> {
+  const today = new Date().toISOString().split("T")[0];
+  const key = `daily-checkin-${today}`;
+  const already = await getProgress(groupKey, key);
+  if (already === "1") return null;
+  await setProgress(groupKey, key, "1");
+  // 随机给一张特殊卡
+  const specialPool = ["mimic-white","mimic-white","mimic-blue","mimic-blue","mimic-gold","twisted-gamble","lonely-pull"];
+  const cardId = specialPool[Math.floor(Math.random() * specialPool.length)];
+  await addCard(groupKey, cardId, 1);
+  return cardId;
+}
+
 // ─── 合成：4合1，概率失败 ───
 // 白→蓝: 100% 成功
 // 蓝→金: 50% 失败

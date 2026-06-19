@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
-import { ALL_CARDS, CardDef, RARITY_LABELS, RARITY_COLORS, drawMulti, MERGE_CHAIN, UPGRADE_GROUPS, UPGRADE_NAMES, MERGE_VIDEOS } from "@/lib/cards";
+import { ALL_CARDS, CardDef, RARITY_LABELS, RARITY_COLORS, drawMulti, MERGE_CHAIN, UPGRADE_GROUPS, UPGRADE_NAMES, MERGE_VIDEOS, CARD_WEIGHT_BY_RARITY } from "@/lib/cards";
 import { getGroupKey, setGroupKey, getTokens, spendTokens, getCollection, addCardsBulk, mergeCards4to1, MERGE_RATES, decomposeCard } from "@/lib/card-storage";
 import { checkFirstLogin, checkMergeFailed, checkGemCard, checkFreljordComplete, checkRevelation, syncUnlocked } from "@/lib/achievement-checker";
+import { checkDailyCheckin } from "@/lib/card-storage";
 
 export default function CardPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,7 +13,7 @@ export default function CardPanel() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [tokens, setTokens] = useState(0);
   const [collection, setCollection] = useState<{ card_id: string; count: number }[]>([]);
-  const [filter, setFilter] = useState<"all" | "white" | "blue" | "gold" | "ultimate">("all");
+  const [filter, setFilter] = useState<"all" | "white" | "blue" | "gold" | "ultimate" | "special">("all");
   const [drawing, setDrawing] = useState(false);
   const [drawResult, setDrawResult] = useState<CardDef[] | null>(null);
   const [mergeTarget, setMergeTarget] = useState<string | null>(null);
@@ -45,6 +46,7 @@ export default function CardPanel() {
     setGroupKey(groupKey.trim()); setLoggedIn(true);
     await loadData(groupKey.trim());
     await syncUnlocked(groupKey.trim());
+    // 成就
     const r = await checkFirstLogin(groupKey.trim());
     if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); await loadData(groupKey.trim()); }
   };
@@ -78,6 +80,57 @@ export default function CardPanel() {
     if (!confirm(`分解 ${decomposeAll} 张（保留1张），返还 ${refund} 币？`)) return;
     await decomposeCard(groupKey, cardId, decomposeAll, refund);
     await loadData(groupKey);
+  };
+
+  // 使用特殊卡效果
+  const useSpecialCard = async (cardId: string) => {
+    const card = ALL_CARDS.find(c => c.id === cardId);
+    if (!card) return;
+    // 百变大咖：自选同稀有度任意卡
+    if (cardId.startsWith("mimic-")) {
+      const rarity = card.rarity === "ultimate" ? "ultimate" : card.rarity;
+      const pool = ALL_CARDS.filter(c => c.rarity === rarity && !c.id.startsWith("mimic-"));
+      const name = prompt(`百变大咖·${RARITY_LABELS[rarity]}\n输入要兑换的英雄名：`);
+      if (!name) return;
+      const target = pool.find(c => c.name === name || c.id.includes(name));
+      if (!target) { alert("未找到该卡"); return; }
+      await decomposeCard(groupKey, cardId, 1, 0); // 消耗百变卡
+      await addCardsBulk(groupKey, [target.id]);
+      showToast(`✅ 获得 ${target.name}`, "#00ff88");
+      await loadData(groupKey);
+    }
+    // 崔斯特的赌约
+    else if (cardId === "twisted-gamble") {
+      if (!confirm("崔斯特的赌约\n蓝=蓝百变(60%) 金=金百变(20%) 红=-200币(20%)\n确认抽牌？")) return;
+      const roll = Math.random();
+      await decomposeCard(groupKey, cardId, 1, 0);
+      if (roll < 0.2) { // 红
+        await spendTokens(groupKey, 200);
+        showToast("💔 红牌！-200币", "#ff3355");
+      } else if (roll < 0.8) { // 蓝
+        await addCardsBulk(groupKey, ["mimic-blue"]);
+        showToast("💙 蓝牌！获得百变大咖·蓝", "#4da8da");
+      } else { // 金
+        await addCardsBulk(groupKey, ["mimic-gold"]);
+        showToast("💛 金牌！获得百变大咖·金", "#ffd700");
+      }
+      await loadData(groupKey);
+    }
+    // 孤立无援：从未拥有卡中单抽
+    else if (cardId === "lonely-pull") {
+      const owned = new Set(collection.map(c => c.card_id));
+      const missing = ALL_CARDS.filter(c => !owned.has(c.id));
+      if (missing.length === 0) { alert("图鉴已全！"); return; }
+      // 按权重抽
+      const totalW = missing.reduce((s, c) => s + CARD_WEIGHT_BY_RARITY[c.rarity], 0);
+      let r = Math.random() * totalW;
+      let picked = missing[0];
+      for (const c of missing) { r -= CARD_WEIGHT_BY_RARITY[c.rarity]; if (r <= 0) { picked = c; break; } }
+      await decomposeCard(groupKey, cardId, 1, 0);
+      await addCardsBulk(groupKey, [picked.id]);
+      showToast(`🔍 获得 ${picked.name} (${RARITY_LABELS[picked.rarity]})`, "#00ff88");
+      await loadData(groupKey);
+    }
   };
 
   const doDecomposeAll = async () => {
@@ -133,7 +186,12 @@ export default function CardPanel() {
     return cards;
   };
 
-  const filteredCards = ALL_CARDS.filter(c => filter === "all" || c.rarity === filter);
+  const isSpecial = (id: string) => id.startsWith("mimic-") || id === "twisted-gamble" || id === "lonely-pull";
+  const filteredCards = ALL_CARDS.filter(c => {
+    if (filter === "all") return true;
+    if (filter === "special") return isSpecial(c.id);
+    return c.rarity === filter;
+  });
   const collectionMap = new Map(collection.map(c => [c.card_id, c.count]));
 
   useEffect(() => {
@@ -169,6 +227,7 @@ export default function CardPanel() {
             </div>
             <div className="flex items-center gap-3">
               <span className="font-mono text-sm" style={{ color: "#ffd700" }}>🪙 {tokens}</span>
+              {loggedIn && <button onClick={async () => { const card = await checkDailyCheckin(groupKey); if (card) { showToast(`📅 签到获得 ${ALL_CARDS.find(c=>c.id===card)?.name||card}`, "#4da8da"); await loadData(groupKey); } else { alert("今日已签到"); } }} className="font-mono text-[10px] px-2 py-1 border" style={{ color: "rgba(77,168,218,0.5)", borderColor: "rgba(77,168,218,0.2)" }}>📅 签到</button>}
               {loggedIn && <button onClick={doDecomposeAll} className="font-mono text-[10px] px-2 py-1 border" style={{ color: "rgba(255,51,85,0.4)", borderColor: "rgba(255,51,85,0.2)" }}>一键分解</button>}
               {loggedIn && <button onClick={handleLogout} className="font-mono text-[10px] px-2 py-1 border" style={{ color: "rgba(200,200,208,0.3)", borderColor: "rgba(200,200,208,0.1)" }}>换号</button>}
               <button onClick={() => setIsOpen(false)} className="font-mono text-lg" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
@@ -191,7 +250,7 @@ export default function CardPanel() {
             <>
               {/* Filter */}
               <div className="flex border-b" style={{ borderColor: "rgba(255,215,0,0.06)" }}>
-                {(["all", "white", "blue", "gold", "ultimate"] as const).map(r =>
+                {(["all", "white", "blue", "gold", "ultimate", "special"] as const).map(r =>
                   <button key={r} onClick={() => setFilter(r)} className="flex-1 py-2.5 font-mono text-xs transition-colors"
                     style={{ color: filter === r ? RARITY_COLORS[r] : "rgba(200,200,208,0.3)", borderBottom: filter === r ? `2px solid ${RARITY_COLORS[r]}` : "2px solid transparent" }}>
                     {r === "all" ? "全部" : RARITY_LABELS[r]}
@@ -214,7 +273,13 @@ export default function CardPanel() {
                           minHeight: "80px", display: "flex", flexDirection: "column", justifyContent: "center",
                           cursor: isSpecial ? "pointer" : "default",
                         }}
-                        onClick={() => { if (isSpecial && card.upgradableGroup) { setMergeTarget(card.upgradableGroup); setMergeCardId(card.id); } }}>
+                        onClick={() => {
+                          if (card.id.startsWith("mimic-") || card.id === "twisted-gamble" || card.id === "lonely-pull") {
+                            if (have > 0) useSpecialCard(card.id);
+                          } else if (isSpecial && card.upgradableGroup) {
+                            setMergeTarget(card.upgradableGroup); setMergeCardId(card.id);
+                          }
+                        }}>
                         <p className="font-mono text-xs truncate" style={{ color: have > 0 ? RARITY_COLORS[card.rarity] : "rgba(200,200,208,0.4)" }}>{card.name}</p>
                         <p className="font-mono text-[10px] mt-0.5" style={{ color: "rgba(200,200,208,0.25)" }}>{RARITY_LABELS[card.rarity]}{isSpecial ? " 🔄" : ""}</p>
                         {have > 0 && <p className="font-mono text-[11px] absolute top-0.5 right-1.5" style={{ color: RARITY_COLORS[card.rarity] }}>×{have}</p>}

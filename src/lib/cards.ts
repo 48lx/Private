@@ -21,15 +21,17 @@ export const CARD_WEIGHT_BY_RARITY: Record<Rarity, number> = {
   white: 700,
 };
 
-export const RARITY_LABELS: Record<Rarity, string> = {
+export const RARITY_LABELS: Record<Rarity | "special", string> = {
   white: "白卡",
+  special: "特殊",
   blue: "蓝卡",
   gold: "金卡",
   ultimate: "终极",
 };
 
-export const RARITY_COLORS: Record<Rarity | "all", string> = {
+export const RARITY_COLORS: Record<Rarity | "all" | "special", string> = {
   all: "#ffd700",
+  special: "#ff6bff",
   white: "#c0c0c0",
   blue: "#4da8da",
   gold: "#ffd700",
@@ -156,6 +158,19 @@ const GOLD_CARDS: CardDef[] = [
   })),
 ];
 
+// 特殊功能卡
+const SPECIAL_CARDS: CardDef[] = [
+  // 妮蔻之助（四稀有度）
+  { id: "mimic-white", name: "妮蔻之助", rarity: "white", type: "gem" },
+  { id: "mimic-blue", name: "妮蔻之助·蓝", rarity: "blue", type: "gem" },
+  { id: "mimic-gold", name: "妮蔻之助·金", rarity: "gold", type: "gem" },
+  { id: "mimic-ultimate", name: "妮蔻之助·终极", rarity: "ultimate", type: "gem" },
+  // 崔斯特的赌约
+  { id: "twisted-gamble", name: "崔斯特的赌约", rarity: "blue", type: "gem" },
+  // 孤立无援
+  { id: "lonely-pull", name: "孤立无援", rarity: "blue", type: "gem" },
+];
+
 // 终极卡（4张）
 const ULTIMATE_CARDS: CardDef[] = [
   { id: "khazix-ultimate", name: "卡兹克·终极", rarity: "ultimate", type: "champion", upgradable: true, upgradableGroup: "khazix" },
@@ -174,6 +189,7 @@ export const ALL_CARDS: CardDef[] = [
   ...BLUE_CARDS,
   ...GOLD_CARDS,
   ...ACHIEVEMENT_CARDS,
+  ...SPECIAL_CARDS,
   ...ULTIMATE_CARDS,
 ];
 
