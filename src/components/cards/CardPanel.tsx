@@ -21,6 +21,7 @@ export default function CardPanel() {
   const [mergeVideo, setMergeVideo] = useState(false);
   const [toast, setToast] = useState<{ text: string; color: string } | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [drawTab, setDrawTab] = useState<"white" | "nonwhite" | "special">("nonwhite");
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -68,6 +69,7 @@ export default function CardPanel() {
     const gemCard = cards.find(c => c.type === "gem");
     if (gemCard) { const gr = await checkGemCard(groupKey, gemCard.id); if (gr?.success) showToast(`🏆 成就解锁！${gr.achName}`, "#ffd700"); }
     setDrawResult(cards);
+    setDrawTab("nonwhite");
     await loadData(groupKey);
     setDrawing(false);
   };
@@ -431,26 +433,72 @@ export default function CardPanel() {
         )}
 
         {/* Draw result */}
-        {drawResult && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center" style={{ background: "rgba(8,4,28,0.95)", backdropFilter: "blur(4px)" }} onClick={() => setDrawResult(null)}>
-            <p className="font-heading text-base mb-4 tracking-[0.2em]" style={{ color: "#ffd700", textShadow: "0 0 10px rgba(255,215,0,0.4)" }}>抽卡结果</p>
-            <div className="grid grid-cols-5 gap-3 max-h-[65vh] overflow-y-auto p-3">
-              {drawResult.map((c, i) => (
-                <div key={i} className="text-center p-2 border"
-                  style={{ borderColor: RARITY_COLORS[c.rarity], background: `${RARITY_COLORS[c.rarity]}14`, boxShadow: `0 0 10px ${RARITY_COLORS[c.rarity]}18` }}>
-                  {c.imageFile && (
-                    <div className="w-full mb-1" style={{ aspectRatio: "5/7", overflow: "hidden", borderRadius: "2px" }}>
-                      <img src={`/cards/${c.imageFile}`} alt="" className="w-full h-full object-cover"/>
-                    </div>
-                  )}
-                  <p className="font-mono text-sm font-bold" style={{ color: RARITY_COLORS[c.rarity] }}>{c.name}</p>
-                  <p className="font-mono text-[10px] mt-0.5" style={{ color: RARITY_COLORS[c.rarity] }}>{RARITY_LABELS[c.rarity]}</p>
+        {drawResult && (() => {
+          const whiteCards = drawResult.filter(c => c.rarity === "white");
+          const nonWhiteCards = drawResult.filter(c => c.rarity !== "white" && !isSpecial(c.id));
+          const specialCards = drawResult.filter(c => isSpecial(c.id));
+          const tabs = [
+            { key: "white" as const, label: "白卡", cards: whiteCards, color: RARITY_COLORS.white },
+            { key: "nonwhite" as const, label: "非白卡", cards: nonWhiteCards, color: RARITY_COLORS.gold },
+            { key: "special" as const, label: "特殊卡", cards: specialCards, color: RARITY_COLORS.special },
+          ];
+          const activeCards = tabs.find(t => t.key === drawTab)?.cards || [];
+          return (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center"
+              style={{ background: "rgba(8,4,28,0.95)", backdropFilter: "blur(4px)" }}
+              onClick={() => setDrawResult(null)}>
+              <div className="flex flex-col" style={{ width: "min(800px, 92vw)", maxHeight: "82vh" }}
+                onClick={e => e.stopPropagation()}>
+                <p className="font-heading text-base mb-3 text-center tracking-[0.2em]"
+                  style={{ color: "#ffd700", textShadow: "0 0 10px rgba(255,215,0,0.4)" }}>
+                  抽卡结果
+                </p>
+
+                {/* Tabs */}
+                <div className="flex border-b mb-3" style={{ borderColor: "rgba(180,140,255,0.15)" }}>
+                  {tabs.map(tab => (
+                    <button key={tab.key} onClick={() => setDrawTab(tab.key)}
+                      className="flex-1 py-2 font-mono text-sm transition-all"
+                      style={{
+                        color: drawTab === tab.key ? tab.color : "rgba(200,200,220,0.3)",
+                        borderBottom: drawTab === tab.key ? `2px solid ${tab.color}` : "2px solid transparent",
+                      }}>
+                      {tab.label} ({tab.cards.length})
+                    </button>
+                  ))}
                 </div>
-              ))}
+
+                {/* Cards */}
+                {activeCards.length === 0 ? (
+                  <p className="text-center py-10 font-mono text-sm" style={{ color: "rgba(200,200,220,0.25)" }}>无</p>
+                ) : (
+                  <div className="grid grid-cols-7 gap-2 max-h-[50vh] overflow-y-auto p-2">
+                    {activeCards.map((c, i) => (
+                      <div key={i} className="text-center p-1.5 border"
+                        style={{ borderColor: RARITY_COLORS[c.rarity], background: `${RARITY_COLORS[c.rarity]}12`, boxShadow: `0 0 6px ${RARITY_COLORS[c.rarity]}10` }}>
+                        {c.imageFile ? (
+                          <div className="w-full mb-1" style={{ aspectRatio: "5/7", overflow: "hidden", borderRadius: "2px" }}>
+                            <img src={`/cards/${c.imageFile}`} alt="" className="w-full h-full object-cover"/>
+                          </div>
+                        ) : (
+                          <div className="w-full mb-1 flex items-center justify-center" style={{ aspectRatio: "5/7", background: `${RARITY_COLORS[c.rarity]}0d`, borderRadius: "2px" }}>
+                            <span className="font-mono text-[9px]" style={{ color: RARITY_COLORS[c.rarity] }}>{RARITY_LABELS[c.rarity]}</span>
+                          </div>
+                        )}
+                        <p className="font-mono text-[11px] font-bold truncate" style={{ color: RARITY_COLORS[c.rarity] }}>{c.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <button onClick={() => setDrawResult(null)} className="mt-3 mx-auto font-mono text-sm px-6 py-2 border transition-all hover:scale-105"
+                  style={{ borderColor: "rgba(180,140,255,0.3)", color: "#ffd700", background: "rgba(120,40,220,0.08)" }}>
+                  确认
+                </button>
+              </div>
             </div>
-            <button onClick={() => setDrawResult(null)} className="mt-4 font-mono text-sm px-6 py-2 border transition-all hover:scale-105" style={{ borderColor: "rgba(255,215,0,0.4)", color: "#ffd700", background: "rgba(255,215,0,0.06)" }}>确认</button>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </>
   );
