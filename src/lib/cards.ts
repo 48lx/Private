@@ -153,17 +153,20 @@ const SPECIAL_WHITES: CardDef[] = [
   },
 ];
 
-// 特殊功能卡（不参与普通抽卡，仅通过十连/百连保底获取，等概率）
+// 特殊功能卡（全量，用于图鉴展示）
 const SPECIAL_CARDS: CardDef[] = [
   { id: "mimic-white", name: "妮蔻之助", rarity: "special", type: "gem" },
   { id: "mimic-blue", name: "妮蔻之助·蓝", rarity: "special", type: "gem" },
-  { id: "mimic-gold", name: "妮蔻之助·金", rarity: "special", type: "gem" },
+  { id: "mimic-gold", name: "妮蔻之助·金", rarity: "special", type: "gem" },   // ⚠️ 不可抽取！仅崔斯特赌约/每日签到获取
   { id: "twisted-gamble", name: "崔斯特的赌约", rarity: "special", type: "gem" },
   { id: "lonely-pull", name: "孤立无援", rarity: "special", type: "gem" },
   { id: "windfall", name: "意外之财", rarity: "special", type: "gem" },
   { id: "autumn", name: "秋", rarity: "special", type: "gem" },
   { id: "oldwei-iou", name: "老维的欠条", rarity: "special", type: "gem" },
 ];
+
+// 保底池（排除妮蔻之助·金，它仅通过崔斯特赌约/每日签到获取）
+const PITY_POOL = SPECIAL_CARDS.filter(c => c.id !== "mimic-gold");
 
 // 特殊卡各自颜色（区分优劣，不用统一紫）
 export const SPECIAL_CARD_COLORS: Record<string, string> = {
@@ -205,13 +208,13 @@ export function drawMulti(count: number): CardDef[] {
     results.push(drawCard());
   }
   if (count >= 10) {
-    // 十连保底：最后1张替换为随机特殊卡（5种等概率 1:1:1:1:1）
-    results[results.length - 1] = SPECIAL_CARDS[Math.floor(Math.random() * SPECIAL_CARDS.length)];
+    // 十连保底：最后1张替换为随机特殊卡（7种等概率，不含妮蔻之助·金）
+    results[results.length - 1] = PITY_POOL[Math.floor(Math.random() * PITY_POOL.length)];
   }
   if (count >= 100) {
     // 百连：最后10张全部替换为随机特殊卡
     for (let i = results.length - 10; i < results.length; i++) {
-      results[i] = SPECIAL_CARDS[Math.floor(Math.random() * SPECIAL_CARDS.length)];
+      results[i] = PITY_POOL[Math.floor(Math.random() * PITY_POOL.length)];
     }
   }
   return results;

@@ -110,7 +110,8 @@ export default function CardPanel() {
       if (roll < 0.01) { // 头彩 1%
         const bigDraw = drawMulti(100);
         await addCardsBulk(groupKey, bigDraw.map(c => c.id));
-        showToast("🎰 头彩！触发百连抽！", "#ffd700");
+        setDrawResult(bigDraw);
+        setDrawTab("nonwhite");
       } else if (roll < 0.3) { // 红 29%
         await spendTokens(groupKey, 200);
         checkHellRed(groupKey); showToast("💔 红牌！-200币", "#ff3355");
@@ -494,7 +495,7 @@ export default function CardPanel() {
                 {[
                   { name: "妮蔻之助", desc: "自选任意一张白卡，输入英雄名即可兑换。", color: "#c0c0c0" },
                   { name: "妮蔻之助·蓝", desc: "自选任意一张蓝卡，输入英雄/皮肤名即可兑换。", color: "#4da8da" },
-                  { name: "妮蔻之助·金", desc: "自选任意一张金卡，输入英雄/皮肤名即可兑换。", color: "#ffd700" },
+                  { name: "妮蔻之助·金", desc: "自选任意一张金卡，输入英雄/皮肤名即可兑换。⚠️ 不可通过保底获取，仅限崔斯特赌约/每日签到。", color: "#ffd700" },
                   { name: "崔斯特的赌约", desc: "🎰头彩(1%)=触发一次百连抽 / 红牌(29%)=扣200币 / 蓝牌(60%)=随机蓝卡 / 金牌(10%)=妮蔻之助·金。", color: "#ffd700" },
                   { name: "孤立无援", desc: "从图鉴中你尚未拥有的所有卡里，按稀有度权重随机抽一张（已全图鉴则无效）。", color: "#00ccff" },
                   { name: "意外之财", desc: "直接获得500代币，简单粗暴。", color: "#4da8da" },
@@ -508,7 +509,7 @@ export default function CardPanel() {
                 ))}
               </div>
               <p className="font-mono text-[10px] mt-4 text-center" style={{ color: "rgba(200,200,220,0.25)" }}>
-                特殊卡仅通过十连/百连保底获取，不参与普通抽卡
+                特殊卡通过十连/百连保底获取（妮蔻之助·金除外，仅限崔斯特赌约/每日签到）
               </p>
             </div>
           </div>
