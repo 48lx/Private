@@ -158,8 +158,8 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     key: "basketball",
     name: "篮球可不是一个人的游戏",
-    desc: "???",
-    trigger: "???",
+    desc: "集齐勒布朗詹姆斯与文班亚马",
+    trigger: "获得勒布朗詹姆斯 + 文班亚马",
     reward: { type: "card", cardId: "max_NBA_凯尔科尔沃" },
     hidden: true,
     status: "live",

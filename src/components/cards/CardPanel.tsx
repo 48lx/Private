@@ -61,9 +61,12 @@ export default function CardPanel() {
     setLoggedIn(false); setGroupKeyLocal(""); setTokens(0); setCollection([]);
   };
 
+  const drawPrice = (count: number) => count === 1 ? 100 : count === 10 ? 950 : 9000;
+
   const handleDraw = async (count: number) => {
     if (!loggedIn || drawing) return;
-    const ok = await spendTokens(groupKey, count*100);
+    const price = drawPrice(count);
+    const ok = await spendTokens(groupKey, price);
     if (!ok) { alert("代币不足！"); return; }
     setDrawing(true);
     const cards = drawMulti(count);
@@ -176,7 +179,7 @@ export default function CardPanel() {
       if (count <= 1) continue;
       // 跳过所有可升级卡（螳螂/剑魔/GEM/2077全链）
       const card = ALL_CARDS.find(c => c.id === id);
-      if (card?.upgradable) continue;
+      if (card?.upgradable || card?.rarity === "special") continue;
       toDecompose.push({ id, count: count - 1, refund: decomposeValue(id) * (count - 1) });
     }
     if (toDecompose.length === 0) { alert("没有可分解的卡牌"); return; }
@@ -397,13 +400,13 @@ export default function CardPanel() {
                     <button onClick={() => handleDraw(1)} disabled={tokens < 100}
                       className="flex-1 py-3 font-mono text-sm border transition-all disabled:opacity-20 cursor-pointer hover:scale-105"
                       style={{ borderColor: "rgba(255,215,0,0.2)", color: "#ffd700", background: "rgba(255,215,0,0.04)" }}>单抽 🪙100</button>
-                    <button onClick={() => handleDraw(10)} disabled={tokens < 1000}
+                    <button onClick={() => handleDraw(10)} disabled={tokens < 950}
                       className="flex-1 py-3 font-mono text-sm border transition-all disabled:opacity-20 cursor-pointer hover:scale-105"
-                      style={{ borderColor: "rgba(255,215,0,0.3)", color: "#ffd700", background: "rgba(255,215,0,0.08)" }}>十连 🪙1000</button>
-                    <button onClick={() => handleDraw(100)} disabled={tokens < 10000}
+                      style={{ borderColor: "rgba(255,215,0,0.3)", color: "#ffd700", background: "rgba(255,215,0,0.08)" }}>十连 🪙950</button>
+                    <button onClick={() => handleDraw(100)} disabled={tokens < 9000}
                       className="flex-1 py-3 font-mono text-sm border transition-all disabled:opacity-20 cursor-pointer hover:scale-105"
                       style={{ borderColor: "rgba(255,107,255,0.3)", color: "#ff6bff", background: "rgba(255,107,255,0.06)" }}>
-                      百连 🪙10000
+                      百连 🪙9000
                     </button>
                   </>
                 )}
@@ -521,7 +524,7 @@ export default function CardPanel() {
                   // 检查篮球成就
                   const coll = await getCollection(groupKey);
                   const r = await checkBasketball(groupKey, coll);
-                  if (r?.success) showToast(`🏆 成就解锁！${r.achName}`, "#ffd700");
+                  if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); await loadData(groupKey); }
                   setShowDunkMerge(false);
                 }}
                   disabled={dunkCount < 2}
