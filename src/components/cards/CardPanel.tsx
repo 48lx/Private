@@ -368,7 +368,7 @@ export default function CardPanel() {
                             textShadow: have > 0 ? `0 0 6px ${getCardColor(card)}44` : "none",
                           }}>{card.name}</p>
                         {!card.imageFile && <p className="font-mono text-[10px] mt-0.5" style={{ color: "rgba(200,200,220,0.35)" }}>{RARITY_LABELS[card.rarity]}{card.upgradable ? " 🔄" : ""}</p>}
-                        {have > 0 && <p className="font-mono text-xs absolute top-0.5 right-1.5 font-bold" style={{ color: getCardColor(card), textShadow: `0 0 4px ${getCardColor(card)}66` }}>×{have}</p>}
+                        {have > 0 && <p className="font-mono text-xs absolute bottom-0.5 right-1.5 font-bold" style={{ color: getCardColor(card), textShadow: `0 0 4px ${getCardColor(card)}66` }}>×{have}</p>}
                       </div>
                     );
                   })}
