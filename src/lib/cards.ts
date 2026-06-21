@@ -1,7 +1,7 @@
 // ═══ 卡牌系统 ═══
 // 数据来源：card-map.json → cards-generated.ts
 
-export type Rarity = "white" | "blue" | "gold" | "ultimate";
+export type Rarity = "white" | "blue" | "gold" | "ultimate" | "special";
 export type CardType = "champion" | "gem" | "cyberpunk" | "skin";
 
 export interface CardDef {
@@ -15,12 +15,13 @@ export interface CardDef {
   upgradableGroup?: string;
 }
 
-// 每张卡权重（终极:15 金:100 蓝:300 白:700）
+// 每张卡权重（终极:15 金:100 蓝:300 白:700 特殊:0不参与普通抽卡）
 export const CARD_WEIGHT_BY_RARITY: Record<Rarity, number> = {
   ultimate: 15,
   gold: 100,
   blue: 300,
   white: 700,
+  special: 0,
 };
 
 export const RARITY_LABELS: Record<Rarity | "special", string> = {
@@ -46,6 +47,7 @@ export const RATE_TABLE = [
   { rarity: "blue" as Rarity, rate: "20%", desc: "皮肤+特殊角色" },
   { rarity: "gold" as Rarity, rate: "8%", desc: "至臻皮肤+特殊角色" },
   { rarity: "ultimate" as Rarity, rate: "2%", desc: "螳螂/剑魔/GEM/2077" },
+  { rarity: "special" as Rarity, rate: "保底", desc: "十连必得1张 / 百连10张" },
 ];
 
 // 四张可升级终极卡组
@@ -114,6 +116,7 @@ export const UPGRADE_NAMES: Record<string, string> = {
 
 // ─── 分解价值 ───
 export function decomposeValue(cardId: string): number {
+  if (cardId.startsWith("mimic-") || cardId === "twisted-gamble" || cardId === "lonely-pull") return 100;
   if (cardId.startsWith("max_") || cardId.includes("ultimate")) return 1000;
   if (cardId.startsWith("gold_") || cardId.includes("-gold")) return 200;
   if (cardId.startsWith("blue_") || cardId.includes("-blue")) return 50;
@@ -150,51 +153,50 @@ const SPECIAL_WHITES: CardDef[] = [
   },
 ];
 
-// 特殊功能卡（妮蔻之助 / 崔斯特的赌约 / 孤立无援）
+// 特殊功能卡（不参与普通抽卡，仅通过十连/百连保底获取，5种等概率 1:1:1:1:1）
 const SPECIAL_CARDS: CardDef[] = [
-  { id: "mimic-white", name: "妮蔻之助", rarity: "white", type: "gem" },
-  { id: "mimic-blue", name: "妮蔻之助·蓝", rarity: "blue", type: "gem" },
-  { id: "mimic-gold", name: "妮蔻之助·金", rarity: "gold", type: "gem" },
-  { id: "mimic-ultimate", name: "妮蔻之助·终极", rarity: "ultimate", type: "gem" },
-  { id: "twisted-gamble", name: "崔斯特的赌约", rarity: "blue", type: "gem" },
-  { id: "lonely-pull", name: "孤立无援", rarity: "blue", type: "gem" },
+  { id: "mimic-white", name: "妮蔻之助", rarity: "special", type: "gem" },
+  { id: "mimic-blue", name: "妮蔻之助·蓝", rarity: "special", type: "gem" },
+  { id: "mimic-gold", name: "妮蔻之助·金", rarity: "special", type: "gem" },
+  { id: "twisted-gamble", name: "崔斯特的赌约", rarity: "special", type: "gem" },
+  { id: "lonely-pull", name: "孤立无援", rarity: "special", type: "gem" },
 ];
 
-// ─── 全卡池 ───
+// ─── 全卡池（含特殊卡，用于图鉴展示）───
 export const ALL_CARDS: CardDef[] = [
   ...buildChampionWhites(),       // 173 英雄白卡
   ...SPECIAL_WHITES,              // 升级线白卡起点（gem-white / cp2077-white）
-  ...SPECIAL_CARDS,               // 功能卡（妮蔻之助 / 崔斯特 / 孤立无援）
-  ...CUSTOM_CARDS,                // 91 张 card-map.json 蓝/金/终极卡（含全部皮肤/角色/GEM/成就卡）
+  ...SPECIAL_CARDS,               // 功能卡（5张，仅保底获取）
+  ...CUSTOM_CARDS,                // 91 张 card-map.json 蓝/金/终极卡
 ];
+
+// 普通抽卡池（排除特殊卡）
+const DRAW_POOL = ALL_CARDS.filter(c => c.rarity !== "special");
 
 // ─── 抽卡引擎 ───
 export function drawCard(): CardDef {
-  const totalWeight = ALL_CARDS.reduce((sum, c) => sum + CARD_WEIGHT_BY_RARITY[c.rarity], 0);
+  const totalWeight = DRAW_POOL.reduce((sum, c) => sum + CARD_WEIGHT_BY_RARITY[c.rarity], 0);
   let r = Math.random() * totalWeight;
-  for (const card of ALL_CARDS) {
+  for (const card of DRAW_POOL) {
     r -= CARD_WEIGHT_BY_RARITY[card.rarity];
     if (r <= 0) return card;
   }
-  return ALL_CARDS[ALL_CARDS.length - 1];
+  return DRAW_POOL[DRAW_POOL.length - 1];
 }
 
 export function drawMulti(count: number): CardDef[] {
   const results: CardDef[] = [];
-  let hasNonWhite = false;
   for (let i = 0; i < count; i++) {
-    const c = drawCard();
-    if (c.rarity !== "white") hasNonWhite = true;
-    results.push(c);
+    results.push(drawCard());
   }
-  if (count >= 10 && !hasNonWhite) {
-    // 保底蓝+：从非白卡中抽
-    const nonWhite = ALL_CARDS.filter(c => c.rarity !== "white");
-    const totalW = nonWhite.reduce((s, c) => s + CARD_WEIGHT_BY_RARITY[c.rarity], 0);
-    let r = Math.random() * totalW;
-    for (const c of nonWhite) {
-      r -= CARD_WEIGHT_BY_RARITY[c.rarity];
-      if (r <= 0) { results[results.length - 1] = c; break; }
+  if (count >= 10) {
+    // 十连保底：最后1张替换为随机特殊卡（5种等概率 1:1:1:1:1）
+    results[results.length - 1] = SPECIAL_CARDS[Math.floor(Math.random() * SPECIAL_CARDS.length)];
+  }
+  if (count >= 100) {
+    // 百连：最后10张全部替换为随机特殊卡
+    for (let i = results.length - 10; i < results.length; i++) {
+      results[i] = SPECIAL_CARDS[Math.floor(Math.random() * SPECIAL_CARDS.length)];
     }
   }
   return results;

@@ -89,9 +89,9 @@ export default function CardPanel() {
     if (!card) return;
     // 妮蔻之助：自选同稀有度任意卡
     if (cardId.startsWith("mimic-")) {
-      const rarity = card.rarity === "ultimate" ? "ultimate" : card.rarity;
-      const pool = ALL_CARDS.filter(c => c.rarity === rarity && !c.id.startsWith("mimic-"));
-      const name = prompt(`妮蔻之助·${RARITY_LABELS[rarity]}\n输入要兑换的英雄名：`);
+      const targetRarity = cardId === "mimic-white" ? "white" : cardId === "mimic-blue" ? "blue" : "gold";
+      const pool = ALL_CARDS.filter(c => c.rarity === targetRarity && !c.id.startsWith("mimic-"));
+      const name = prompt(`妮蔻之助·${RARITY_LABELS[targetRarity]}\n输入要兑换的英雄名：`);
       if (!name) return;
       const target = pool.find(c => c.name === name || c.id.includes(name));
       if (!target) { alert("未找到该卡"); return; }
@@ -447,7 +447,7 @@ export default function CardPanel() {
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center"
               style={{ background: "rgba(8,4,28,0.95)", backdropFilter: "blur(4px)" }}
               onClick={() => setDrawResult(null)}>
-              <div className="flex flex-col" style={{ width: "min(800px, 92vw)", maxHeight: "82vh" }}
+              <div className="flex flex-col" style={{ width: "min(1200px, 94vw)", maxHeight: "82vh" }}
                 onClick={e => e.stopPropagation()}>
                 <p className="font-heading text-base mb-3 text-center tracking-[0.2em]"
                   style={{ color: "#ffd700", textShadow: "0 0 10px rgba(255,215,0,0.4)" }}>
