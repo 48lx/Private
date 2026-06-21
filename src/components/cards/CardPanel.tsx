@@ -197,20 +197,21 @@ export default function CardPanel() {
     setMergeAnim(null);
     setMergeVideo(true);
     if (autumnEquipped) {
-      // 秋装备中：先判定，失败不扣卡
+      // 秋装备中：先判定，成功不消耗秋，失败保留卡牌
       const successRate = MERGE_RATES[rateKey] || 100;
       const roll = Math.random() * 100;
       if (roll < successRate) {
         await mergeCards4to1(groupKey, fromId, toId, rateKey);
         const nextCard = ALL_CARDS.find(c => c.id === toId);
-        showToast(`合成成功！获得 ${nextCard?.name || ""}（秋已消耗）`, "#00ff88");
+        showToast(`合成成功！获得 ${nextCard?.name || ""}（秋保留）`, "#00ff88");
+        setAutumnEquipped(false);
       } else {
+        await decomposeCard(groupKey, "autumn", 1, 0);
+        setAutumnEquipped(false);
         showToast("🍂 秋 发动！合成失败但保留全部卡牌", "#ffd700");
         const r = await checkMergeFailed(groupKey);
         if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); }
       }
-      await decomposeCard(groupKey, "autumn", 1, 0);
-      setAutumnEquipped(false);
       await loadData(groupKey);
       return;
     }

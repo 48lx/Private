@@ -2233,7 +2233,12 @@ export function compareGuess(guess: Champion, answer: Champion): GuessResult[] {
     },
     {
       dimension: "releaseYear", label: "上线年份",
-      guessValue: String(guess.releaseYear), answerValue: String(answer.releaseYear),
+      guessValue: guess.releaseYear === answer.releaseYear
+        ? String(guess.releaseYear)
+        : guess.releaseYear > answer.releaseYear
+          ? `${guess.releaseYear}↓`
+          : `${guess.releaseYear}↑`,
+      answerValue: String(answer.releaseYear),
       matchLevel: guess.releaseYear === answer.releaseYear ? "full" : "none",
     },
     {
