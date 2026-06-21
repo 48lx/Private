@@ -20,6 +20,7 @@ export default function CardPanel() {
   const [mergeCardId, setMergeCardId] = useState<string | null>(null);
   const [mergeVideo, setMergeVideo] = useState(false);
   const [toast, setToast] = useState<{ text: string; color: string } | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -209,29 +210,29 @@ export default function CardPanel() {
       </button>
 
       <div ref={overlayRef} className="fixed inset-0 z-[80] items-center justify-center"
-        style={{ display: "none", background: "rgba(5,5,16,0.92)" }}
+        style={{ display: "none", background: "rgba(8,4,28,0.85)", backdropFilter: "blur(4px)" }}
         onClick={e => { if (e.target === overlayRef.current) setIsOpen(false); }}>
         <div ref={panelRef} className="relative glass-cyber border flex flex-col"
-          style={{ width: "min(1200px, 95vw)", height: "min(900px, 85vh)", borderColor: "rgba(255,215,0,0.15)", overflow: "visible" }}>
+          style={{ width: "min(1200px, 95vw)", height: "min(900px, 85vh)", borderColor: "rgba(180,140,255,0.2)", overflow: "visible", boxShadow: "0 0 80px rgba(120,40,220,0.2), 0 0 200px rgba(0,180,255,0.08), inset 0 0 40px rgba(120,40,220,0.04)" }}>
 
           {/* Floating side buttons — left edge */}
           {loggedIn && (
             <div className="absolute top-1/3 flex flex-col gap-3 z-50" style={{ left: "-50px" }}>
               <button onClick={async () => { const c = await checkDailyCheckin(groupKey); if (c) { showToast(`📅 获得 ${ALL_CARDS.find(x=>x.id===c)?.name||c}`, "#4da8da"); await loadData(groupKey); } else { alert("今日已签到"); } }}
                 className="font-mono text-sm border cursor-pointer transition-all hover:-translate-x-4"
-                style={{ writingMode: "vertical-rl", color: "rgba(77,168,218,0.7)", borderColor: "rgba(77,168,218,0.3)", background: "rgba(13,13,36,0.95)", borderRadius: "6px 0 0 6px", width: "48px", padding: "16px 10px", textAlign: "center", letterSpacing: "0.3em" }}>
+                style={{ writingMode: "vertical-rl", color: "rgba(0,200,255,0.8)", borderColor: "rgba(0,200,255,0.3)", background: "rgba(8,4,28,0.95)", borderRadius: "6px 0 0 6px", width: "48px", padding: "16px 10px", textAlign: "center", letterSpacing: "0.3em", boxShadow: "0 0 10px rgba(0,200,255,0.1)" }}>
                 📅签到
               </button>
               <button onClick={doDecomposeAll}
                 className="font-mono text-sm border cursor-pointer transition-all hover:-translate-x-4"
-                style={{ writingMode: "vertical-rl", color: "rgba(255,51,85,0.5)", borderColor: "rgba(255,51,85,0.25)", background: "rgba(13,13,36,0.95)", borderRadius: "6px 0 0 6px", width: "48px", padding: "16px 10px", textAlign: "center", letterSpacing: "0.3em" }}>
+                style={{ writingMode: "vertical-rl", color: "rgba(255,80,120,0.8)", borderColor: "rgba(255,80,120,0.3)", background: "rgba(8,4,28,0.95)", borderRadius: "6px 0 0 6px", width: "48px", padding: "16px 10px", textAlign: "center", letterSpacing: "0.3em", boxShadow: "0 0 10px rgba(255,80,120,0.08)" }}>
                 一键分解
               </button>
             </div>
           )}
 
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "rgba(255,215,0,0.1)", background: "rgba(255,215,0,0.03)" }}>
+          <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "rgba(180,140,255,0.15)", background: "rgba(120,40,220,0.06)" }}>
             <div className="flex items-center gap-3">
               <h3 className="font-heading text-sm tracking-[0.2em] neon-gold" style={{ color: "#ffd700" }}>🃏 卡牌图鉴</h3>
               {loggedIn && <span className="font-mono text-xs px-2 py-0.5 border" style={{ color: "rgba(200,200,208,0.4)", borderColor: "rgba(200,200,208,0.12)" }}>{groupKey}</span>}
@@ -258,7 +259,7 @@ export default function CardPanel() {
           ) : (
             <>
               {/* Filter */}
-              <div className="flex border-b" style={{ borderColor: "rgba(255,215,0,0.06)" }}>
+              <div className="flex border-b" style={{ borderColor: "rgba(180,140,255,0.1)" }}>
                 {(["all", "white", "blue", "gold", "ultimate", "special"] as const).map(r =>
                   <button key={r} onClick={() => setFilter(r)} className="flex-1 py-2.5 font-mono text-xs transition-colors"
                     style={{ color: filter === r ? RARITY_COLORS[r] : "rgba(200,200,208,0.3)", borderBottom: filter === r ? `2px solid ${RARITY_COLORS[r]}` : "2px solid transparent" }}>
@@ -269,36 +270,46 @@ export default function CardPanel() {
 
               {/* Collection */}
               <div className="flex-1 overflow-y-auto p-4" style={{ scrollbarWidth: "thin", overflowX: "hidden" }}>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-5 gap-3">
                   {filteredCards.map(card => {
                     const have = collectionMap.get(card.id) || 0;
-                    const isSpecial = card.upgradable;
+                    const isUpgradable = card.upgradable && card.upgradableGroup;
+                    const isFunctional = card.id.startsWith("mimic-") || card.id === "twisted-gamble" || card.id === "lonely-pull";
+                    const canPreview = card.imageFile && !isUpgradable;
                     return (
-                      <div key={card.id} className="relative text-center p-2 border transition-all group"
+                      <div key={card.id} className="relative text-center p-2 border transition-all group hover:scale-105"
                         style={{
-                          borderColor: have > 0 ? RARITY_COLORS[card.rarity] : "rgba(255,255,255,0.03)",
-                          background: have > 0 ? `${RARITY_COLORS[card.rarity]}0d` : "rgba(255,255,255,0.005)",
-                          opacity: have > 0 ? 1 : 0.25,
-                          minHeight: "80px", display: "flex", flexDirection: "column", justifyContent: "center",
-                          cursor: isSpecial ? "pointer" : "default",
+                          borderColor: have > 0 ? RARITY_COLORS[card.rarity] : "rgba(180,160,255,0.15)",
+                          background: have > 0
+                            ? `${RARITY_COLORS[card.rarity]}15`
+                            : "rgba(160,140,255,0.03)",
+                          opacity: have > 0 ? 1 : 0.55,
+                          minHeight: "100px", display: "flex", flexDirection: "column", justifyContent: "center",
+                          cursor: (isFunctional && have > 0) || isUpgradable || canPreview ? "pointer" : "default",
+                          boxShadow: have > 0 ? `0 0 12px ${RARITY_COLORS[card.rarity]}22` : "none",
                         }}
                         onClick={() => {
-                          if (card.id.startsWith("mimic-") || card.id === "twisted-gamble" || card.id === "lonely-pull") {
-                            if (have > 0) useSpecialCard(card.id);
-                          } else if (isSpecial && card.upgradableGroup) {
-                            setMergeTarget(card.upgradableGroup); setMergeCardId(card.id);
+                          if (isFunctional && have > 0) {
+                            useSpecialCard(card.id);
+                          } else if (isUpgradable) {
+                            setMergeTarget(card.upgradableGroup!); setMergeCardId(card.id);
+                          } else if (canPreview) {
+                            setImagePreview(`/cards/${card.imageFile}`);
                           }
                         }}>
                         {card.imageFile && (
-                          <div className="w-full mb-1" style={{ aspectRatio: "5/7", overflow: "hidden" }}>
+                          <div className="w-full mb-1.5" style={{ aspectRatio: "5/7", overflow: "hidden", borderRadius: "2px" }}>
                             <img src={`/cards/${card.imageFile}`} alt="" className="w-full h-full object-cover"
                               onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}/>
                           </div>
                         )}
-                        <p className="font-mono text-xs truncate" style={{ color: have > 0 ? RARITY_COLORS[card.rarity] : "rgba(200,200,208,0.4)" }}>{card.name}</p>
-                        {!card.imageFile && <p className="font-mono text-[10px] mt-0.5" style={{ color: "rgba(200,200,208,0.25)" }}>{RARITY_LABELS[card.rarity]}{card.upgradable ? " 🔄" : ""}</p>}
-                        {have > 0 && <p className="font-mono text-[11px] absolute top-0.5 right-1.5" style={{ color: RARITY_COLORS[card.rarity] }}>×{have}</p>}
-                        {/* Decompose button */}
+                        <p className="font-mono text-base font-bold truncate"
+                          style={{
+                            color: have > 0 ? RARITY_COLORS[card.rarity] : "rgba(210,200,240,0.55)",
+                            textShadow: have > 0 ? `0 0 6px ${RARITY_COLORS[card.rarity]}44` : "none",
+                          }}>{card.name}</p>
+                        {!card.imageFile && <p className="font-mono text-[10px] mt-0.5" style={{ color: "rgba(200,200,220,0.35)" }}>{RARITY_LABELS[card.rarity]}{card.upgradable ? " 🔄" : ""}</p>}
+                        {have > 0 && <p className="font-mono text-xs absolute top-0.5 right-1.5 font-bold" style={{ color: RARITY_COLORS[card.rarity], textShadow: `0 0 4px ${RARITY_COLORS[card.rarity]}66` }}>×{have}</p>}
                       </div>
                     );
                   })}
@@ -306,7 +317,7 @@ export default function CardPanel() {
               </div>
 
               {/* Draw */}
-              <div className="p-4 border-t flex gap-3" style={{ borderColor: "rgba(255,215,0,0.08)" }}>
+              <div className="p-4 border-t flex gap-3" style={{ borderColor: "rgba(180,140,255,0.12)", background: "rgba(120,40,220,0.03)" }}>
                 {drawing ? (
                   <div className="flex-1 flex items-center justify-center gap-3 py-4">
                     <span className="font-mono text-sm animate-pulse" style={{ color: "#ffd700" }}>抽取中...</span>
@@ -334,9 +345,9 @@ export default function CardPanel() {
 
         {/* Merge popup */}
         {mergeTarget && (
-          <div className="fixed inset-0 z-[90] flex items-center justify-center" style={{ background: "rgba(5,5,16,0.9)" }}
+          <div className="fixed inset-0 z-[90] flex items-center justify-center" style={{ background: "rgba(8,4,28,0.9)", backdropFilter: "blur(4px)" }}
             onClick={() => setMergeTarget(null)}>
-            <div className="p-8 border" style={{ width: "700px", background: "rgba(13,13,36,0.98)", borderColor: "rgba(255,215,0,0.2)" }}
+            <div className="p-8 border" style={{ width: "700px", background: "rgba(16,8,40,0.98)", borderColor: "rgba(180,140,255,0.2)", boxShadow: "0 0 60px rgba(120,40,220,0.2)" }}
               onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-heading text-lg tracking-[0.2em] neon-gold" style={{ color: "#ffd700" }}>
@@ -389,6 +400,18 @@ export default function CardPanel() {
           </div>
         )}
 
+        {/* Image preview modal */}
+        {imagePreview && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center"
+            style={{ background: "rgba(4,2,18,0.92)", backdropFilter: "blur(8px)", cursor: "pointer" }}
+            onClick={() => setImagePreview(null)}>
+            <img src={imagePreview} alt="卡片原图"
+              className="max-w-[85vw] max-h-[88vh] object-contain rounded"
+              style={{ boxShadow: "0 0 80px rgba(120,40,220,0.3), 0 0 200px rgba(0,180,255,0.12)" }}
+              onClick={e => e.stopPropagation()}/>
+          </div>
+        )}
+
         {/* Toast notification */}
         {toast && (
           <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-[100] pointer-events-none animate-bounce"
@@ -409,17 +432,23 @@ export default function CardPanel() {
 
         {/* Draw result */}
         {drawResult && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center" style={{ background: "rgba(5,5,16,0.95)" }} onClick={() => setDrawResult(null)}>
-            <p className="font-heading text-sm mb-4 neon-gold" style={{ color: "#ffd700" }}>抽卡结果</p>
-            <div className="grid grid-cols-5 gap-2 max-h-80 overflow-y-auto p-2">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center" style={{ background: "rgba(8,4,28,0.95)", backdropFilter: "blur(4px)" }} onClick={() => setDrawResult(null)}>
+            <p className="font-heading text-base mb-4 tracking-[0.2em]" style={{ color: "#ffd700", textShadow: "0 0 10px rgba(255,215,0,0.4)" }}>抽卡结果</p>
+            <div className="grid grid-cols-5 gap-3 max-h-[65vh] overflow-y-auto p-3">
               {drawResult.map((c, i) => (
-                <div key={i} className="text-center p-3 border" style={{ borderColor: RARITY_COLORS[c.rarity], background: `${RARITY_COLORS[c.rarity]}11` }}>
-                  <p className="font-mono text-xs" style={{ color: RARITY_COLORS[c.rarity] }}>{c.name}</p>
-                  <p className="font-mono text-[10px] mt-1" style={{ color: RARITY_COLORS[c.rarity] }}>{RARITY_LABELS[c.rarity]}</p>
+                <div key={i} className="text-center p-2 border"
+                  style={{ borderColor: RARITY_COLORS[c.rarity], background: `${RARITY_COLORS[c.rarity]}14`, boxShadow: `0 0 10px ${RARITY_COLORS[c.rarity]}18` }}>
+                  {c.imageFile && (
+                    <div className="w-full mb-1" style={{ aspectRatio: "5/7", overflow: "hidden", borderRadius: "2px" }}>
+                      <img src={`/cards/${c.imageFile}`} alt="" className="w-full h-full object-cover"/>
+                    </div>
+                  )}
+                  <p className="font-mono text-sm font-bold" style={{ color: RARITY_COLORS[c.rarity] }}>{c.name}</p>
+                  <p className="font-mono text-[10px] mt-0.5" style={{ color: RARITY_COLORS[c.rarity] }}>{RARITY_LABELS[c.rarity]}</p>
                 </div>
               ))}
             </div>
-            <button onClick={() => setDrawResult(null)} className="mt-4 font-mono text-sm px-6 py-2 border" style={{ borderColor: "rgba(255,215,0,0.3)", color: "#ffd700" }}>确认</button>
+            <button onClick={() => setDrawResult(null)} className="mt-4 font-mono text-sm px-6 py-2 border transition-all hover:scale-105" style={{ borderColor: "rgba(255,215,0,0.4)", color: "#ffd700", background: "rgba(255,215,0,0.06)" }}>确认</button>
           </div>
         )}
       </div>

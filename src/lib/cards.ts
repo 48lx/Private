@@ -123,7 +123,6 @@ export function decomposeValue(cardId: string): number {
 // ─── 构建完整卡池 ───
 
 import { champions } from "./lol-data";
-import { ACHIEVEMENT_CARDS } from "./achievements";
 import { CUSTOM_CARDS } from "./cards-generated";
 
 // 普通英雄白卡（173张）
@@ -165,9 +164,8 @@ const SPECIAL_CARDS: CardDef[] = [
 export const ALL_CARDS: CardDef[] = [
   ...buildChampionWhites(),       // 173 英雄白卡
   ...SPECIAL_WHITES,              // 升级线白卡起点（gem-white / cp2077-white）
-  ...ACHIEVEMENT_CARDS,           // 成就奖励卡（16张）
   ...SPECIAL_CARDS,               // 功能卡（妮蔻之助 / 崔斯特 / 孤立无援）
-  ...CUSTOM_CARDS,                // 91 张 card-map.json 蓝/金/终极卡（含全部皮肤/角色/GEM）
+  ...CUSTOM_CARDS,                // 91 张 card-map.json 蓝/金/终极卡（含全部皮肤/角色/GEM/成就卡）
 ];
 
 // ─── 抽卡引擎 ───
