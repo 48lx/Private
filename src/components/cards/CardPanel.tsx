@@ -13,7 +13,7 @@ export default function CardPanel() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [tokens, setTokens] = useState(0);
   const [collection, setCollection] = useState<{ card_id: string; count: number }[]>([]);
-  const [filter, setFilter] = useState<"all" | "white" | "blue" | "gold" | "ultimate" | "special">("all");
+  const [filter, setFilter] = useState<"all" | "white" | "blue" | "gold" | "ultimate" | "special">("white");
   const [drawing, setDrawing] = useState(false);
   const [drawResult, setDrawResult] = useState<CardDef[] | null>(null);
   const [mergeTarget, setMergeTarget] = useState<string | null>(null);
@@ -22,6 +22,7 @@ export default function CardPanel() {
   const [toast, setToast] = useState<{ text: string; color: string } | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [drawTab, setDrawTab] = useState<"white" | "nonwhite" | "special">("nonwhite");
+  const [showSpecialHelp, setShowSpecialHelp] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -261,12 +262,18 @@ export default function CardPanel() {
           ) : (
             <>
               {/* Filter */}
-              <div className="flex border-b" style={{ borderColor: "rgba(180,140,255,0.1)" }}>
-                {(["all", "white", "blue", "gold", "ultimate", "special"] as const).map(r =>
+              <div className="flex border-b items-center" style={{ borderColor: "rgba(180,140,255,0.1)" }}>
+                {(["white", "blue", "gold", "ultimate", "special"] as const).map(r =>
                   <button key={r} onClick={() => setFilter(r)} className="flex-1 py-2.5 font-mono text-xs transition-colors"
                     style={{ color: filter === r ? RARITY_COLORS[r] : "rgba(200,200,208,0.3)", borderBottom: filter === r ? `2px solid ${RARITY_COLORS[r]}` : "2px solid transparent" }}>
-                    {r === "all" ? "全部" : RARITY_LABELS[r]}
+                    {RARITY_LABELS[r]}
                   </button>
+                )}
+                {filter === "special" && (
+                  <button onClick={() => setShowSpecialHelp(true)}
+                    className="px-3 py-2.5 font-mono text-xs transition-colors hover:scale-110"
+                    style={{ color: "#ff6bff", opacity: 0.7 }}
+                    title="特殊卡说明">❓</button>
                 )}
               </div>
 
@@ -402,6 +409,38 @@ export default function CardPanel() {
           </div>
         )}
 
+        {/* Special card help modal */}
+        {showSpecialHelp && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center"
+            style={{ background: "rgba(8,4,28,0.9)", backdropFilter: "blur(4px)" }}
+            onClick={() => setShowSpecialHelp(false)}>
+            <div className="p-6 border" style={{ width: "min(520px, 90vw)", background: "rgba(16,8,40,0.98)", borderColor: "rgba(255,107,255,0.25)", boxShadow: "0 0 40px rgba(255,107,255,0.15)" }}
+              onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-heading text-base tracking-[0.15em]" style={{ color: "#ff6bff", textShadow: "0 0 8px rgba(255,107,255,0.3)" }}>🃏 特殊卡说明</h3>
+                <button onClick={() => setShowSpecialHelp(false)} className="font-mono text-lg" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
+              </div>
+              <div className="flex flex-col gap-3">
+                {[
+                  { name: "妮蔻之助", desc: "自选任意一张白卡，输入英雄名即可兑换。", color: RARITY_COLORS.white },
+                  { name: "妮蔻之助·蓝", desc: "自选任意一张蓝卡，输入英雄/皮肤名即可兑换。", color: RARITY_COLORS.blue },
+                  { name: "妮蔻之助·金", desc: "自选任意一张金卡，输入英雄/皮肤名即可兑换。", color: RARITY_COLORS.gold },
+                  { name: "崔斯特的赌约", desc: "抽一张命运之牌——红牌(30%)扣200币 / 蓝牌(60%)得随机蓝卡 / 金牌(10%)得妮蔻之助·金。", color: "#ffd700" },
+                  { name: "孤立无援", desc: "从图鉴中你尚未拥有的所有卡里，按稀有度权重随机抽一张（已全图鉴则无效）。", color: "#00ccff" },
+                ].map(item => (
+                  <div key={item.name} className="p-3 border" style={{ borderColor: `${item.color}30`, background: `${item.color}0a` }}>
+                    <p className="font-mono text-sm font-bold mb-1" style={{ color: item.color }}>{item.name}</p>
+                    <p className="font-mono text-xs leading-relaxed" style={{ color: "rgba(210,200,240,0.7)" }}>{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="font-mono text-[10px] mt-4 text-center" style={{ color: "rgba(200,200,220,0.25)" }}>
+                特殊卡仅通过十连/百连保底获取，不参与普通抽卡
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Image preview modal */}
         {imagePreview && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center"
@@ -472,7 +511,7 @@ export default function CardPanel() {
                 {activeCards.length === 0 ? (
                   <p className="text-center py-10 font-mono text-sm" style={{ color: "rgba(200,200,220,0.25)" }}>无</p>
                 ) : (
-                  <div className="grid grid-cols-7 gap-2 max-h-[50vh] overflow-y-auto p-2">
+                  <div className="grid grid-cols-6 gap-2 max-h-[50vh] overflow-y-auto p-2">
                     {activeCards.map((c, i) => (
                       <div key={i} className="text-center p-1.5 border"
                         style={{ borderColor: RARITY_COLORS[c.rarity], background: `${RARITY_COLORS[c.rarity]}12`, boxShadow: `0 0 6px ${RARITY_COLORS[c.rarity]}10` }}>
