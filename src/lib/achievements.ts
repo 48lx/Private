@@ -155,4 +155,13 @@ export const ACHIEVEMENTS: Achievement[] = [
     hidden: false,
     status: "live",
   },
+  {
+    key: "basketball",
+    name: "篮球可不是一个人的游戏",
+    desc: "???",
+    trigger: "???",
+    reward: { type: "card", cardId: "max_NBA_凯尔科尔沃" },
+    hidden: true,
+    status: "live",
+  },
 ];

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
-import { ALL_CARDS, CardDef, RARITY_LABELS, RARITY_COLORS, drawMulti, MERGE_CHAIN, UPGRADE_GROUPS, UPGRADE_NAMES, MERGE_VIDEOS, CARD_WEIGHT_BY_RARITY, decomposeValue, SPECIAL_CARD_COLORS } from "@/lib/cards";
+import { ALL_CARDS, CardDef, RARITY_LABELS, RARITY_COLORS, drawMulti, MERGE_CHAIN, UPGRADE_GROUPS, UPGRADE_NAMES, MERGE_VIDEOS, CARD_WEIGHT_BY_RARITY, decomposeValue, SPECIAL_CARD_COLORS, DUNK_MERGE_POOL } from "@/lib/cards";
 import { getGroupKey, setGroupKey, getTokens, spendTokens, getCollection, addCardsBulk, mergeCards4to1, MERGE_RATES, decomposeCard, addTokens } from "@/lib/card-storage";
-import { checkFirstLogin, checkMergeFailed, checkGemCard, checkFreljordComplete, checkRevelation, syncUnlocked, checkReturnAfterAbsence, checkHellRed, checkHellGold } from "@/lib/achievement-checker";
+import { checkFirstLogin, checkMergeFailed, checkGemCard, checkFreljordComplete, checkRevelation, syncUnlocked, checkReturnAfterAbsence, checkHellRed, checkHellGold, checkBasketball } from "@/lib/achievement-checker";
 import { checkDailyCheckin } from "@/lib/card-storage";
 
 export default function CardPanel() {
@@ -24,6 +24,7 @@ export default function CardPanel() {
   const [drawTab, setDrawTab] = useState<"white" | "nonwhite" | "special">("nonwhite");
   const [showSpecialHelp, setShowSpecialHelp] = useState(false);
   const [autumnEquipped, setAutumnEquipped] = useState(false);
+  const [showDunkMerge, setShowDunkMerge] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +44,7 @@ export default function CardPanel() {
     // 成就检查
     checkFreljordComplete(key, c);
     checkRevelation(key, c);
+    checkBasketball(key, c);
   };
 
   const handleLogin = async () => {
@@ -334,7 +336,9 @@ export default function CardPanel() {
                     const have = collectionMap.get(card.id) || 0;
                     const isUpgradable = card.upgradable && card.upgradableGroup;
                     const isFunctional = card.id.startsWith("mimic-") || card.id === "twisted-gamble" || card.id === "lonely-pull" || card.id === "windfall" || card.id === "autumn" || card.id === "oldwei-iou";
-                    const canPreview = card.imageFile && !isUpgradable;
+                    const isDunk = card.id === "gold_德莱厄斯_灌篮高手";
+                    const hidden = card.hidden && have === 0;
+                    const canPreview = card.imageFile && !isUpgradable && !hidden;
                     return (
                       <div key={card.id} className="relative text-center p-2 border transition-all group hover:scale-105"
                         style={{
@@ -344,30 +348,36 @@ export default function CardPanel() {
                             : "rgba(160,140,255,0.03)",
                           opacity: have > 0 ? 1 : 0.55,
                           minHeight: "100px", display: "flex", flexDirection: "column", justifyContent: "center",
-                          cursor: (isFunctional && have > 0) || isUpgradable || canPreview ? "pointer" : "default",
+                          cursor: (isFunctional && have > 0) || isUpgradable || canPreview || (isDunk && have >= 2) ? "pointer" : "default",
                           boxShadow: have > 0 ? `0 0 12px ${getCardColor(card)}22` : "none",
                         }}
                         onClick={() => {
                           if (isFunctional && have > 0) {
                             useSpecialCard(card.id);
+                          } else if (isDunk && have >= 2) {
+                            setShowDunkMerge(true);
                           } else if (isUpgradable) {
                             setMergeTarget(card.upgradableGroup!); setMergeCardId(card.id);
                           } else if (canPreview) {
                             setImagePreview(`/cards/${card.imageFile}`);
                           }
                         }}>
-                        {card.imageFile && (
+                        {hidden ? (
+                          <div className="w-full mb-1.5 flex items-center justify-center" style={{ aspectRatio: "5/7", background: "rgba(255,255,255,0.02)", borderRadius: "2px", border: "1px dashed rgba(255,255,255,0.06)" }}>
+                            <span className="font-mono text-[10px]" style={{ color: "rgba(200,200,220,0.2)" }}>???</span>
+                          </div>
+                        ) : card.imageFile ? (
                           <div className="w-full mb-1.5" style={{ aspectRatio: "5/7", overflow: "hidden", borderRadius: "2px" }}>
                             <img src={`/cards/${card.imageFile}`} alt="" className="w-full h-full object-cover"
                               onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}/>
                           </div>
-                        )}
+                        ) : null}
                         <p className="font-mono text-base font-bold truncate"
                           style={{
                             color: have > 0 ? getCardColor(card) : "rgba(210,200,240,0.55)",
                             textShadow: have > 0 ? `0 0 6px ${getCardColor(card)}44` : "none",
-                          }}>{card.name}</p>
-                        {!card.imageFile && <p className="font-mono text-[10px] mt-0.5" style={{ color: "rgba(200,200,220,0.35)" }}>{RARITY_LABELS[card.rarity]}{card.upgradable ? " 🔄" : ""}</p>}
+                          }}>{hidden ? "???" : card.name}</p>
+                        {!card.imageFile && !hidden && <p className="font-mono text-[10px] mt-0.5" style={{ color: "rgba(200,200,220,0.35)" }}>{RARITY_LABELS[card.rarity]}{card.upgradable ? " 🔄" : ""}</p>}
                         {have > 0 && <p className="font-mono text-xs absolute bottom-0.5 right-1.5 font-bold" style={{ color: getCardColor(card), textShadow: `0 0 4px ${getCardColor(card)}66` }}>×{have}</p>}
                       </div>
                     );
@@ -479,6 +489,54 @@ export default function CardPanel() {
             </div>
           </div>
         )}
+
+        {/* Dunk merge popup */}
+        {showDunkMerge && (() => {
+          const dunkCount = collectionMap.get("gold_德莱厄斯_灌篮高手") || 0;
+          return (
+            <div className="fixed inset-0 z-[90] flex items-center justify-center" style={{ background: "rgba(8,4,28,0.9)", backdropFilter: "blur(4px)" }}
+              onClick={() => setShowDunkMerge(false)}>
+              <div className="p-8 border text-center" style={{ width: "min(480px, 90vw)", background: "rgba(16,8,40,0.98)", borderColor: "rgba(255,215,0,0.25)", boxShadow: "0 0 60px rgba(255,140,0,0.2)" }}
+                onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-heading text-lg tracking-[0.2em]" style={{ color: "#ff8c00", textShadow: "0 0 10px rgba(255,140,0,0.3)" }}>🏀 灌篮高手 · 二合一</h3>
+                  <button onClick={() => setShowDunkMerge(false)} className="font-mono text-xl" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
+                </div>
+                <p className="font-mono text-sm mb-4" style={{ color: "rgba(200,200,208,0.5)" }}>
+                  消耗2张「灌篮高手」，100%获得一张神秘球星卡
+                </p>
+                <div className="flex items-center justify-center gap-6 mb-6">
+                  <span className="font-mono text-3xl" style={{ color: "#ffd700" }}>×{dunkCount}</span>
+                  <span className="font-mono text-xl" style={{ color: "rgba(200,200,208,0.3)" }}>→</span>
+                  <span className="font-mono text-3xl" style={{ color: "#ff8c00" }}>🎁</span>
+                </div>
+                <button onClick={async () => {
+                  if (dunkCount < 2) { alert("需要至少2张灌篮高手！"); return; }
+                  await decomposeCard(groupKey, "gold_德莱厄斯_灌篮高手", 2, 0);
+                  const reward = DUNK_MERGE_POOL[Math.floor(Math.random() * DUNK_MERGE_POOL.length)];
+                  await addCardsBulk(groupKey, [reward]);
+                  const rewardCard = ALL_CARDS.find(c => c.id === reward);
+                  showToast(`🏀 获得 ${rewardCard?.name || "球星卡"}！`, "#ff8c00");
+                  await loadData(groupKey);
+                  // 检查篮球成就
+                  const coll = await getCollection(groupKey);
+                  const r = await checkBasketball(groupKey, coll);
+                  if (r?.success) showToast(`🏆 成就解锁！${r.achName}`, "#ffd700");
+                  setShowDunkMerge(false);
+                }}
+                  disabled={dunkCount < 2}
+                  className="font-mono text-base px-8 py-3 border transition-all disabled:opacity-15 cursor-pointer hover:scale-105"
+                  style={{
+                    borderColor: "#ff8c00",
+                    color: dunkCount >= 2 ? "#ff8c00" : "rgba(200,200,208,0.2)",
+                    background: dunkCount >= 2 ? "rgba(255,140,0,0.08)" : "transparent",
+                  }}>
+                  {dunkCount >= 2 ? "合成" : `${dunkCount}/2`}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Special card help modal */}
         {showSpecialHelp && (

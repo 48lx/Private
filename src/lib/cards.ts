@@ -13,6 +13,7 @@ export interface CardDef {
   imageFile?: string;   // public/cards/ 下的文件名
   upgradable?: boolean;
   upgradableGroup?: string;
+  hidden?: boolean;      // 隐藏卡：未拥有时名称/卡面均显示"隐藏卡"
 }
 
 // 每张卡权重（终极:15 金:100 蓝:300 白:700 特殊:0不参与普通抽卡）
@@ -188,8 +189,11 @@ export const ALL_CARDS: CardDef[] = [
   ...CUSTOM_CARDS,                // 91 张 card-map.json 蓝/金/终极卡
 ];
 
-// 普通抽卡池（排除特殊卡）
-const DRAW_POOL = ALL_CARDS.filter(c => c.rarity !== "special");
+// 普通抽卡池（排除特殊卡和隐藏卡）
+const DRAW_POOL = ALL_CARDS.filter(c => c.rarity !== "special" && !c.hidden);
+
+// 灌篮高手·二合一（2张灌篮高手 → 随机NBA球星卡）
+export const DUNK_MERGE_POOL = ["max_NBA_文班亚马", "max_NBA_勒布朗詹姆斯"];
 
 // ─── 抽卡引擎 ───
 export function drawCard(): CardDef {

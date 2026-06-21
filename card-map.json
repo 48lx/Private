@@ -734,5 +734,32 @@
     "type": "gem",
     "imageFile": "max_邓紫棋_金鱼嘴.png",
     "character": "邓紫棋"
+  },
+  {
+    "id": "max_nba_wemby",
+    "name": "文班亚马",
+    "rarity": "ultimate",
+    "type": "skin",
+    "imageFile": "max_NBA_文班亚马.png",
+    "character": "NBA",
+    "hidden": true
+  },
+  {
+    "id": "max_nba_lebron",
+    "name": "勒布朗詹姆斯",
+    "rarity": "ultimate",
+    "type": "skin",
+    "imageFile": "max_NBA_勒布朗詹姆斯.png",
+    "character": "NBA",
+    "hidden": true
+  },
+  {
+    "id": "max_nba_korver",
+    "name": "凯尔科尔沃",
+    "rarity": "ultimate",
+    "type": "skin",
+    "imageFile": "max_NBA_凯尔科尔沃.png",
+    "character": "NBA",
+    "hidden": true
   }
 ]

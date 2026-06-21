@@ -139,3 +139,11 @@ export async function checkHellRed(groupKey: string) {
 export async function checkHellGold(groupKey: string) {
   return await tryUnlock(groupKey, "hell-2");
 }
+
+// 14. 篮球可不是一个人的游戏 — 拥有勒布朗詹姆斯+文班亚马
+export async function checkBasketball(groupKey: string, collection: { card_id: string; count: number }[]) {
+  const hasLebron = collection.some(c => c.card_id === "max_NBA_勒布朗詹姆斯" && c.count > 0);
+  const hasWemby = collection.some(c => c.card_id === "max_NBA_文班亚马" && c.count > 0);
+  if (hasLebron && hasWemby) return await tryUnlock(groupKey, "basketball");
+  return null;
+}

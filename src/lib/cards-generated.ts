@@ -1,4 +1,4 @@
-// 从 card-map.json 自动生成的卡牌（共 92 张）
+// 从 card-map.json 自动生成的卡牌（共 95 张）
 import { CardDef } from "./cards";
 
 export const CUSTOM_CARDS: CardDef[] = [
@@ -94,4 +94,7 @@ export const CUSTOM_CARDS: CardDef[] = [
   { id: "max_卡兹克_刹那银光", name: "刹那银光", rarity: "ultimate", type: "champion", imageFile: "max_卡兹克_刹那银光.png", upgradable: true, upgradableGroup: "khazix" },
   { id: "max_邓紫棋_启示录", name: "启示录", rarity: "ultimate", type: "gem", imageFile: "max_邓紫棋_启示录.png" },
   { id: "max_邓紫棋_金鱼嘴", name: "金鱼嘴", rarity: "ultimate", type: "gem", imageFile: "max_邓紫棋_金鱼嘴.png", upgradable: true, upgradableGroup: "gem" },
+  { id: "max_NBA_文班亚马", name: "文班亚马", rarity: "ultimate", type: "skin", imageFile: "max_NBA_文班亚马.png", hidden: true },
+  { id: "max_NBA_勒布朗詹姆斯", name: "勒布朗詹姆斯", rarity: "ultimate", type: "skin", imageFile: "max_NBA_勒布朗詹姆斯.png", hidden: true },
+  { id: "max_NBA_凯尔科尔沃", name: "凯尔科尔沃", rarity: "ultimate", type: "skin", imageFile: "max_NBA_凯尔科尔沃.png", hidden: true },
 ];
