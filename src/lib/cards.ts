@@ -153,14 +153,29 @@ const SPECIAL_WHITES: CardDef[] = [
   },
 ];
 
-// 特殊功能卡（不参与普通抽卡，仅通过十连/百连保底获取，5种等概率 1:1:1:1:1）
+// 特殊功能卡（不参与普通抽卡，仅通过十连/百连保底获取，等概率）
 const SPECIAL_CARDS: CardDef[] = [
   { id: "mimic-white", name: "妮蔻之助", rarity: "special", type: "gem" },
   { id: "mimic-blue", name: "妮蔻之助·蓝", rarity: "special", type: "gem" },
   { id: "mimic-gold", name: "妮蔻之助·金", rarity: "special", type: "gem" },
   { id: "twisted-gamble", name: "崔斯特的赌约", rarity: "special", type: "gem" },
   { id: "lonely-pull", name: "孤立无援", rarity: "special", type: "gem" },
+  { id: "windfall", name: "意外之财", rarity: "special", type: "gem" },
+  { id: "autumn", name: "秋", rarity: "special", type: "gem" },
+  { id: "oldwei-iou", name: "老维的欠条", rarity: "special", type: "gem" },
 ];
+
+// 特殊卡各自颜色（区分优劣，不用统一紫）
+export const SPECIAL_CARD_COLORS: Record<string, string> = {
+  "mimic-white": "#c0c0c0",
+  "mimic-blue": "#4da8da",
+  "mimic-gold": "#ffd700",
+  "twisted-gamble": "#ffd700",
+  "lonely-pull": "#00ccff",
+  "windfall": "#4da8da",
+  "autumn": "#ffd700",
+  "oldwei-iou": "#4da8da",
+};
 
 // ─── 全卡池（含特殊卡，用于图鉴展示）───
 export const ALL_CARDS: CardDef[] = [

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
-import { ALL_CARDS, CardDef, RARITY_LABELS, RARITY_COLORS, drawMulti, MERGE_CHAIN, UPGRADE_GROUPS, UPGRADE_NAMES, MERGE_VIDEOS, CARD_WEIGHT_BY_RARITY, decomposeValue } from "@/lib/cards";
-import { getGroupKey, setGroupKey, getTokens, spendTokens, getCollection, addCardsBulk, mergeCards4to1, MERGE_RATES, decomposeCard } from "@/lib/card-storage";
+import { ALL_CARDS, CardDef, RARITY_LABELS, RARITY_COLORS, drawMulti, MERGE_CHAIN, UPGRADE_GROUPS, UPGRADE_NAMES, MERGE_VIDEOS, CARD_WEIGHT_BY_RARITY, decomposeValue, SPECIAL_CARD_COLORS } from "@/lib/cards";
+import { getGroupKey, setGroupKey, getTokens, spendTokens, getCollection, addCardsBulk, mergeCards4to1, MERGE_RATES, decomposeCard, addTokens } from "@/lib/card-storage";
 import { checkFirstLogin, checkMergeFailed, checkGemCard, checkFreljordComplete, checkRevelation, syncUnlocked, checkReturnAfterAbsence, checkHellRed, checkHellGold } from "@/lib/achievement-checker";
 import { checkDailyCheckin } from "@/lib/card-storage";
 
@@ -23,6 +23,7 @@ export default function CardPanel() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [drawTab, setDrawTab] = useState<"white" | "nonwhite" | "special">("nonwhite");
   const [showSpecialHelp, setShowSpecialHelp] = useState(false);
+  const [autumnEquipped, setAutumnEquipped] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -103,10 +104,14 @@ export default function CardPanel() {
     }
     // 崔斯特的赌约
     else if (cardId === "twisted-gamble") {
-      if (!confirm("崔斯特的赌约\n红=-200币(30%) 蓝=随机蓝卡(60%) 金=妮蔻之助·金(10%)\n确认抽牌？")) return;
+      if (!confirm("崔斯特的赌约\n🎰头彩(1%)=百连抽 红(29%)=-200币 蓝(60%)=随机蓝卡 金(10%)=妮蔻之助·金\n确认抽牌？")) return;
       const roll = Math.random();
       await decomposeCard(groupKey, cardId, 1, 0);
-      if (roll < 0.3) { // 红 30%
+      if (roll < 0.01) { // 头彩 1%
+        const bigDraw = drawMulti(100);
+        await addCardsBulk(groupKey, bigDraw.map(c => c.id));
+        showToast("🎰 头彩！触发百连抽！", "#ffd700");
+      } else if (roll < 0.3) { // 红 29%
         await spendTokens(groupKey, 200);
         checkHellRed(groupKey); showToast("💔 红牌！-200币", "#ff3355");
       } else if (roll < 0.9) { // 蓝 60%
@@ -125,7 +130,6 @@ export default function CardPanel() {
       const owned = new Set(collection.map(c => c.card_id));
       const missing = ALL_CARDS.filter(c => !owned.has(c.id));
       if (missing.length === 0) { alert("图鉴已全！"); return; }
-      // 按权重抽
       const totalW = missing.reduce((s, c) => s + CARD_WEIGHT_BY_RARITY[c.rarity], 0);
       let r = Math.random() * totalW;
       let picked = missing[0];
@@ -133,6 +137,25 @@ export default function CardPanel() {
       await decomposeCard(groupKey, cardId, 1, 0);
       await addCardsBulk(groupKey, [picked.id]);
       showToast(`🔍 获得 ${picked.name} (${RARITY_LABELS[picked.rarity]})`, "#00ff88");
+      await loadData(groupKey);
+    }
+    // 意外之财：获得500代币
+    else if (cardId === "windfall") {
+      await decomposeCard(groupKey, cardId, 1, 0);
+      await addTokens(groupKey, 500);
+      showToast("💰 意外之财！+500币", "#ffd700");
+      await loadData(groupKey);
+    }
+    // 老维的欠条：消耗1张老维，进行一次十连抽
+    else if (cardId === "oldwei-iou") {
+      const oldweiCount = collectionMap.get("blue_2077_老维") || 0;
+      if (oldweiCount < 1) { alert("需要至少拥有一张「老维」才能使用！"); return; }
+      if (!confirm("老维的欠条\n消耗1张「老维」，进行一次十连抽\n确认使用？")) return;
+      await decomposeCard(groupKey, cardId, 1, 0);
+      await decomposeCard(groupKey, "blue_2077_老维", 1, 0);
+      const draw = drawMulti(10);
+      await addCardsBulk(groupKey, draw.map(c => c.id));
+      showToast("📝 老维的欠条！十连抽完成", "#4da8da");
       await loadData(groupKey);
     }
   };
@@ -160,6 +183,24 @@ export default function CardPanel() {
   const doMerge = async (fromId: string, toId: string, rateKey: string) => {
     setMergeAnim(null);
     setMergeVideo(true);
+    if (autumnEquipped) {
+      // 秋装备中：先判定，失败不扣卡
+      const successRate = MERGE_RATES[rateKey] || 100;
+      const roll = Math.random() * 100;
+      if (roll < successRate) {
+        await mergeCards4to1(groupKey, fromId, toId, rateKey);
+        const nextCard = ALL_CARDS.find(c => c.id === toId);
+        showToast(`合成成功！获得 ${nextCard?.name || ""}（秋已消耗）`, "#00ff88");
+      } else {
+        showToast("🍂 秋 发动！合成失败但保留全部卡牌", "#ffd700");
+        const r = await checkMergeFailed(groupKey);
+        if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); }
+      }
+      await decomposeCard(groupKey, "autumn", 1, 0);
+      setAutumnEquipped(false);
+      await loadData(groupKey);
+      return;
+    }
     const result = await mergeCards4to1(groupKey, fromId, toId, rateKey);
     if (!result.success && result.lost === 0) { alert("卡牌不足（需要4张）"); setMergeVideo(false); return; }
     await loadData(groupKey);
@@ -185,7 +226,8 @@ export default function CardPanel() {
     return ALL_CARDS.find(c => c.id === nextId) || null;
   };
 
-  const isSpecial = (id: string) => id.startsWith("mimic-") || id === "twisted-gamble" || id === "lonely-pull";
+  const isSpecial = (id: string) => id.startsWith("mimic-") || id === "twisted-gamble" || id === "lonely-pull" || id === "windfall" || id === "autumn" || id === "oldwei-iou";
+  const getCardColor = (card: CardDef) => card.rarity === "special" ? (SPECIAL_CARD_COLORS[card.id] || RARITY_COLORS.special) : RARITY_COLORS[card.rarity];
   const filteredCards = ALL_CARDS.filter(c => {
     if (filter === "all") return true;
     if (filter === "special") return isSpecial(c.id);
@@ -288,14 +330,14 @@ export default function CardPanel() {
                     return (
                       <div key={card.id} className="relative text-center p-2 border transition-all group hover:scale-105"
                         style={{
-                          borderColor: have > 0 ? RARITY_COLORS[card.rarity] : "rgba(180,160,255,0.15)",
+                          borderColor: have > 0 ? getCardColor(card) : "rgba(180,160,255,0.15)",
                           background: have > 0
-                            ? `${RARITY_COLORS[card.rarity]}15`
+                            ? `${getCardColor(card)}15`
                             : "rgba(160,140,255,0.03)",
                           opacity: have > 0 ? 1 : 0.55,
                           minHeight: "100px", display: "flex", flexDirection: "column", justifyContent: "center",
                           cursor: (isFunctional && have > 0) || isUpgradable || canPreview ? "pointer" : "default",
-                          boxShadow: have > 0 ? `0 0 12px ${RARITY_COLORS[card.rarity]}22` : "none",
+                          boxShadow: have > 0 ? `0 0 12px ${getCardColor(card)}22` : "none",
                         }}
                         onClick={() => {
                           if (isFunctional && have > 0) {
@@ -314,11 +356,11 @@ export default function CardPanel() {
                         )}
                         <p className="font-mono text-base font-bold truncate"
                           style={{
-                            color: have > 0 ? RARITY_COLORS[card.rarity] : "rgba(210,200,240,0.55)",
-                            textShadow: have > 0 ? `0 0 6px ${RARITY_COLORS[card.rarity]}44` : "none",
+                            color: have > 0 ? getCardColor(card) : "rgba(210,200,240,0.55)",
+                            textShadow: have > 0 ? `0 0 6px ${getCardColor(card)}44` : "none",
                           }}>{card.name}</p>
                         {!card.imageFile && <p className="font-mono text-[10px] mt-0.5" style={{ color: "rgba(200,200,220,0.35)" }}>{RARITY_LABELS[card.rarity]}{card.upgradable ? " 🔄" : ""}</p>}
-                        {have > 0 && <p className="font-mono text-xs absolute top-0.5 right-1.5 font-bold" style={{ color: RARITY_COLORS[card.rarity], textShadow: `0 0 4px ${RARITY_COLORS[card.rarity]}66` }}>×{have}</p>}
+                        {have > 0 && <p className="font-mono text-xs absolute top-0.5 right-1.5 font-bold" style={{ color: getCardColor(card), textShadow: `0 0 4px ${getCardColor(card)}66` }}>×{have}</p>}
                       </div>
                     );
                   })}
@@ -362,8 +404,29 @@ export default function CardPanel() {
                 <h3 className="font-heading text-lg tracking-[0.2em] neon-gold" style={{ color: "#ffd700" }}>
                   ⬆ {UPGRADE_NAMES[mergeTarget]} · 四合一
                 </h3>
-                <button onClick={() => { setMergeTarget(null); setMergeCardId(null); setMergeVideo(false); setMergeAnim(null); }} className="font-mono text-xl" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
+                <button onClick={() => { setMergeTarget(null); setMergeCardId(null); setMergeVideo(false); setMergeAnim(null); setAutumnEquipped(false); }} className="font-mono text-xl" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
               </div>
+              {/* 秋：合成失败保护 */}
+              {(() => {
+                const autumnCount = collectionMap.get("autumn") || 0;
+                if (autumnCount > 0) {
+                  return (
+                    <div className="mb-4 p-3 border flex items-center justify-between" style={{ borderColor: "rgba(255,215,0,0.2)", background: "rgba(255,215,0,0.05)" }}>
+                      <span className="font-mono text-sm" style={{ color: "#ffd700" }}>🍂 秋 · 合成失败时保留全部卡牌</span>
+                      <button onClick={() => setAutumnEquipped(!autumnEquipped)}
+                        className="font-mono text-xs px-4 py-1.5 border transition-all"
+                        style={{
+                          borderColor: autumnEquipped ? "#ffd700" : "rgba(255,215,0,0.3)",
+                          color: autumnEquipped ? "#000" : "#ffd700",
+                          background: autumnEquipped ? "#ffd700" : "transparent",
+                        }}>
+                        {autumnEquipped ? "已装备 ✓" : "装备"}
+                      </button>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
               {mergeCardId && (() => {
                 const card = ALL_CARDS.find(c => c.id === mergeCardId);
                 if (!card) return <p className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.3)" }}>卡牌不存在</p>;
@@ -422,11 +485,14 @@ export default function CardPanel() {
               </div>
               <div className="flex flex-col gap-3">
                 {[
-                  { name: "妮蔻之助", desc: "自选任意一张白卡，输入英雄名即可兑换。", color: RARITY_COLORS.white },
-                  { name: "妮蔻之助·蓝", desc: "自选任意一张蓝卡，输入英雄/皮肤名即可兑换。", color: RARITY_COLORS.blue },
-                  { name: "妮蔻之助·金", desc: "自选任意一张金卡，输入英雄/皮肤名即可兑换。", color: RARITY_COLORS.gold },
-                  { name: "崔斯特的赌约", desc: "抽一张命运之牌——红牌(30%)扣200币 / 蓝牌(60%)得随机蓝卡 / 金牌(10%)得妮蔻之助·金。", color: "#ffd700" },
+                  { name: "妮蔻之助", desc: "自选任意一张白卡，输入英雄名即可兑换。", color: "#c0c0c0" },
+                  { name: "妮蔻之助·蓝", desc: "自选任意一张蓝卡，输入英雄/皮肤名即可兑换。", color: "#4da8da" },
+                  { name: "妮蔻之助·金", desc: "自选任意一张金卡，输入英雄/皮肤名即可兑换。", color: "#ffd700" },
+                  { name: "崔斯特的赌约", desc: "🎰头彩(1%)=触发一次百连抽 / 红牌(29%)=扣200币 / 蓝牌(60%)=随机蓝卡 / 金牌(10%)=妮蔻之助·金。", color: "#ffd700" },
                   { name: "孤立无援", desc: "从图鉴中你尚未拥有的所有卡里，按稀有度权重随机抽一张（已全图鉴则无效）。", color: "#00ccff" },
+                  { name: "意外之财", desc: "直接获得500代币，简单粗暴。", color: "#4da8da" },
+                  { name: "秋", desc: "在合成界面装备后，若合成失败则不扣除任何卡牌（仅消耗秋本身）。一次性消耗品。", color: "#ffd700" },
+                  { name: "老维的欠条", desc: "消耗1张「老维」卡，进行一次十连抽。需要先拥有至少一张老维。", color: "#4da8da" },
                 ].map(item => (
                   <div key={item.name} className="p-3 border" style={{ borderColor: `${item.color}30`, background: `${item.color}0a` }}>
                     <p className="font-mono text-sm font-bold mb-1" style={{ color: item.color }}>{item.name}</p>
@@ -514,17 +580,17 @@ export default function CardPanel() {
                   <div className="grid grid-cols-6 gap-2 max-h-[50vh] overflow-y-auto p-2">
                     {activeCards.map((c, i) => (
                       <div key={i} className="text-center p-1.5 border"
-                        style={{ borderColor: RARITY_COLORS[c.rarity], background: `${RARITY_COLORS[c.rarity]}12`, boxShadow: `0 0 6px ${RARITY_COLORS[c.rarity]}10` }}>
+                        style={{ borderColor: getCardColor(c), background: `${getCardColor(c)}12`, boxShadow: `0 0 6px ${getCardColor(c)}10` }}>
                         {c.imageFile ? (
                           <div className="w-full mb-1" style={{ aspectRatio: "5/7", overflow: "hidden", borderRadius: "2px" }}>
                             <img src={`/cards/${c.imageFile}`} alt="" className="w-full h-full object-cover"/>
                           </div>
                         ) : (
-                          <div className="w-full mb-1 flex items-center justify-center" style={{ aspectRatio: "5/7", background: `${RARITY_COLORS[c.rarity]}0d`, borderRadius: "2px" }}>
-                            <span className="font-mono text-[9px]" style={{ color: RARITY_COLORS[c.rarity] }}>{RARITY_LABELS[c.rarity]}</span>
+                          <div className="w-full mb-1 flex items-center justify-center" style={{ aspectRatio: "5/7", background: `${getCardColor(c)}0d`, borderRadius: "2px" }}>
+                            <span className="font-mono text-[9px]" style={{ color: getCardColor(c) }}>{RARITY_LABELS[c.rarity]}</span>
                           </div>
                         )}
-                        <p className="font-mono text-[11px] font-bold truncate" style={{ color: RARITY_COLORS[c.rarity] }}>{c.name}</p>
+                        <p className="font-mono text-[11px] font-bold truncate" style={{ color: getCardColor(c) }}>{c.name}</p>
                       </div>
                     ))}
                   </div>

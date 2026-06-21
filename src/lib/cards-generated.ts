@@ -1,4 +1,4 @@
-// 从 card-map.json 自动生成的卡牌（共 91 张）
+// 从 card-map.json 自动生成的卡牌（共 92 张）
 import { CardDef } from "./cards";
 
 export const CUSTOM_CARDS: CardDef[] = [
@@ -14,6 +14,7 @@ export const CUSTOM_CARDS: CardDef[] = [
   { id: "blue_2077_纳扎雷", name: "纳扎雷", rarity: "blue", type: "cyberpunk", imageFile: "blue_2077_纳扎雷.png" },
   { id: "blue_2077_草雉CT-3X", name: "草雉CT-3X", rarity: "blue", type: "cyberpunk", imageFile: "blue_2077_草雉CT-3X.png" },
   { id: "blue_2077_隼MZ2", name: "隼MZ2", rarity: "blue", type: "cyberpunk", imageFile: "blue_2077_隼MZ2.png" },
+  { id: "blue_2077_老维", name: "老维", rarity: "blue", type: "cyberpunk", imageFile: "blue_2077_老维.png" },
   { id: "blue_乌迪尔_灵魂守卫", name: "灵魂守卫", rarity: "blue", type: "skin", imageFile: "blue_乌迪尔_灵魂守卫.png" },
   { id: "blue_亚托克斯_暗裔剑魔", name: "暗裔剑魔", rarity: "blue", type: "champion", imageFile: "blue_亚托克斯_暗裔剑魔.png", upgradable: true, upgradableGroup: "aatrox" },
   { id: "blue_伊芙琳_KAD", name: "KAD", rarity: "blue", type: "skin", imageFile: "blue_伊芙琳_KAD.png" },

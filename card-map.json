@@ -96,6 +96,14 @@
     "character": "2077"
   },
   {
+    "id": "blue_2077_老维",
+    "name": "老维",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_老维.png",
+    "character": "2077"
+  },
+  {
     "id": "blue_---_----",
     "name": "灵魂守卫",
     "rarity": "blue",
