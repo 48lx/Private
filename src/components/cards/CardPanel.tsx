@@ -139,6 +139,12 @@ export default function CardPanel() {
       showToast(`🔍 获得 ${picked.name} (${RARITY_LABELS[picked.rarity]})`, "#00ff88");
       await loadData(groupKey);
     }
+    // 秋：装备到合成界面（下次合成失败时保护卡牌）
+    else if (cardId === "autumn") {
+      if (autumnEquipped) { showToast("🍂 秋已装备，前往合成界面使用", "#ffd700"); return; }
+      setAutumnEquipped(true);
+      showToast("🍂 秋 已装备！下次合成失败将保留全部卡牌", "#ffd700");
+    }
     // 意外之财：获得500代币
     else if (cardId === "windfall") {
       await decomposeCard(groupKey, cardId, 1, 0);
@@ -325,7 +331,7 @@ export default function CardPanel() {
                   {filteredCards.map(card => {
                     const have = collectionMap.get(card.id) || 0;
                     const isUpgradable = card.upgradable && card.upgradableGroup;
-                    const isFunctional = card.id.startsWith("mimic-") || card.id === "twisted-gamble" || card.id === "lonely-pull";
+                    const isFunctional = card.id.startsWith("mimic-") || card.id === "twisted-gamble" || card.id === "lonely-pull" || card.id === "windfall" || card.id === "autumn" || card.id === "oldwei-iou";
                     const canPreview = card.imageFile && !isUpgradable;
                     return (
                       <div key={card.id} className="relative text-center p-2 border transition-all group hover:scale-105"
@@ -409,7 +415,7 @@ export default function CardPanel() {
               {/* 秋：合成失败保护 */}
               {(() => {
                 const autumnCount = collectionMap.get("autumn") || 0;
-                if (autumnCount > 0) {
+                if (autumnCount > 0 || autumnEquipped) {
                   return (
                     <div className="mb-4 p-3 border flex items-center justify-between" style={{ borderColor: "rgba(255,215,0,0.2)", background: "rgba(255,215,0,0.05)" }}>
                       <span className="font-mono text-sm" style={{ color: "#ffd700" }}>🍂 秋 · 合成失败时保留全部卡牌</span>

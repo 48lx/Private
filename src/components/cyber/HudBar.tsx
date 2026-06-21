@@ -33,7 +33,7 @@ export default function HudBar() {
       {/* Center: version / tagline */}
       <div className="hidden sm:flex items-center gap-2">
         <span className="text-cyber-cyan/40 tracking-[0.2em]">
-          N.E.X.U.S. v0.2.13
+          N.E.X.U.S. v0.2.14
         </span>
       </div>
 
