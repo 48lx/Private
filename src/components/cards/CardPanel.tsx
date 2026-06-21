@@ -161,7 +161,8 @@ export default function CardPanel() {
       await decomposeCard(groupKey, "blue_2077_老维", 1, 0);
       const draw = drawMulti(10);
       await addCardsBulk(groupKey, draw.map(c => c.id));
-      showToast("📝 老维的欠条！十连抽完成", "#4da8da");
+      setDrawResult(draw);
+      setDrawTab("nonwhite");
       await loadData(groupKey);
     }
   };
