@@ -16,12 +16,12 @@ export interface CardDef {
   hidden?: boolean;      // 隐藏卡：未拥有时名称/卡面均显示"隐藏卡"
 }
 
-// 每张卡权重（终极:15 金:100 蓝:300 白:700 特殊:0不参与普通抽卡）
+// 每张卡权重（终极:16 金:60 蓝:240 白:360 特殊:0不参与普通抽卡）
 export const CARD_WEIGHT_BY_RARITY: Record<Rarity, number> = {
-  ultimate: 15,
-  gold: 100,
-  blue: 300,
-  white: 700,
+  ultimate: 16,
+  gold: 60,
+  blue: 240,
+  white: 360,
   special: 0,
 };
 
@@ -44,10 +44,10 @@ export const RARITY_COLORS: Record<Rarity | "all" | "special", string> = {
 
 // 概率表
 export const RATE_TABLE = [
-  { rarity: "white" as Rarity, rate: "70%", desc: "全英雄+特殊角色" },
-  { rarity: "blue" as Rarity, rate: "20%", desc: "皮肤+特殊角色" },
-  { rarity: "gold" as Rarity, rate: "8%", desc: "至臻皮肤+特殊角色" },
-  { rarity: "ultimate" as Rarity, rate: "2%", desc: "螳螂/剑魔/GEM/2077" },
+  { rarity: "white" as Rarity, rate: "~80%", desc: "全英雄+特殊角色" },
+  { rarity: "blue" as Rarity, rate: "~16%", desc: "皮肤+特殊角色" },
+  { rarity: "gold" as Rarity, rate: "~4%", desc: "至臻皮肤+特殊角色" },
+  { rarity: "ultimate" as Rarity, rate: "~0.2%", desc: "螳螂/剑魔/GEM/2077" },
   { rarity: "special" as Rarity, rate: "保底", desc: "十连必得1张 / 百连10张" },
 ];
 
