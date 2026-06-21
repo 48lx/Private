@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
-import { ALL_CARDS, CardDef, RARITY_LABELS, RARITY_COLORS, drawMulti, MERGE_CHAIN, UPGRADE_GROUPS, UPGRADE_NAMES, MERGE_VIDEOS, CARD_WEIGHT_BY_RARITY } from "@/lib/cards";
+import { ALL_CARDS, CardDef, RARITY_LABELS, RARITY_COLORS, drawMulti, MERGE_CHAIN, UPGRADE_GROUPS, UPGRADE_NAMES, MERGE_VIDEOS, CARD_WEIGHT_BY_RARITY, decomposeValue } from "@/lib/cards";
 import { getGroupKey, setGroupKey, getTokens, spendTokens, getCollection, addCardsBulk, mergeCards4to1, MERGE_RATES, decomposeCard } from "@/lib/card-storage";
 import { checkFirstLogin, checkMergeFailed, checkGemCard, checkFreljordComplete, checkRevelation, syncUnlocked, checkReturnAfterAbsence, checkHellRed, checkHellGold } from "@/lib/achievement-checker";
 import { checkDailyCheckin } from "@/lib/card-storage";
@@ -71,12 +71,10 @@ export default function CardPanel() {
     setDrawing(false);
   };
 
-  const priceOf = (id: string) => id.includes("ultimate") ? 1000 : id.includes("-gold") || id.includes("gem-g") || id.includes("gem-skynolimit") || id.includes("gem-centrifugal") || id.includes("gem-endofnight") || id.includes("gem-dontgohome") ? 200 : id.includes("-blue") || id.includes("gem-b") ? 50 : 10;
-
   const doDecompose = async (cardId: string, count: number) => {
     if (count <= 1) { alert("只剩1张，不可分解"); return; }
     const decomposeAll = count - 1; // 保留1张
-    const refund = priceOf(cardId) * decomposeAll;
+    const refund = decomposeValue(cardId) * decomposeAll;
     if (!confirm(`分解 ${decomposeAll} 张（保留1张），返还 ${refund} 币？`)) return;
     await decomposeCard(groupKey, cardId, decomposeAll, refund);
     await loadData(groupKey);
@@ -142,7 +140,7 @@ export default function CardPanel() {
       // 跳过所有可升级卡（螳螂/剑魔/GEM/2077全链）
       const card = ALL_CARDS.find(c => c.id === id);
       if (card?.upgradable) continue;
-      toDecompose.push({ id, count: count - 1, refund: priceOf(id) * (count - 1) });
+      toDecompose.push({ id, count: count - 1, refund: decomposeValue(id) * (count - 1) });
     }
     if (toDecompose.length === 0) { alert("没有可分解的卡牌"); return; }
     const totalRefund = toDecompose.reduce((s, t) => s + t.refund, 0);
@@ -172,20 +170,15 @@ export default function CardPanel() {
   };
 
   const showToast = (text: string, color: string) => {
-  function decomposeValue(rarity: string): number {
-    switch (rarity) { case "ultimate": return 1000; case "gold": return 200; case "blue": return 50; default: return 10; }
-  }
     setToast({ text, color });
     setTimeout(() => setToast(null), 2000);
   };
 
-  // Dedicated merge card info
-  const getMergeChain = (groupId: string) => {
-    const cards = ALL_CARDS.filter(c => c.upgradableGroup === groupId).sort((a, b) => {
-      const order = { white: 0, blue: 1, gold: 2, ultimate: 3 };
-      return (order[a.rarity] || 0) - (order[b.rarity] || 0);
-    });
-    return cards;
+  // 获取指定卡的下一个合成目标（使用 MERGE_CHAIN 查找）
+  const getMergeTarget = (cardId: string): CardDef | null => {
+    const nextId = MERGE_CHAIN[cardId];
+    if (!nextId) return null;
+    return ALL_CARDS.find(c => c.id === nextId) || null;
   };
 
   const isSpecial = (id: string) => id.startsWith("mimic-") || id === "twisted-gamble" || id === "lonely-pull";
@@ -296,8 +289,14 @@ export default function CardPanel() {
                             setMergeTarget(card.upgradableGroup); setMergeCardId(card.id);
                           }
                         }}>
+                        {card.imageFile && (
+                          <div className="w-full mb-1" style={{ aspectRatio: "5/7", overflow: "hidden" }}>
+                            <img src={`/cards/${card.imageFile}`} alt="" className="w-full h-full object-cover"
+                              onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}/>
+                          </div>
+                        )}
                         <p className="font-mono text-xs truncate" style={{ color: have > 0 ? RARITY_COLORS[card.rarity] : "rgba(200,200,208,0.4)" }}>{card.name}</p>
-                        <p className="font-mono text-[10px] mt-0.5" style={{ color: "rgba(200,200,208,0.25)" }}>{RARITY_LABELS[card.rarity]}{isSpecial ? " 🔄" : ""}</p>
+                        {!card.imageFile && <p className="font-mono text-[10px] mt-0.5" style={{ color: "rgba(200,200,208,0.25)" }}>{RARITY_LABELS[card.rarity]}{card.upgradable ? " 🔄" : ""}</p>}
                         {have > 0 && <p className="font-mono text-[11px] absolute top-0.5 right-1.5" style={{ color: RARITY_COLORS[card.rarity] }}>×{have}</p>}
                         {/* Decompose button */}
                       </div>
@@ -348,9 +347,7 @@ export default function CardPanel() {
               {mergeCardId && (() => {
                 const card = ALL_CARDS.find(c => c.id === mergeCardId);
                 if (!card) return <p className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.3)" }}>卡牌不存在</p>;
-                const chain = getMergeChain(mergeTarget);
-                const idx = chain.findIndex(c => c.id === mergeCardId);
-                const nextCard = idx >= 0 ? chain[idx + 1] : null;
+                const nextCard = getMergeTarget(mergeCardId);
                 const count = collectionMap.get(card.id) || 0;
                 if (!nextCard) {
                   return <p className="font-mono text-lg text-center" style={{ color: RARITY_COLORS[card.rarity] }}>已是最高级 · ×{count}</p>;

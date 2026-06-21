@@ -1,19 +1,21 @@
 // ═══ 卡牌系统 ═══
+// 数据来源：card-map.json → cards-generated.ts
 
 export type Rarity = "white" | "blue" | "gold" | "ultimate";
 export type CardType = "champion" | "gem" | "cyberpunk" | "skin";
 
 export interface CardDef {
-  id: string;           // 唯一ID e.g. "champ-aatrox"
-  name: string;         // 显示名
+  id: string;
+  name: string;
   rarity: Rarity;
   type: CardType;
-  imageUrl?: string;    // 卡面图
-  upgradable?: boolean; // 可五合一升级（螳螂/剑魔/GEM/2077）
-  upgradableGroup?: string; // 升级组标识
+  imageUrl?: string;
+  imageFile?: string;   // public/cards/ 下的文件名
+  upgradable?: boolean;
+  upgradableGroup?: string;
 }
 
-// 每张卡权重（终极2:金8:蓝30:白100）
+// 每张卡权重（终极:15 金:100 蓝:300 白:700）
 export const CARD_WEIGHT_BY_RARITY: Record<Rarity, number> = {
   ultimate: 15,
   gold: 100,
@@ -49,24 +51,49 @@ export const RATE_TABLE = [
 // 四张可升级终极卡组
 export const UPGRADE_GROUPS = ["khazix", "aatrox", "gem", "cyberpunk2077"];
 
-// 合成链（卡ID映射）
+// ─── 合成目标映射 ───
+// group → fromRarity → toCardId（4张同稀有度 → 1张下一稀有度的指定卡）
+export const MERGE_TARGETS: Record<string, Record<string, string>> = {
+  khazix: {
+    white: "blue_卡兹克_虚空掠夺者",
+    blue: "gold_卡兹克_霸天异形",
+    gold: "max_卡兹克_刹那银光",
+  },
+  aatrox: {
+    white: "blue_亚托克斯_暗裔剑魔",
+    blue: "gold_亚托克斯_霸天剑魔",
+    gold: "max_亚托克斯_涤罪之翼",
+  },
+  gem: {
+    white: "blue_邓紫棋_金鱼嘴",
+    blue: "gold_邓紫棋_金鱼嘴",
+    gold: "max_邓紫棋_金鱼嘴",
+  },
+  cyberpunk2077: {
+    white: "blue_2077_V",
+    blue: "gold_2077_V",
+    gold: "max_2077_V",
+  },
+};
+
+// 合成链（卡ID → 下一级卡ID）——只有四条升级线上的特定卡
 export const MERGE_CHAIN: Record<string, string | null> = {
-  // 螳螂
-  "champ-khazix": "khazix-blue",       // 白→蓝
-  "khazix-blue": "khazix-gold",         // 蓝→金
-  "khazix-gold": "khazix-ultimate",     // 金→终极
-  // 剑魔
-  "champ-aatrox": "aatrox-blue",
-  "aatrox-blue": "aatrox-gold",
-  "aatrox-gold": "aatrox-ultimate",
-  // 邓紫棋
-  "gem-white": "gem-blue",
-  "gem-blue": "gem-gold",
-  "gem-gold": "gem-ultimate",
-  // 2077
-  "cp2077-white": "cp2077-blue",
-  "cp2077-blue": "cp2077-gold",
-  "cp2077-gold": "cp2077-ultimate",
+  // 卡兹克：虚空掠夺者 → 霸天异形 → 刹那银光
+  "champ-khazix": "blue_卡兹克_虚空掠夺者",
+  "blue_卡兹克_虚空掠夺者": "gold_卡兹克_霸天异形",
+  "gold_卡兹克_霸天异形": "max_卡兹克_刹那银光",
+  // 剑魔：暗裔剑魔 → 霸天剑魔 → 涤罪之翼
+  "champ-aatrox": "blue_亚托克斯_暗裔剑魔",
+  "blue_亚托克斯_暗裔剑魔": "gold_亚托克斯_霸天剑魔",
+  "gold_亚托克斯_霸天剑魔": "max_亚托克斯_涤罪之翼",
+  // 金鱼嘴：三张金鱼嘴
+  "gem-white": "blue_邓紫棋_金鱼嘴",
+  "blue_邓紫棋_金鱼嘴": "gold_邓紫棋_金鱼嘴",
+  "gold_邓紫棋_金鱼嘴": "max_邓紫棋_金鱼嘴",
+  // 2077：V → V → V
+  "cp2077-white": "blue_2077_V",
+  "blue_2077_V": "gold_2077_V",
+  "gold_2077_V": "max_2077_V",
 };
 
 // 视频映射（合成时播放）
@@ -81,17 +108,25 @@ export const MERGE_VIDEOS: Record<string, string> = {
 export const UPGRADE_NAMES: Record<string, string> = {
   khazix: "卡兹克",
   aatrox: "亚托克斯",
-  gem: "邓紫棋",
+  gem: "金鱼嘴",
   cyberpunk2077: "V",
 };
+
+// ─── 分解价值 ───
+export function decomposeValue(cardId: string): number {
+  if (cardId.startsWith("max_") || cardId.includes("ultimate")) return 1000;
+  if (cardId.startsWith("gold_") || cardId.includes("-gold")) return 200;
+  if (cardId.startsWith("blue_") || cardId.includes("-blue")) return 50;
+  return 10;
+}
 
 // ─── 构建完整卡池 ───
 
 import { champions } from "./lol-data";
+import { ACHIEVEMENT_CARDS } from "./achievements";
+import { CUSTOM_CARDS } from "./cards-generated";
 
-const CHAMP_IDS = champions.map(c => c.id);
-
-// 普通英雄白卡
+// 普通英雄白卡（173张）
 function buildChampionWhites(): CardDef[] {
   return champions.map(c => ({
     id: `champ-${c.id}`,
@@ -104,96 +139,38 @@ function buildChampionWhites(): CardDef[] {
   }));
 }
 
-// 螳螂/剑魔的中间卡（蓝/金）
-const KHAZIX_INTERMEDIATE: CardDef[] = [
-  { id: "khazix-blue", name: "卡兹克·蓝", rarity: "blue", type: "champion", upgradable: true, upgradableGroup: "khazix" },
-  { id: "khazix-gold", name: "卡兹克·金", rarity: "gold", type: "champion", upgradable: true, upgradableGroup: "khazix" },
-];
-const AATROX_INTERMEDIATE: CardDef[] = [
-  { id: "aatrox-blue", name: "亚托克斯·蓝", rarity: "blue", type: "champion", upgradable: true, upgradableGroup: "aatrox" },
-  { id: "aatrox-gold", name: "亚托克斯·金", rarity: "gold", type: "champion", upgradable: true, upgradableGroup: "aatrox" },
-];
-
-// 白卡：英雄 + 邓紫棋 + 2077角色
+// 四条升级线的白卡起点
 const SPECIAL_WHITES: CardDef[] = [
   {
-    id: "gem-white", name: "邓紫棋", rarity: "white", type: "gem",
+    id: "gem-white", name: "金鱼嘴", rarity: "white", type: "gem",
     upgradable: true, upgradableGroup: "gem",
   },
   {
     id: "cp2077-white", name: "V", rarity: "white", type: "cyberpunk",
     upgradable: true, upgradableGroup: "cyberpunk2077",
   },
-  // 2077 剧情角色（普通白/蓝/金）
-  { id: "cp2077-johnny-w", name: "强尼·银手", rarity: "white", type: "cyberpunk" },
-  { id: "cp2077-panam-w", name: "帕南", rarity: "white", type: "cyberpunk" },
-  { id: "cp2077-judy-w", name: "朱迪", rarity: "white", type: "cyberpunk" },
-  { id: "cp2077-jackie-w", name: "杰克", rarity: "white", type: "cyberpunk" },
-  { id: "cp2077-tbug-w", name: "T-Bug", rarity: "white", type: "cyberpunk" },
-  { id: "cp2077-takemura-w", name: "竹村", rarity: "white", type: "cyberpunk" },
 ];
 
-// 蓝卡
-const BLUE_CARDS: CardDef[] = [
-  { id: "gem-blue", name: "邓紫棋·蓝", rarity: "blue", type: "gem", upgradable: true, upgradableGroup: "gem" },
-  { id: "cp2077-blue", name: "V·蓝", rarity: "blue", type: "cyberpunk", upgradable: true, upgradableGroup: "cyberpunk2077" },
-  { id: "cp2077-johnny-b", name: "强尼·银手·蓝", rarity: "blue", type: "cyberpunk" },
-  { id: "cp2077-panam-b", name: "帕南·蓝", rarity: "blue", type: "cyberpunk" },
-  { id: "cp2077-judy-b", name: "朱迪·蓝", rarity: "blue", type: "cyberpunk" },
-  // 部分英雄皮肤（用通用占位）
-  ...CHAMP_IDS.filter((_, i) => i % 3 === 0).map(id => ({
-    id: `skin-${id}`, name: `${champions.find(c => c.id === id)?.name}·皮肤`, rarity: "blue" as Rarity, type: "skin" as CardType,
-  })),
-];
-
-// 金卡
-const GOLD_CARDS: CardDef[] = [
-  { id: "gem-gold", name: "邓紫棋·金", rarity: "gold", type: "gem", upgradable: true, upgradableGroup: "gem" },
-  { id: "cp2077-gold", name: "V·金", rarity: "gold", type: "cyberpunk", upgradable: true, upgradableGroup: "cyberpunk2077" },
-  { id: "cp2077-johnny-g", name: "强尼·银手·金", rarity: "gold", type: "cyberpunk" },
-  { id: "cp2077-panam-g", name: "帕南·金", rarity: "gold", type: "cyberpunk" },
-  // 至臻皮肤占位
-  ...CHAMP_IDS.filter((_, i) => i % 8 === 0).map(id => ({
-    id: `prestige-${id}`, name: `${champions.find(c => c.id === id)?.name}·至臻`, rarity: "gold" as Rarity, type: "skin" as CardType,
-  })),
-];
-
-// 特殊功能卡
+// 特殊功能卡（妮蔻之助 / 崔斯特的赌约 / 孤立无援）
 const SPECIAL_CARDS: CardDef[] = [
-  // 妮蔻之助（四稀有度）
   { id: "mimic-white", name: "妮蔻之助", rarity: "white", type: "gem" },
   { id: "mimic-blue", name: "妮蔻之助·蓝", rarity: "blue", type: "gem" },
   { id: "mimic-gold", name: "妮蔻之助·金", rarity: "gold", type: "gem" },
   { id: "mimic-ultimate", name: "妮蔻之助·终极", rarity: "ultimate", type: "gem" },
-  // 崔斯特的赌约
   { id: "twisted-gamble", name: "崔斯特的赌约", rarity: "blue", type: "gem" },
-  // 孤立无援
   { id: "lonely-pull", name: "孤立无援", rarity: "blue", type: "gem" },
 ];
 
-// 终极卡（4张）
-const ULTIMATE_CARDS: CardDef[] = [
-  { id: "khazix-ultimate", name: "卡兹克·终极", rarity: "ultimate", type: "champion", upgradable: true, upgradableGroup: "khazix" },
-  { id: "aatrox-ultimate", name: "剑魔·终极", rarity: "ultimate", type: "champion", upgradable: true, upgradableGroup: "aatrox" },
-  { id: "gem-ultimate", name: "邓紫棋·终极", rarity: "ultimate", type: "gem", upgradable: true, upgradableGroup: "gem" },
-  { id: "cp2077-ultimate", name: "V·终极", rarity: "ultimate", type: "cyberpunk", upgradable: true, upgradableGroup: "cyberpunk2077" },
-];
-
-import { ACHIEVEMENT_CARDS } from "./achievements";
-
+// ─── 全卡池 ───
 export const ALL_CARDS: CardDef[] = [
-  ...buildChampionWhites(),
-  ...SPECIAL_WHITES,
-  ...KHAZIX_INTERMEDIATE,
-  ...AATROX_INTERMEDIATE,
-  ...BLUE_CARDS,
-  ...GOLD_CARDS,
-  ...ACHIEVEMENT_CARDS,
-  ...SPECIAL_CARDS,
-  ...ULTIMATE_CARDS,
+  ...buildChampionWhites(),       // 173 英雄白卡
+  ...SPECIAL_WHITES,              // 升级线白卡起点（gem-white / cp2077-white）
+  ...ACHIEVEMENT_CARDS,           // 成就奖励卡（16张）
+  ...SPECIAL_CARDS,               // 功能卡（妮蔻之助 / 崔斯特 / 孤立无援）
+  ...CUSTOM_CARDS,                // 91 张 card-map.json 蓝/金/终极卡（含全部皮肤/角色/GEM）
 ];
 
-// ─── 抽卡引擎（按每张卡权重）───
+// ─── 抽卡引擎 ───
 export function drawCard(): CardDef {
   const totalWeight = ALL_CARDS.reduce((sum, c) => sum + CARD_WEIGHT_BY_RARITY[c.rarity], 0);
   let r = Math.random() * totalWeight;

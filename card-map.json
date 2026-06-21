@@ -1,0 +1,730 @@
+[
+  {
+    "id": "blue_2077_v",
+    "name": "V",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_V.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_--",
+    "name": "圣剑",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_圣剑.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_---",
+    "name": "复仇者",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_复仇者.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_---",
+    "name": "多利欧",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_多利欧.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_------",
+    "name": "帕南·帕尔默",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_帕南·帕尔默.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_--",
+    "name": "朱迪",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_朱迪.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_---",
+    "name": "法尔科",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_法尔科.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_----",
+    "name": "湖女之剑",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_湖女之剑.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_--",
+    "name": "琦薇",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_琦薇.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_---",
+    "name": "纳扎雷",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_纳扎雷.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_--ct-3x",
+    "name": "草雉CT-3X",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_草雉CT-3X.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_2077_-mz2",
+    "name": "隼MZ2",
+    "rarity": "blue",
+    "type": "cyberpunk",
+    "imageFile": "blue_2077_隼MZ2.png",
+    "character": "2077"
+  },
+  {
+    "id": "blue_---_----",
+    "name": "灵魂守卫",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_乌迪尔_灵魂守卫.png",
+    "character": "乌迪尔"
+  },
+  {
+    "id": "blue_----_----",
+    "name": "暗裔剑魔",
+    "rarity": "blue",
+    "type": "champion",
+    "imageFile": "blue_亚托克斯_暗裔剑魔.png",
+    "character": "亚托克斯"
+  },
+  {
+    "id": "blue_---_kad",
+    "name": "KAD",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_伊芙琳_KAD.png",
+    "character": "伊芙琳"
+  },
+  {
+    "id": "blue_--_----",
+    "name": "泳池派对",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_佐伊_泳池派对.png",
+    "character": "佐伊"
+  },
+  {
+    "id": "blue_---_-----",
+    "name": "福牛守护者",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_佛耶戈_福牛守护者.png",
+    "character": "佛耶戈"
+  },
+  {
+    "id": "blue_--_----",
+    "name": "利刃充饥",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_刀妹_利刃充饥.png",
+    "character": "刀妹"
+  },
+  {
+    "id": "blue_---_---",
+    "name": "奥德赛",
+    "rarity": "blue",
+    "type": "champion",
+    "imageFile": "blue_卡兹克_奥德赛.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "blue_---_----",
+    "name": "春晖海神",
+    "rarity": "blue",
+    "type": "champion",
+    "imageFile": "blue_卡兹克_春晖海神.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "blue_---_--",
+    "name": "暗星",
+    "rarity": "blue",
+    "type": "champion",
+    "imageFile": "blue_卡兹克_暗星.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "blue_---_----",
+    "name": "死亡绽放",
+    "rarity": "blue",
+    "type": "champion",
+    "imageFile": "blue_卡兹克_死亡绽放.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "blue_---_----",
+    "name": "沙之守护",
+    "rarity": "blue",
+    "type": "champion",
+    "imageFile": "blue_卡兹克_沙之守护.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "blue_---_-----",
+    "name": "虚空掠夺者",
+    "rarity": "blue",
+    "type": "champion",
+    "imageFile": "blue_卡兹克_虚空掠夺者.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "blue_--_kda",
+    "name": "KDA",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_卡莎_KDA.png",
+    "character": "卡莎"
+  },
+  {
+    "id": "blue_---_-----",
+    "name": "星之守护者",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_厄加特_星之守护者.png",
+    "character": "厄加特"
+  },
+  {
+    "id": "blue_--_-----",
+    "name": "星之守护者",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_发条_星之守护者.png",
+    "character": "发条"
+  },
+  {
+    "id": "blue_---_-----",
+    "name": "幻灵战斗狼",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_塞拉斯_幻灵战斗狼.png",
+    "character": "塞拉斯"
+  },
+  {
+    "id": "blue_--_----",
+    "name": "山海绘卷",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_妮蔻_山海绘卷.png",
+    "character": "妮蔻"
+  },
+  {
+    "id": "blue_---_--",
+    "name": "绿芝士",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_德莱文_绿芝士.png",
+    "character": "德莱文"
+  },
+  {
+    "id": "blue_---_kfc",
+    "name": "KFC",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_斯维因_KFC.png",
+    "character": "斯维因"
+  },
+  {
+    "id": "blue_-----_---",
+    "name": "吕奉先",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_最强双马尾_吕奉先.png",
+    "character": "最强双马尾"
+  },
+  {
+    "id": "blue_----_---",
+    "name": "赵子龙",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_最强室友_赵子龙.png",
+    "character": "最强室友"
+  },
+  {
+    "id": "blue_--_----",
+    "name": "青蛙雨衣",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_格温_青蛙雨衣.png",
+    "character": "格温"
+  },
+  {
+    "id": "blue_--_----",
+    "name": "战斗学院",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_永恩_战斗学院.png",
+    "character": "永恩"
+  },
+  {
+    "id": "blue_--_----",
+    "name": "春晖神女",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_艾希_春晖神女.png",
+    "character": "艾希"
+  },
+  {
+    "id": "blue_---_-----",
+    "name": "星之守护者",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_辛德拉_星之守护者.png",
+    "character": "辛德拉"
+  },
+  {
+    "id": "blue_---_find-you",
+    "name": "Find You",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_Find You.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_gloria",
+    "name": "Gloria",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_Gloria.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_hell--",
+    "name": "Hell 白",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_Hell 白.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_hell--",
+    "name": "Hell 黑",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_Hell 黑.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_----------",
+    "name": "你不是第一个离开的人",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_你不是第一个离开的人.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_----",
+    "name": "冰河时代",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_冰河时代.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_---",
+    "name": "受难曲",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_受难曲.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_--------",
+    "name": "只有我和你的地方",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_只有我和你的地方.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_----",
+    "name": "少年与海",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_少年与海.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_----",
+    "name": "老人与海",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_老人与海.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_--------",
+    "name": "让世界暂停一分钟",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_让世界暂停一分钟.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_---",
+    "name": "金鱼嘴",
+    "rarity": "blue",
+    "type": "gem",
+    "imageFile": "blue_邓紫棋_金鱼嘴.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "blue_---_kda",
+    "name": "KDA",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_阿卡丽_KDA.png",
+    "character": "阿卡丽"
+  },
+  {
+    "id": "blue_--_kda",
+    "name": "KDA",
+    "rarity": "blue",
+    "type": "skin",
+    "imageFile": "blue_阿狸_KDA.png",
+    "character": "阿狸"
+  },
+  {
+    "id": "gold_2077_v",
+    "name": "V",
+    "rarity": "gold",
+    "type": "cyberpunk",
+    "imageFile": "gold_2077_V.png",
+    "character": "2077"
+  },
+  {
+    "id": "gold_2077_--",
+    "name": "大卫",
+    "rarity": "gold",
+    "type": "cyberpunk",
+    "imageFile": "gold_2077_大卫.png",
+    "character": "2077"
+  },
+  {
+    "id": "gold_2077_-----",
+    "name": "强尼·银手",
+    "rarity": "gold",
+    "type": "cyberpunk",
+    "imageFile": "gold_2077_强尼·银手.png",
+    "character": "2077"
+  },
+  {
+    "id": "gold_2077_--",
+    "name": "曼恩",
+    "rarity": "gold",
+    "type": "cyberpunk",
+    "imageFile": "gold_2077_曼恩.png",
+    "character": "2077"
+  },
+  {
+    "id": "gold_2077_------",
+    "name": "杰克·威尔斯",
+    "rarity": "gold",
+    "type": "cyberpunk",
+    "imageFile": "gold_2077_杰克·威尔斯.png",
+    "character": "2077"
+  },
+  {
+    "id": "gold_2077_--",
+    "name": "露西",
+    "rarity": "gold",
+    "type": "cyberpunk",
+    "imageFile": "gold_2077_露西.png",
+    "character": "2077"
+  },
+  {
+    "id": "gold_---_---",
+    "name": "青花瓷",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_丽桑卓_青花瓷.png",
+    "character": "丽桑卓"
+  },
+  {
+    "id": "gold_----_----",
+    "name": "霸天剑魔",
+    "rarity": "gold",
+    "type": "champion",
+    "imageFile": "gold_亚托克斯_霸天剑魔.png",
+    "character": "亚托克斯"
+  },
+  {
+    "id": "gold_---_kda",
+    "name": "KDA",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_伊芙琳_KDA.png",
+    "character": "伊芙琳"
+  },
+  {
+    "id": "gold_---_edg",
+    "name": "EDG",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_佛耶戈_EDG.png",
+    "character": "佛耶戈"
+  },
+  {
+    "id": "gold_---_----",
+    "name": "丛林灾厄",
+    "rarity": "gold",
+    "type": "champion",
+    "imageFile": "gold_卡兹克_丛林灾厄.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "gold_---_-----",
+    "name": "冠军掠夺者",
+    "rarity": "gold",
+    "type": "champion",
+    "imageFile": "gold_卡兹克_冠军掠夺者.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "gold_---_----",
+    "name": "凯旋圣装",
+    "rarity": "gold",
+    "type": "champion",
+    "imageFile": "gold_卡兹克_凯旋圣装.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "gold_---_----",
+    "name": "掠空魅影",
+    "rarity": "gold",
+    "type": "champion",
+    "imageFile": "gold_卡兹克_掠空魅影.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "gold_---_-----",
+    "name": "水晶掠夺者",
+    "rarity": "gold",
+    "type": "champion",
+    "imageFile": "gold_卡兹克_水晶掠夺者.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "gold_---_----",
+    "name": "霸天异形",
+    "rarity": "gold",
+    "type": "champion",
+    "imageFile": "gold_卡兹克_霸天异形.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "gold_---_----",
+    "name": "黄金异端",
+    "rarity": "gold",
+    "type": "champion",
+    "imageFile": "gold_卡兹克_黄金异端.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "gold_--_kda",
+    "name": "KDA",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_卡莎_KDA.png",
+    "character": "卡莎"
+  },
+  {
+    "id": "gold_----_----",
+    "name": "灌篮高手",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_德莱厄斯_灌篮高手.png",
+    "character": "德莱厄斯"
+  },
+  {
+    "id": "gold_---_----",
+    "name": "善意虚影",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_拉克丝_善意虚影.png",
+    "character": "拉克丝"
+  },
+  {
+    "id": "gold_---_----",
+    "name": "灭国魔女",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_拉克丝_灭国魔女.png",
+    "character": "拉克丝"
+  },
+  {
+    "id": "gold_--_--",
+    "name": "女帝",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_皎月_女帝.png",
+    "character": "皎月"
+  },
+  {
+    "id": "gold_---_--",
+    "name": "魔女",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_莫甘娜_魔女.png",
+    "character": "莫甘娜"
+  },
+  {
+    "id": "gold_----_---",
+    "name": "海之歌",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_萨勒芬妮_海之歌.png",
+    "character": "萨勒芬妮"
+  },
+  {
+    "id": "gold_-_----",
+    "name": "双城斗士",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_蔚_双城斗士.png",
+    "character": "蔚"
+  },
+  {
+    "id": "gold_---_----",
+    "name": "不想回家",
+    "rarity": "gold",
+    "type": "gem",
+    "imageFile": "gold_邓紫棋_不想回家.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "gold_---_----",
+    "name": "夜的尽头",
+    "rarity": "gold",
+    "type": "gem",
+    "imageFile": "gold_邓紫棋_夜的尽头.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "gold_---_------",
+    "name": "天空没有极限",
+    "rarity": "gold",
+    "type": "gem",
+    "imageFile": "gold_邓紫棋_天空没有极限.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "gold_---_---",
+    "name": "离心力",
+    "rarity": "gold",
+    "type": "gem",
+    "imageFile": "gold_邓紫棋_离心力.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "gold_---_---",
+    "name": "金鱼嘴",
+    "rarity": "gold",
+    "type": "gem",
+    "imageFile": "gold_邓紫棋_金鱼嘴.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "gold_---_---",
+    "name": "破碎者",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_金克斯_破碎者.png",
+    "character": "金克斯"
+  },
+  {
+    "id": "gold_---_kda",
+    "name": "KDA",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_阿卡丽_KDA.png",
+    "character": "阿卡丽"
+  },
+  {
+    "id": "gold_--_kda",
+    "name": "KDA",
+    "rarity": "gold",
+    "type": "skin",
+    "imageFile": "gold_阿狸_KDA.png",
+    "character": "阿狸"
+  },
+  {
+    "id": "max_2077_v",
+    "name": "V",
+    "rarity": "ultimate",
+    "type": "cyberpunk",
+    "imageFile": "max_2077_V.png",
+    "character": "2077"
+  },
+  {
+    "id": "max_2077_----",
+    "name": "星河入梦",
+    "rarity": "ultimate",
+    "type": "cyberpunk",
+    "imageFile": "max_2077_星河入梦.png",
+    "character": "2077"
+  },
+  {
+    "id": "max_2077_----",
+    "name": "月相同轨",
+    "rarity": "ultimate",
+    "type": "cyberpunk",
+    "imageFile": "max_2077_月相同轨.png",
+    "character": "2077"
+  },
+  {
+    "id": "max_----_----",
+    "name": "涤罪之翼",
+    "rarity": "ultimate",
+    "type": "champion",
+    "imageFile": "max_亚托克斯_涤罪之翼.png",
+    "character": "亚托克斯"
+  },
+  {
+    "id": "max_---_----",
+    "name": "刹那银光",
+    "rarity": "ultimate",
+    "type": "champion",
+    "imageFile": "max_卡兹克_刹那银光.png",
+    "character": "卡兹克"
+  },
+  {
+    "id": "max_---_---",
+    "name": "启示录",
+    "rarity": "ultimate",
+    "type": "gem",
+    "imageFile": "max_邓紫棋_启示录.png",
+    "character": "邓紫棋"
+  },
+  {
+    "id": "max_---_---",
+    "name": "金鱼嘴",
+    "rarity": "ultimate",
+    "type": "gem",
+    "imageFile": "max_邓紫棋_金鱼嘴.png",
+    "character": "邓紫棋"
+  }
+]
