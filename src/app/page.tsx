@@ -12,6 +12,7 @@ import PhotoEntrance from "@/components/photos/PhotoEntrance";
 import HeroGuessEntrance from "@/components/hero-guess/HeroGuessEntrance";
 import CardPanel from "@/components/cards/CardPanel";
 import AchievementPanel from "@/components/achievements/AchievementPanel";
+import { getGroupKey, getProgress, setProgress } from "@/lib/card-storage";
 
 const PARTICLES = Array.from({ length: 15 }, (_, i) => ({
   id: i,
@@ -30,19 +31,28 @@ export default function Home() {
   const [coreLocked, setCoreLocked] = useState(true);
   const [showMap, setShowMap] = useState(false);
   const [orbUnlocked, setOrbUnlocked] = useState(false);
+  const [groupKey, setGroupKey] = useState("");
 
-  const checkOrbUnlock = () => {
+  const checkOrbUnlock = async () => {
     try {
+      const gk = getGroupKey();
+      if (!gk) { setOrbUnlocked(false); return; }
+      setGroupKey(gk);
       const today = new Date().toISOString().split("T")[0];
-      const std = localStorage.getItem("hero-solved-standard");
-      const uzi = localStorage.getItem("hero-solved-uzi");
-      if (std === today && uzi === today) setOrbUnlocked(true);
+      const v = await getProgress(gk, `orb-${today}`);
+      if (v === "1") setOrbUnlocked(true);
     } catch {}
   };
 
   useEffect(() => { checkOrbUnlock(); }, []);
   useEffect(() => {
-    const onCheck = () => checkOrbUnlock();
+    const onCheck = async (e: Event) => {
+      const gk = getGroupKey();
+      if (!gk) return;
+      const today = new Date().toISOString().split("T")[0];
+      await setProgress(gk, `orb-${today}`, "1");
+      checkOrbUnlock();
+    };
     window.addEventListener("orb-check", onCheck);
     return () => window.removeEventListener("orb-check", onCheck);
   }, []);
@@ -84,6 +94,7 @@ export default function Home() {
 
         {showMap && (
           <RuneterraMap
+            groupKey={groupKey}
             onClose={() => setShowMap(false)}
             onRegionClick={(region) => {
               setShowMap(false);

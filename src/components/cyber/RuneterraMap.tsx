@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { getProgress, setProgress } from "@/lib/card-storage";
 
 interface Region {
   id: string; name: string;
   x: number; y: number; w: number; h: number;
   color: string;
   locked?: boolean;
-  lockedLabel?: string;
 }
 
-const DEFAULT_REGIONS: Region[] = [
+const REGIONS: Region[] = [
   { id: "freljord",   name: "弗雷尔卓德", x: 8,    y: 2,    w: 29.9, h: 22,   color: "#7ec8e3" },
   { id: "demacia",    name: "德玛西亚",   x: 7.7,  y: 28.6, w: 19,   h: 19,   color: "#c9a96e" },
   { id: "noxus",      name: "诺克萨斯",   x: 29.8, y: 24.7, w: 19.5, h: 29.4, color: "#c0392b" },
@@ -20,76 +20,114 @@ const DEFAULT_REGIONS: Region[] = [
   { id: "bilgewater", name: "比尔吉沃特", x: 71.7, y: 53.1, w: 14.9, h: 26.4, color: "#2980b9" },
   { id: "ixtal",      name: "以绪塔尔",   x: 57.3, y: 59.7, w: 14.1, h: 18,   color: "#1abc9c" },
   { id: "shurima",    name: "恕瑞玛",     x: 33.8, y: 65.5, w: 24,   h: 22,   color: "#f39c12" },
-  { id: "shadow",     name: "暗影岛",     x: 86.9, y: 71.6, w: 8.3,  h: 11.2, color: "#2c3e50", locked: true, lockedLabel: "路途凶险 · 暂不开放" },
-  { id: "targon",     name: "巨神峰",     x: 27.3, y: 75.6, w: 5.9,  h: 6.6,  color: "#b8860b", locked: true, lockedLabel: "终局地点 · 暂不开放" },
+  { id: "shadow",     name: "暗影岛",     x: 86.9, y: 71.6, w: 8.3,  h: 11.2, color: "#2c3e50", locked: true },
+  { id: "targon",     name: "巨神峰",     x: 27.3, y: 75.6, w: 5.9,  h: 6.6,  color: "#b8860b", locked: true },
 ];
 
+// 相邻关系
+const ADJACENCY: Record<string, string[]> = {
+  freljord:   ["demacia"],
+  demacia:    ["freljord", "noxus"],
+  noxus:      ["piltover", "freljord", "demacia", "ionia"],
+  ionia:      ["noxus", "piltover", "bilgewater"],
+  piltover:   ["zaun", "noxus", "ionia", "bilgewater"],
+  zaun:       ["piltover", "bilgewater", "ixtal", "shurima"],
+  ixtal:      ["zaun", "shurima", "bilgewater"],
+  bilgewater: ["ionia", "piltover", "zaun", "ixtal", "shadow"],
+  shadow:     ["bilgewater", "ixtal"],
+  shurima:    ["ixtal", "targon", "zaun"],
+  targon:     ["shurima"],
+};
+
+const START_REGION = "demacia";
+const EXPLORE_COST = 2;
+const MOVE_COST = 3;
+
 interface Props {
+  groupKey: string;
   onClose: () => void;
   onRegionClick: (region: Region) => void;
 }
 
-export default function RuneterraMap({ onClose, onRegionClick }: Props) {
+export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [imgFailed, setImgFailed] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [regions, setRegions] = useState<Region[]>(DEFAULT_REGIONS);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ id: string; edge: string; startX: number; startY: number; orig: Region } | null>(null);
+  const [vitality, setVitality] = useState(0);
+  const [currentRegion, setCurrentRegion] = useState(START_REGION);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const nudge = useCallback((id: string, dx: number, dy: number, dw: number, dh: number) => {
-    setRegions(prev => prev.map(r =>
-      r.id === id ? { ...r, x: r.x + dx, y: r.y + dy, w: Math.max(3, r.w + dw), h: Math.max(3, r.h + dh) } : r
-    ));
-  }, []);
+  const adjacentSet = useMemo(() => {
+    return new Set(ADJACENCY[currentRegion] || []);
+  }, [currentRegion]);
 
-  const onMouseDown = useCallback((e: React.MouseEvent, region: Region, edge: string) => {
-    if (!editMode) return;
-    e.stopPropagation(); e.preventDefault();
-    dragRef.current = { id: region.id, edge, startX: e.clientX, startY: e.clientY, orig: { ...region } };
-  }, [editMode]);
-
+  // 加载活力与当前位置
   useEffect(() => {
-    if (!editMode) return;
-    const onMove = (e: MouseEvent) => {
-      const d = dragRef.current;
-      if (!d || !mapRef.current) return;
-      const rect = mapRef.current.getBoundingClientRect();
-      const dx = ((e.clientX - d.startX) / rect.width) * 100;
-      const dy = ((e.clientY - d.startY) / rect.height) * 100;
-      setRegions(prev => prev.map(r => {
-        if (r.id !== d.id) return r;
-        const o = d.orig;
-        switch (d.edge) {
-          case "move": return { ...r, x: o.x + dx, y: o.y + dy };
-          case "n": return { ...r, y: o.y + dy, h: Math.max(3, o.h - dy) };
-          case "s": return { ...r, h: Math.max(3, o.h + dy) };
-          case "w": return { ...r, x: o.x + dx, w: Math.max(3, o.w - dx) };
-          case "e": return { ...r, w: Math.max(3, o.w + dx) };
-          case "nw": return { ...r, x: o.x + dx, y: o.y + dy, w: Math.max(3, o.w - dx), h: Math.max(3, o.h - dy) };
-          case "ne": return { ...r, y: o.y + dy, w: Math.max(3, o.w + dx), h: Math.max(3, o.h - dy) };
-          case "sw": return { ...r, x: o.x + dx, w: Math.max(3, o.w - dx), h: Math.max(3, o.h + dy) };
-          case "se": return { ...r, w: Math.max(3, o.w + dx), h: Math.max(3, o.h + dy) };
-          default: return r;
-        }
-      }));
-    };
-    const onUp = () => { dragRef.current = null; };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
-  }, [editMode]);
+    if (!groupKey) return;
+    (async () => {
+      const today = new Date().toISOString().split("T")[0];
+      // 活力
+      const vRaw = await getProgress(groupKey, "map-vitality");
+      let vData: { v: number; date: string };
+      if (vRaw) {
+        vData = JSON.parse(vRaw);
+        if (vData.date !== today) vData = { v: 8, date: today };
+      } else {
+        vData = { v: 8, date: today };
+      }
+      setVitality(vData.v);
+      // 位置
+      const region = await getProgress(groupKey, "map-region");
+      if (region && REGIONS.some(r => r.id === region)) setCurrentRegion(region);
+      // 持久化初始化
+      await setProgress(groupKey, "map-vitality", JSON.stringify(vData));
+      if (!region) await setProgress(groupKey, "map-region", START_REGION);
+    })();
+  }, [groupKey]);
 
-  const exportRegions = () => {
-    const json = JSON.stringify(regions.map(r => ({
-      id: r.id, name: r.name, x: Math.round(r.x * 10) / 10, y: Math.round(r.y * 10) / 10,
-      w: Math.round(r.w * 10) / 10, h: Math.round(r.h * 10) / 10,
-      color: r.color, locked: r.locked,
-    })), null, 2);
-    navigator.clipboard.writeText(json).then(() => alert("已复制到剪贴板！"));
+  const saveVitality = async (v: number) => {
+    const today = new Date().toISOString().split("T")[0];
+    await setProgress(groupKey, "map-vitality", JSON.stringify({ v, date: today }));
+    setVitality(v);
   };
 
-  const resetRegions = () => { setRegions(DEFAULT_REGIONS); };
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2200);
+  };
+
+  const handleRegionClick = async (region: Region) => {
+    if (region.locked) {
+      showToast("暂未开放");
+      return;
+    }
+
+    const rid = region.id;
+
+    // 当前区域：探索
+    if (rid === currentRegion) {
+      if (vitality < EXPLORE_COST) { showToast(`活力不足（需${EXPLORE_COST}点）`); return; }
+      await saveVitality(vitality - EXPLORE_COST);
+      showToast(`🔍 探索 ${region.name}（-${EXPLORE_COST}活力）`);
+      onRegionClick(region);
+      return;
+    }
+
+    // 相邻区域：移动
+    if (adjacentSet.has(rid)) {
+      if (vitality < MOVE_COST) { showToast(`活力不足（需${MOVE_COST}点）`); return; }
+      await setProgress(groupKey, "map-region", rid);
+      setCurrentRegion(rid);
+      await saveVitality(vitality - MOVE_COST);
+      showToast(`🚶 前往 ${region.name}（-${MOVE_COST}活力）`);
+      onRegionClick(region);
+      return;
+    }
+
+    // 不相邻
+    showToast(`无法直接到达${region.name}，需要从相邻区域移动`);
+  };
+
+  const isAdjacent = (id: string) => adjacentSet.has(id) || id === currentRegion;
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center"
@@ -99,30 +137,31 @@ export default function RuneterraMap({ onClose, onRegionClick }: Props) {
         style={{ width: "min(1000px, 96vw)", height: "min(780px, 92vh)" }}
         onClick={e => e.stopPropagation()}>
 
+        {/* Header */}
         <div className="flex items-center justify-between w-full mb-2 px-2">
-          <h3 className="font-heading text-lg tracking-[0.2em]"
-            style={{ color: "#ffd700", textShadow: "0 0 12px rgba(255,215,0,0.4)" }}>
-            🗺️ 符文大陆
-          </h3>
+          <div className="flex items-center gap-4">
+            <h3 className="font-heading text-lg tracking-[0.2em]"
+              style={{ color: "#ffd700", textShadow: "0 0 12px rgba(255,215,0,0.4)" }}>
+              🗺️ 符文大陆
+            </h3>
+            {/* Vitality bar */}
+            <div className="flex items-center gap-2 font-mono text-sm">
+              <span style={{ color: "#00ff88" }}>⚡</span>
+              <span style={{ color: vitality > 2 ? "#00ff88" : "#ff3355" }}>{vitality}</span>
+              <span style={{ color: "rgba(200,200,208,0.3)", fontSize: 10 }}>/8</span>
+            </div>
+          </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setEditMode(!editMode)}
-              className="font-mono text-xs px-3 py-1 border transition-all"
-              style={{
-                color: editMode ? "#000" : "rgba(200,200,208,0.3)",
-                background: editMode ? "#ffd700" : "transparent",
-                borderColor: editMode ? "#ffd700" : "rgba(200,200,208,0.12)",
-              }}>
-              {editMode ? "✎ 编辑中" : "✎ 编辑"}
-            </button>
-            {editMode && (<>
-              <button onClick={exportRegions} className="font-mono text-xs px-3 py-1 border" style={{ color: "#00ff88", borderColor: "rgba(0,255,136,0.3)" }}>📋 导出</button>
-              <button onClick={resetRegions} className="font-mono text-xs px-3 py-1 border" style={{ color: "#ff3355", borderColor: "rgba(255,51,85,0.3)" }}>↺ 重置</button>
-            </>)}
-            <button onClick={onClose} className="font-mono text-xl hover:scale-110 transition-transform" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
+            <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.3)" }}>
+              📍 {REGIONS.find(r => r.id === currentRegion)?.name || ""}
+            </span>
+            <button onClick={onClose} className="font-mono text-xl hover:scale-110 transition-transform"
+              style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
           </div>
         </div>
 
-        <div ref={mapRef} className="flex-1 w-full relative overflow-hidden"
+        {/* Map */}
+        <div className="flex-1 w-full relative overflow-hidden"
           style={{ border: "1px solid rgba(180,160,200,0.15)", borderRadius: "6px", background: "rgba(10,15,25,0.8)" }}>
           {!imgFailed && (
             <img src="/runeterra-original.png" alt="符文大陆"
@@ -132,114 +171,115 @@ export default function RuneterraMap({ onClose, onRegionClick }: Props) {
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(3,2,14,0.6) 100%)", pointerEvents: "none" }} />
           {imgFailed && (
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <p className="font-mono text-sm text-center" style={{ color: "rgba(200,200,220,0.12)" }}>
-                将符文大陆地图放入 public/runeterra-original.png
-              </p>
+              <p className="font-mono text-sm" style={{ color: "rgba(200,200,220,0.12)" }}>将符文大陆地图放入 public/runeterra-original.png</p>
             </div>
           )}
 
-          {regions.map(region => {
+          {/* Current location marker */}
+          {REGIONS.filter(r => r.id === currentRegion).map(r => (
+            <div key="current" className="absolute pointer-events-none"
+              style={{
+                left: `${r.x}%`, top: `${r.y}%`, width: `${r.w}%`, height: `${r.h}%`,
+                border: "2px solid rgba(0,255,136,0.5)",
+                background: "rgba(0,255,136,0.06)",
+                boxShadow: "inset 0 0 30px rgba(0,255,136,0.15), 0 0 20px rgba(0,255,136,0.1)",
+                borderRadius: "4px", zIndex: 5,
+              }}
+            />
+          ))}
+
+          {REGIONS.map(region => {
             const isHovered = hovered === region.id;
-            const isDragging = editMode && dragRef.current?.id === region.id;
-            const showLabel = isHovered || editMode;
+            const isCurrent = region.id === currentRegion;
+            const canReach = isAdjacent(region.id);
+
             return (
               <div key={region.id}
                 className="absolute transition-all duration-200"
                 style={{
                   left: `${region.x}%`, top: `${region.y}%`,
                   width: `${region.w}%`, height: `${region.h}%`,
-                  border: editMode ? `2px solid ${region.color}cc`
+                  border: isCurrent ? "2px solid rgba(0,255,136,0.5)"
                     : isHovered ? `2px solid ${region.color}88`
                     : "1px solid transparent",
-                  background: editMode ? `${region.color}30`
+                  background: isCurrent ? "rgba(0,255,136,0.06)"
                     : isHovered ? `${region.color}12`
                     : "transparent",
-                  boxShadow: editMode ? `0 0 8px ${region.color}40`
-                    : isHovered ? `inset 0 0 50px ${region.color}20, 0 0 30px ${region.color}12`
+                  boxShadow: isCurrent ? "inset 0 0 30px rgba(0,255,136,0.15)"
+                    : isHovered ? `inset 0 0 50px ${region.color}20`
                     : "none",
                   borderRadius: "4px",
-                  filter: region.locked ? "grayscale(0.7)" : "none",
-                  zIndex: isDragging ? 20 : isHovered || editMode ? 10 : 1,
-                  cursor: editMode ? "move" : region.locked ? "default" : "pointer",
+                  filter: region.locked ? "grayscale(0.7)" : canReach ? "none" : "brightness(0.5)",
+                  zIndex: isHovered ? 10 : 1,
+                  cursor: "pointer",
                   userSelect: "none",
                 }}
-                onMouseEnter={() => !editMode && setHovered(region.id)}
+                onMouseEnter={() => setHovered(region.id)}
                 onMouseLeave={() => setHovered(null)}
-                onMouseDown={e => editMode && onMouseDown(e, region, "move")}
-                onClick={() => {
-                  if (editMode || region.locked) return;
-                  onRegionClick(region);
-                }}>
+                onClick={() => handleRegionClick(region)}>
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  style={{ opacity: showLabel ? 1 : 0, transition: "opacity 0.3s" }}>
+                  style={{ opacity: isHovered || isCurrent ? 1 : 0, transition: "opacity 0.3s" }}>
                   <div className="text-center">
                     <span className="font-heading block font-bold"
                       style={{
-                        fontSize: editMode ? "11px" : "22px",
-                        color: region.locked ? "rgba(150,150,160,0.35)" : region.color,
-                        textShadow: isHovered && !region.locked ? `0 0 18px ${region.color}cc, 0 0 36px ${region.color}66` : "none",
+                        fontSize: "22px",
+                        color: region.locked ? "rgba(150,150,160,0.35)"
+                          : isCurrent ? "#00ff88"
+                          : region.color,
+                        textShadow: isHovered && !region.locked && !isCurrent
+                          ? `0 0 18px ${region.color}cc, 0 0 36px ${region.color}66`
+                          : isCurrent ? "0 0 12px rgba(0,255,136,0.6)" : "none",
                         letterSpacing: "0.08em",
                       }}>
                       {region.name}
-                      {editMode && <span style={{ fontSize: 9, opacity: 0.6, marginLeft: 4 }}>({region.x}%,{region.y}% {region.w}%×{region.h}%)</span>}
                     </span>
-                    {isHovered && region.locked && (
+                    {region.locked && (
                       <span className="font-mono block mt-1" style={{ fontSize: 10, color: "rgba(200,200,200,0.3)" }}>
-                        {region.lockedLabel}
+                        暂未开放
                       </span>
                     )}
-                    {isHovered && !region.locked && (
-                      <div className="mx-auto mt-1.5" style={{
-                        width: 6, height: 6, borderRadius: "50%",
-                        backgroundColor: region.color,
-                        boxShadow: `0 0 8px ${region.color}`,
-                        animation: "pulse-glow 1.5s ease-in-out infinite",
-                      }} />
+                    {isHovered && !region.locked && !isCurrent && !canReach && (
+                      <span className="font-mono block mt-1" style={{ fontSize: 9, color: "rgba(255,255,255,0.25)" }}>
+                        无法直接到达
+                      </span>
+                    )}
+                    {isCurrent && (
+                      <div className="mx-auto mt-1 flex items-center gap-1 justify-center">
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#00ff88", boxShadow: "0 0 8px #00ff88", animation: "pulse-glow 1.5s ease-in-out infinite" }} />
+                        <span className="font-mono" style={{ fontSize: 8, color: "rgba(0,255,136,0.4)" }}>当前位置</span>
+                      </div>
+                    )}
+                    {isHovered && canReach && !isCurrent && !region.locked && (
+                      <span className="font-mono block mt-1" style={{ fontSize: 9, color: region.color + "88" }}>
+                        {region.id === currentRegion ? `探索 -${EXPLORE_COST}⚡` : `前往 -${MOVE_COST}⚡`}
+                      </span>
                     )}
                   </div>
                 </div>
-                {editMode && (
-                  <>
-                    {(["nw","n","ne","w","e","sw","s","se"] as const).map(edge => {
-                      const pos: Record<string, React.CSSProperties> = {
-                        nw: { top: -4, left: -4 }, n: { top: -4, left: "50%", marginLeft: -4 },
-                        ne: { top: -4, right: -4 }, w: { top: "50%", left: -4, marginTop: -4 },
-                        e: { top: "50%", right: -4, marginTop: -4 }, sw: { bottom: -4, left: -4 },
-                        s: { bottom: -4, left: "50%", marginLeft: -4 }, se: { bottom: -4, right: -4 },
-                      };
-                      return (
-                        <div key={edge} className="absolute rounded-full"
-                          style={{ ...pos[edge], width: 8, height: 8, background: region.color, border: "1px solid #fff", cursor: edge + "-resize", zIndex: 30 }}
-                          onMouseDown={e => onMouseDown(e, region, edge)} />
-                      );
-                    })}
-                    <div className="absolute flex gap-0.5 pointer-events-auto" style={{ bottom: "100%", left: 0, marginBottom: 2 }}>
-                      {[
-                        ["←", -0.5, 0, 0, 0], ["→", 0.5, 0, 0, 0],
-                        ["↑", 0, -0.5, 0, 0], ["↓", 0, 0.5, 0, 0],
-                        ["+W", 0, 0, 0.5, 0], ["-W", 0, 0, -0.5, 0],
-                        ["+H", 0, 0, 0, 0.5], ["-H", 0, 0, 0, -0.5],
-                      ].map(([label, dx, dy, dw, dh]) => (
-                        <button key={label as string} className="font-mono border"
-                          style={{ fontSize: 8, padding: "1px 3px", color: region.color, borderColor: region.color + "44", background: "rgba(0,0,0,0.7)" }}
-                          onClick={e => { e.stopPropagation(); nudge(region.id, Number(dx), Number(dy), Number(dw), Number(dh)); }}
-                          onMouseDown={e => e.stopPropagation()}>
-                          {label as string}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
               </div>
             );
           })}
+
+          {/* Cost legend */}
+          <div className="absolute bottom-3 left-3 font-mono text-xs flex gap-4"
+            style={{ color: "rgba(200,200,208,0.2)", background: "rgba(5,5,16,0.7)", padding: "4px 8px", borderRadius: 3 }}>
+            <span>🔍 探索 -{EXPLORE_COST}⚡</span>
+            <span>🚶 移动 -{MOVE_COST}⚡</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-5 mt-2 font-mono text-xs" style={{ color: "rgba(200,200,208,0.2)" }}>
-          {editMode
-            ? <span style={{ color: "#ffd700" }}>🖐 拖拽移动 · 边角调整大小 · 箭头微调 · 导出后告诉我</span>
-            : <span>光标划过地图探索区域</span>}
-        </div>
+        {/* Toast */}
+        {toast && (
+          <div className="fixed top-1/4 left-1/2 -translate-x-1/2 z-[130] pointer-events-none animate-bounce"
+            style={{
+              padding: "8px 18px", background: "rgba(13,13,36,0.95)",
+              border: "1px solid rgba(255,215,0,0.3)", color: "#ffd700",
+              fontFamily: "monospace", fontSize: 13, borderRadius: 4,
+              textShadow: "0 0 8px rgba(255,215,0,0.3)",
+            }}>
+            {toast}
+          </div>
+        )}
       </div>
     </div>
   );
