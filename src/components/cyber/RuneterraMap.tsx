@@ -1,31 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import gsap from "gsap";
+import { useState, useEffect } from "react";
 
 interface Region {
   id: string;
   name: string;
-  gridArea: string;       // CSS grid placement
+  // 相对于地图容器的百分比定位 (left, top, width, height)
+  x: number; y: number; w: number; h: number;
   color: string;
   locked?: boolean;
   lockedLabel?: string;
 }
 
 const REGIONS: Region[] = [
-  { id: "freljord",    name: "弗雷尔卓德", gridArea: "1 / 1 / 3 / 3", color: "#7ec8e3" },
-  { id: "demacia",     name: "德玛西亚",   gridArea: "1 / 3 / 3 / 5", color: "#c9a96e" },
-  { id: "noxus",       name: "诺克萨斯",   gridArea: "1 / 5 / 3 / 7", color: "#c0392b" },
-  { id: "piltover",    name: "皮尔特沃夫", gridArea: "3 / 1 / 5 / 2", color: "#f4d03f" },
-  { id: "zaun",        name: "祖安",       gridArea: "5 / 1 / 7 / 2", color: "#27ae60" },
-  { id: "ionia",       name: "艾欧尼亚",   gridArea: "3 / 2 / 6 / 5", color: "#e67e22" },
-  { id: "bilgewater",  name: "比尔吉沃特", gridArea: "3 / 5 / 5 / 7", color: "#2980b9" },
-  { id: "ixtal",       name: "以绪塔尔",   gridArea: "6 / 2 / 7 / 5", color: "#1abc9c" },
-  { id: "shurima",     name: "恕瑞玛",     gridArea: "5 / 5 / 7 / 7", color: "#f39c12" },
-  { id: "bandle",      name: "班德尔城",   gridArea: "7 / 3 / 8 / 5", color: "#9b59b6" },
-  { id: "shadow",      name: "暗影岛",     gridArea: "8 / 5 / 9 / 7", color: "#2c3e50",
+  { id: "freljord",   name: "弗雷尔卓德", x: 22, y: 4,  w: 32, h: 18, color: "#7ec8e3" },
+  { id: "demacia",    name: "德玛西亚",   x: 10, y: 22, w: 16, h: 16, color: "#c9a96e" },
+  { id: "noxus",      name: "诺克萨斯",   x: 52, y: 18, w: 22, h: 22, color: "#c0392b" },
+  { id: "piltover",   name: "皮尔特沃夫", x: 28, y: 32, w: 10, h: 10, color: "#f4d03f" },
+  { id: "zaun",       name: "祖安",       x: 28, y: 42, w: 10, h: 10, color: "#27ae60" },
+  { id: "ionia",      name: "艾欧尼亚",   x: 68, y: 28, w: 22, h: 30, color: "#e67e22" },
+  { id: "bilgewater", name: "比尔吉沃特", x: 58, y: 52, w: 14, h: 14, color: "#2980b9" },
+  { id: "ixtal",      name: "以绪塔尔",   x: 22, y: 58, w: 16, h: 14, color: "#1abc9c" },
+  { id: "shurima",    name: "恕瑞玛",     x: 38, y: 50, w: 26, h: 22, color: "#f39c12" },
+  { id: "bandle",     name: "班德尔城",   x: 42, y: 36, w: 10, h: 10, color: "#9b59b6" },
+  { id: "shadow",     name: "暗影岛",     x: 76, y: 66, w: 14, h: 16, color: "#2c3e50",
     locked: true, lockedLabel: "路途凶险 · 暂不开放" },
-  { id: "targon",      name: "巨神峰",     gridArea: "8 / 1 / 9 / 3", color: "#b8860b",
+  { id: "targon",     name: "巨神峰",     x: 4,  y: 64, w: 14, h: 18, color: "#b8860b",
     locked: true, lockedLabel: "终局地点 · 暂不开放" },
 ];
 
@@ -36,116 +36,163 @@ interface Props {
 
 export default function RuneterraMap({ onClose, onRegionClick }: Props) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const [imgFailed, setImgFailed] = useState(false);
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center"
-      style={{ background: "rgba(4,2,18,0.95)", backdropFilter: "blur(6px)" }}
+      style={{ background: "rgba(3,2,14,0.96)", backdropFilter: "blur(8px)" }}
       onClick={onClose}>
-      <div className="flex flex-col items-center" style={{ width: "min(900px, 94vw)", height: "min(750px, 88vh)" }}
+      <div className="flex flex-col items-center"
+        style={{ width: "min(1000px, 96vw)", height: "min(780px, 92vh)" }}
         onClick={e => e.stopPropagation()}>
 
-        {/* Title */}
-        <div className="flex items-center justify-between w-full mb-3 px-2">
+        {/* Header */}
+        <div className="flex items-center justify-between w-full mb-2 px-2">
           <h3 className="font-heading text-lg tracking-[0.2em]"
             style={{ color: "#ffd700", textShadow: "0 0 12px rgba(255,215,0,0.4)" }}>
             🗺️ 符文大陆
           </h3>
-          <div className="flex items-center gap-4">
-            <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.3)" }}>
-              点击区域探索秘宝
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.25)" }}>
+              {REGIONS.filter(r => !r.locked).length} 区域可探索
             </span>
-            <button onClick={onClose} className="font-mono text-xl" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
+            <button onClick={onClose} className="font-mono text-xl hover:scale-110 transition-transform"
+              style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
           </div>
         </div>
 
-        {/* Map grid: 8 rows × 6 columns */}
-        <div className="flex-1 w-full relative"
+        {/* Map container */}
+        <div className="flex-1 w-full relative overflow-hidden"
           style={{
-            display: "grid",
-            gridTemplateRows: "repeat(8, 1fr)",
-            gridTemplateColumns: "repeat(6, 1fr)",
-            gap: "4px",
-            padding: "4px",
-            background: "rgba(10,20,40,0.6)",
-            border: "1px solid rgba(100,140,200,0.15)",
-            borderRadius: "4px",
+            border: "1px solid rgba(180,160,200,0.15)",
+            borderRadius: "6px",
+            background: imgFailed
+              ? "radial-gradient(ellipse at 40% 40%, #1a2a3a 0%, #0a1018 100%)"
+              : "rgba(10,15,25,0.8)",
           }}>
-          {/* Ocean background */}
-          <div className="absolute inset-0 opacity-10"
+
+          {/* Map background image — 放在 public/runeterra-map.jpg */}
+          {!imgFailed && (
+            <img
+              src="/runeterra-map.jpg"
+              alt="符文大陆"
+              className="absolute inset-0 w-full h-full object-cover opacity-70"
+              onError={() => setImgFailed(true)}
+            />
+          )}
+
+          {/* Dark overlay for atmosphere */}
+          <div className="absolute inset-0"
             style={{
-              background: "radial-gradient(ellipse at 30% 40%, rgba(0,150,200,0.3) 0%, transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(0,100,180,0.2) 0%, transparent 50%)",
+              background: "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(3,2,14,0.6) 100%)",
               pointerEvents: "none",
             }} />
 
-          {REGIONS.map(region => (
-            <div
-              key={region.id}
-              className="relative flex items-center justify-center cursor-pointer transition-all duration-300 border overflow-hidden"
-              style={{
-                gridArea: region.gridArea,
-                borderColor: hovered === region.id
-                  ? region.color + "99"
-                  : region.locked
-                    ? "rgba(100,100,100,0.2)"
-                    : region.color + "33",
-                background: hovered === region.id
-                  ? region.color + "18"
-                  : region.locked
-                    ? "rgba(40,40,50,0.3)"
-                    : region.color + "08",
-                boxShadow: hovered === region.id
-                  ? `inset 0 0 30px ${region.color}22`
-                  : "none",
-                filter: region.locked ? "grayscale(0.6)" : "none",
-                borderRadius: "3px",
-              }}
-              onMouseEnter={() => setHovered(region.id)}
-              onMouseLeave={() => setHovered(null)}
-              onClick={() => {
-                if (region.locked) return;
-                onRegionClick(region);
-              }}>
-              {/* Region name */}
-              <div className="text-center z-10">
-                <span className="font-heading block transition-all duration-300"
-                  style={{
-                    fontSize: region.locked ? "14px" : hovered === region.id ? "18px" : "15px",
-                    color: region.locked
-                      ? "rgba(150,150,160,0.4)"
-                      : hovered === region.id
-                        ? region.color
-                        : region.color + "cc",
-                    textShadow: hovered === region.id && !region.locked
-                      ? `0 0 10px ${region.color}88`
-                      : "none",
-                    letterSpacing: "0.1em",
-                  }}>
-                  {region.name}
+          {/* Fallback decoration when no image */}
+          {imgFailed && (
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <p className="font-mono text-sm text-center leading-relaxed"
+                style={{ color: "rgba(200,200,220,0.12)" }}>
+                将符文大陆地图放入 public/runeterra-map.jpg<br/>
+                <span style={{ fontSize: 11 }}>
+                  参考：League of Legends Universe 官方地图
                 </span>
-                {hovered === region.id && region.locked && region.lockedLabel && (
-                  <span className="font-mono block mt-1" style={{ fontSize: "10px", color: "rgba(200,200,200,0.3)" }}>
-                    {region.lockedLabel}
-                  </span>
+              </p>
+            </div>
+          )}
+
+          {/* Region hotspots */}
+          {REGIONS.map(region => {
+            const isHovered = hovered === region.id;
+            return (
+              <div
+                key={region.id}
+                className="absolute cursor-pointer transition-all duration-300"
+                style={{
+                  left: `${region.x}%`, top: `${region.y}%`,
+                  width: `${region.w}%`, height: `${region.h}%`,
+                  border: isHovered
+                    ? `2px solid ${region.color}99`
+                    : `1px solid ${region.locked ? "rgba(100,100,100,0.15)" : region.color + "22"}`,
+                  background: isHovered
+                    ? `${region.color}18`
+                    : region.locked
+                      ? "rgba(40,40,50,0.2)"
+                      : `${region.color}06`,
+                  boxShadow: isHovered
+                    ? `inset 0 0 40px ${region.color}30, 0 0 20px ${region.color}20`
+                    : "none",
+                  borderRadius: "4px",
+                  filter: region.locked ? "grayscale(0.7)" : "none",
+                  zIndex: isHovered ? 10 : 1,
+                }}
+                onMouseEnter={() => setHovered(region.id)}
+                onMouseLeave={() => setHovered(null)}
+                onClick={() => {
+                  if (region.locked) return;
+                  onRegionClick(region);
+                }}>
+                {/* Region name label */}
+                <div className="absolute inset-0 flex items-center justify-center"
+                  style={{ pointerEvents: "none" }}>
+                  <div className="text-center transition-all duration-300"
+                    style={{
+                      transform: isHovered ? "scale(1.1)" : "scale(1)",
+                    }}>
+                    <span className="font-heading block"
+                      style={{
+                        fontSize: isHovered ? "18px" : "14px",
+                        color: region.locked
+                          ? "rgba(150,150,160,0.35)"
+                          : isHovered
+                            ? region.color
+                            : region.color + "aa",
+                        textShadow: isHovered && !region.locked
+                          ? `0 0 14px ${region.color}99`
+                          : "none",
+                        letterSpacing: "0.08em",
+                      }}>
+                      {region.name}
+                    </span>
+                    {isHovered && region.locked && (
+                      <span className="font-mono block mt-1"
+                        style={{ fontSize: "10px", color: "rgba(200,200,200,0.3)" }}>
+                        {region.lockedLabel}
+                      </span>
+                    )}
+                    {isHovered && !region.locked && (
+                      <div className="mx-auto mt-1.5" style={{
+                        width: 6, height: 6,
+                        borderRadius: "50%",
+                        backgroundColor: region.color,
+                        boxShadow: `0 0 8px ${region.color}`,
+                        animation: "pulse-glow 1.5s ease-in-out infinite",
+                      }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Region border glow on hover */}
+                {isHovered && !region.locked && (
+                  <div className="absolute inset-0 rounded pointer-events-none"
+                    style={{
+                      boxShadow: `inset 0 0 20px ${region.color}44`,
+                      animation: "pulse-glow 2s ease-in-out infinite",
+                    }} />
                 )}
               </div>
-
-              {/* Decorative dots for unlocked regions */}
-              {!region.locked && (
-                <div className="absolute inset-0 opacity-30 pointer-events-none"
-                  style={{
-                    backgroundImage: `radial-gradient(circle, ${region.color}44 1px, transparent 1px)`,
-                    backgroundSize: "20px 20px",
-                  }} />
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-6 mt-3 font-mono text-xs" style={{ color: "rgba(200,200,208,0.25)" }}>
-          <span>🔓 可探索</span>
+        {/* Footer legend */}
+        <div className="flex items-center gap-5 mt-2 font-mono text-xs"
+          style={{ color: "rgba(200,200,208,0.2)" }}>
+          <span>🔮 已解锁区域</span>
           <span>🔒 暂不开放</span>
-          <span>✨ 共 10 个区域</span>
+          <span className="ml-4" style={{ color: "rgba(200,200,208,0.12)" }}>
+            hover 区域查看名称 · 点击探索
+          </span>
         </div>
       </div>
     </div>

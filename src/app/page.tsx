@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { EditModeProvider } from "@/lib/edit-mode";
 import SkinBackground from "@/components/cyber/SkinBackground";
 import CyberParticles from "@/components/cyber/CyberParticles";
-import IdentityCore from "@/components/cyber/IdentityCore";
 import HudBar from "@/components/cyber/HudBar";
 import FloatingOrb from "@/components/cyber/FloatingOrb";
 import RuneterraMap from "@/components/cyber/RuneterraMap";
@@ -25,9 +24,6 @@ const PARTICLES = Array.from({ length: 15 }, (_, i) => ({
 
 export default function Home() {
   const [currentSkinSet, setCurrentSkinSet] = useState("虚空暗裔");
-  const [coreDismissed, setCoreDismissed] = useState(false);
-  const [coreFading, setCoreFading] = useState(false);
-  const [coreLocked, setCoreLocked] = useState(true);
   const [showMap, setShowMap] = useState(false);
   const [orbUnlocked, setOrbUnlocked] = useState(false);
 
@@ -37,90 +33,71 @@ export default function Home() {
       const today = new Date().toISOString().split("T")[0];
       const std = localStorage.getItem("hero-solved-standard");
       const uzi = localStorage.getItem("hero-solved-uzi");
-      if (std === today && uzi === today) {
-        setOrbUnlocked(true);
-      }
+      if (std === today && uzi === today) setOrbUnlocked(true);
     } catch {}
   };
 
   useEffect(() => { checkOrbUnlock(); }, []);
-  // 监听猜英完成事件
   useEffect(() => {
     const onCheck = () => checkOrbUnlock();
     window.addEventListener("orb-check", onCheck);
     return () => window.removeEventListener("orb-check", onCheck);
   }, []);
 
-  const unlockCore = () => {
-    setCoreFading(true);
-    setCoreLocked(false);
-    setTimeout(() => setCoreDismissed(true), 1100);
-  };
-
   return (
     <EditModeProvider>
       <div className="relative min-h-screen overflow-hidden bg-[#050510]">
-          <CyberParticles visible={coreLocked} />
-          <SkinBackground onSkinChange={setCurrentSkinSet} bright={coreFading} />
+        <CyberParticles visible={true} />
+        <SkinBackground onSkinChange={setCurrentSkinSet} bright={false} />
 
-          {!coreDismissed && (
-            <div className="fixed inset-0 flex items-center justify-center"
-              style={{ zIndex: coreLocked ? 100 : 10 }}>
-              {/* 锁定遮罩——防止点击穿透 */}
-              {coreLocked && (
-                <div className="absolute inset-0" style={{ background: "rgba(5,5,16,0.3)" }} />
-              )}
-              <IdentityCore onDismiss={unlockCore} />
-            </div>
-          )}
+        <HeroGuessEntrance />
+        <PhotoEntrance />
+        <CardPanel />
+        <AchievementPanel />
 
-          {!coreLocked && (
-            <>
-              <HeroGuessEntrance />
-              <PhotoEntrance />
-              <CardPanel />
-              <AchievementPanel />
-              <FloatingOrb
-                unlocked={orbUnlocked}
-                onClick={() => { if (orbUnlocked) setShowMap(true); }}
-              />
-            </>
-          )}
-
-          {showMap && (
-            <RuneterraMap
-              onClose={() => setShowMap(false)}
-              onRegionClick={(region) => {
-                // TODO: 地区事件系统（下一阶段）
-                setShowMap(false);
-              }}
+        {/* 悬浮球 — 页面中心 */}
+        <div className="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
+          <div className="pointer-events-auto">
+            <FloatingOrb
+              unlocked={orbUnlocked}
+              onClick={() => { if (orbUnlocked) setShowMap(true); }}
             />
-          )}
-
-          <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-            <p style={{ fontFamily: "monospace", fontSize: 10, color: "rgba(200,200,208,0.2)", letterSpacing: "0.2em" }}>
-              {currentSkinSet} · SKIN WALL ACTIVE
-            </p>
           </div>
+        </div>
 
-          <HudBar />
+        {showMap && (
+          <RuneterraMap
+            onClose={() => setShowMap(false)}
+            onRegionClick={(region) => {
+              setShowMap(false);
+            }}
+          />
+        )}
 
-          <div className="fixed inset-0 z-[1] pointer-events-none" style={{ opacity: 0.2 }}>
-            {PARTICLES.map((p) => (
-              <div
-                key={p.id}
-                className="absolute rounded-full"
-                style={{
-                  left: p.left, top: p.top,
-                  width: "2px", height: "2px",
-                  backgroundColor: "#00f0ff",
-                  animation: `drift ${p.duration} infinite`,
-                  animationDelay: p.delay,
-                  "--dx": p.dx, "--dy": p.dy,
-                } as React.CSSProperties}
-              />
-            ))}
-          </div>
+        <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+          <p style={{ fontFamily: "monospace", fontSize: 10, color: "rgba(200,200,208,0.2)", letterSpacing: "0.2em" }}>
+            {currentSkinSet} · SKIN WALL ACTIVE
+          </p>
+        </div>
+
+        <HudBar />
+
+        <div className="fixed inset-0 z-[1] pointer-events-none" style={{ opacity: 0.2 }}>
+          {PARTICLES.map((p) => (
+            <div
+              key={p.id}
+              className="absolute rounded-full"
+              style={{
+                left: p.left, top: p.top,
+                width: "2px", height: "2px",
+                backgroundColor: "#00f0ff",
+                animation: `drift ${p.duration} infinite`,
+                animationDelay: p.delay,
+                "--dx": p.dx, "--dy": p.dy,
+              } as React.CSSProperties}
+            />
+          ))}
+        </div>
       </div>
     </EditModeProvider>
   );
