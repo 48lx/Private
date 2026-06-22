@@ -166,6 +166,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
           {!imgFailed && (
             <img src="/runeterra-original.png" alt="符文大陆"
               className="absolute inset-0 w-full h-full object-cover opacity-75"
+              loading="eager"
               onError={() => setImgFailed(true)} />
           )}
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(3,2,14,0.6) 100%)", pointerEvents: "none" }} />

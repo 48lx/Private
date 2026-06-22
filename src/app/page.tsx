@@ -54,7 +54,13 @@ export default function Home() {
       checkOrbUnlock();
     };
     window.addEventListener("orb-check", onCheck);
-    return () => window.removeEventListener("orb-check", onCheck);
+    // 换号时重新检测（同标签页）
+    const onGroupChange = () => checkOrbUnlock();
+    window.addEventListener("card-group-changed", onGroupChange);
+    // 跨标签页
+    const onStorage = (e: StorageEvent) => { if (e.key === "card-group") checkOrbUnlock(); };
+    window.addEventListener("storage", onStorage);
+    return () => { window.removeEventListener("orb-check", onCheck); window.removeEventListener("card-group-changed", onGroupChange); window.removeEventListener("storage", onStorage); };
   }, []);
 
   const unlockCore = () => {

@@ -50,6 +50,7 @@ export default function CardPanel() {
   const handleLogin = async () => {
     if (!groupKey.trim()) return;
     setGroupKey(groupKey.trim()); setLoggedIn(true);
+    try { window.dispatchEvent(new Event("card-group-changed")); } catch {}
     await loadData(groupKey.trim());
     await syncUnlocked(groupKey.trim());
     // 成就
@@ -59,6 +60,7 @@ export default function CardPanel() {
   const handleLogout = () => {
     try { localStorage.removeItem("card-group"); } catch {}
     setLoggedIn(false); setGroupKeyLocal(""); setTokens(0); setCollection([]);
+    try { window.dispatchEvent(new Event("card-group-changed")); } catch {}
   };
 
   const drawPrice = (count: number) => count === 1 ? 100 : count === 10 ? 950 : 9000;
@@ -373,6 +375,7 @@ export default function CardPanel() {
                         ) : card.imageFile ? (
                           <div className="w-full mb-1.5" style={{ aspectRatio: "5/7", overflow: "hidden", borderRadius: "2px" }}>
                             <img src={`/cards/${card.imageFile}`} alt="" className="w-full h-full object-cover"
+                              loading="lazy"
                               onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}/>
                           </div>
                         ) : null}
@@ -653,7 +656,7 @@ export default function CardPanel() {
                         style={{ borderColor: getCardColor(c), background: `${getCardColor(c)}12`, boxShadow: `0 0 6px ${getCardColor(c)}10` }}>
                         {c.imageFile ? (
                           <div className="w-full mb-1" style={{ aspectRatio: "5/7", overflow: "hidden", borderRadius: "2px" }}>
-                            <img src={`/cards/${c.imageFile}`} alt="" className="w-full h-full object-cover"/>
+                            <img src={`/cards/${c.imageFile}`} alt="" className="w-full h-full object-cover" loading="lazy"/>
                           </div>
                         ) : (
                           <div className="w-full mb-1 flex items-center justify-center" style={{ aspectRatio: "5/7", background: `${getCardColor(c)}0d`, borderRadius: "2px" }}>
