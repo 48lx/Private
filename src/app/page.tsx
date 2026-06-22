@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { EditModeProvider } from "@/lib/edit-mode";
 import SkinBackground from "@/components/cyber/SkinBackground";
 import CyberParticles from "@/components/cyber/CyberParticles";
+import IdentityCore from "@/components/cyber/IdentityCore";
 import HudBar from "@/components/cyber/HudBar";
 import FloatingOrb from "@/components/cyber/FloatingOrb";
 import RuneterraMap from "@/components/cyber/RuneterraMap";
@@ -24,10 +25,12 @@ const PARTICLES = Array.from({ length: 15 }, (_, i) => ({
 
 export default function Home() {
   const [currentSkinSet, setCurrentSkinSet] = useState("虚空暗裔");
+  const [coreDismissed, setCoreDismissed] = useState(false);
+  const [coreFading, setCoreFading] = useState(false);
+  const [coreLocked, setCoreLocked] = useState(true);
   const [showMap, setShowMap] = useState(false);
   const [orbUnlocked, setOrbUnlocked] = useState(false);
 
-  // 检查今日猜英双挑战是否完成
   const checkOrbUnlock = () => {
     try {
       const today = new Date().toISOString().split("T")[0];
@@ -44,26 +47,40 @@ export default function Home() {
     return () => window.removeEventListener("orb-check", onCheck);
   }, []);
 
+  const unlockCore = () => {
+    setCoreFading(true);
+    setCoreLocked(false);
+    setTimeout(() => setCoreDismissed(true), 1100);
+  };
+
   return (
     <EditModeProvider>
       <div className="relative min-h-screen overflow-hidden bg-[#050510]">
-        <CyberParticles visible={true} />
-        <SkinBackground onSkinChange={setCurrentSkinSet} bright={false} />
+        <CyberParticles visible={coreLocked} />
+        <SkinBackground onSkinChange={setCurrentSkinSet} bright={coreFading} />
 
-        <HeroGuessEntrance />
-        <PhotoEntrance />
-        <CardPanel />
-        <AchievementPanel />
+        {!coreDismissed && (
+          <div className="fixed inset-0 flex items-center justify-center"
+            style={{ zIndex: coreLocked ? 100 : 10 }}>
+            {coreLocked && (
+              <div className="absolute inset-0" style={{ background: "rgba(5,5,16,0.3)" }} />
+            )}
+            <IdentityCore onDismiss={unlockCore} />
+          </div>
+        )}
 
-        {/* 悬浮球 — 页面中心 */}
-        <div className="fixed inset-0 z-20 flex items-center justify-center pointer-events-none">
-          <div className="pointer-events-auto">
+        {!coreLocked && (
+          <>
+            <HeroGuessEntrance />
+            <PhotoEntrance />
+            <CardPanel />
+            <AchievementPanel />
             <FloatingOrb
               unlocked={orbUnlocked}
               onClick={() => { if (orbUnlocked) setShowMap(true); }}
             />
-          </div>
-        </div>
+          </>
+        )}
 
         {showMap && (
           <RuneterraMap

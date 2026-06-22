@@ -13,19 +13,19 @@ interface Region {
 }
 
 const REGIONS: Region[] = [
-  { id: "freljord",   name: "弗雷尔卓德", x: 22, y: 4,  w: 32, h: 18, color: "#7ec8e3" },
-  { id: "demacia",    name: "德玛西亚",   x: 10, y: 22, w: 16, h: 16, color: "#c9a96e" },
-  { id: "noxus",      name: "诺克萨斯",   x: 52, y: 18, w: 22, h: 22, color: "#c0392b" },
-  { id: "piltover",   name: "皮尔特沃夫", x: 28, y: 32, w: 10, h: 10, color: "#f4d03f" },
-  { id: "zaun",       name: "祖安",       x: 28, y: 42, w: 10, h: 10, color: "#27ae60" },
-  { id: "ionia",      name: "艾欧尼亚",   x: 68, y: 28, w: 22, h: 30, color: "#e67e22" },
-  { id: "bilgewater", name: "比尔吉沃特", x: 58, y: 52, w: 14, h: 14, color: "#2980b9" },
-  { id: "ixtal",      name: "以绪塔尔",   x: 22, y: 58, w: 16, h: 14, color: "#1abc9c" },
-  { id: "shurima",    name: "恕瑞玛",     x: 38, y: 50, w: 26, h: 22, color: "#f39c12" },
-  { id: "bandle",     name: "班德尔城",   x: 42, y: 36, w: 10, h: 10, color: "#9b59b6" },
-  { id: "shadow",     name: "暗影岛",     x: 76, y: 66, w: 14, h: 16, color: "#2c3e50",
+  { id: "freljord",   name: "弗雷尔卓德", x: 8,  y: 2,  w: 37, h: 22, color: "#7ec8e3" },
+  { id: "demacia",    name: "德玛西亚",   x: 6,  y: 24, w: 19, h: 18, color: "#c9a96e" },
+  { id: "noxus",      name: "诺克萨斯",   x: 53, y: 4,  w: 38, h: 32, color: "#c0392b" },
+  { id: "piltover",   name: "皮尔特沃夫", x: 26, y: 28, w: 9,  h: 10, color: "#f4d03f" },
+  { id: "zaun",       name: "祖安",       x: 26, y: 38, w: 9,  h: 12, color: "#27ae60" },
+  { id: "ionia",      name: "艾欧尼亚",   x: 75, y: 16, w: 22, h: 38, color: "#e67e22" },
+  { id: "bilgewater", name: "比尔吉沃特", x: 58, y: 56, w: 22, h: 24, color: "#2980b9" },
+  { id: "ixtal",      name: "以绪塔尔",   x: 20, y: 54, w: 18, h: 18, color: "#1abc9c" },
+  { id: "shurima",    name: "恕瑞玛",     x: 40, y: 44, w: 24, h: 22, color: "#f39c12" },
+  { id: "bandle",     name: "班德尔城",   x: 40, y: 32, w: 11, h: 11, color: "#9b59b6" },
+  { id: "shadow",     name: "暗影岛",     x: 76, y: 66, w: 20, h: 28, color: "#2c3e50",
     locked: true, lockedLabel: "路途凶险 · 暂不开放" },
-  { id: "targon",     name: "巨神峰",     x: 4,  y: 64, w: 14, h: 18, color: "#b8860b",
+  { id: "targon",     name: "巨神峰",     x: 2,  y: 66, w: 16, h: 24, color: "#b8860b",
     locked: true, lockedLabel: "终局地点 · 暂不开放" },
 ];
 
@@ -71,12 +71,12 @@ export default function RuneterraMap({ onClose, onRegionClick }: Props) {
               : "rgba(10,15,25,0.8)",
           }}>
 
-          {/* Map background image — 放在 public/runeterra-map.jpg */}
+          {/* Map background image */}
           {!imgFailed && (
             <img
-              src="/runeterra-map.jpg"
+              src="/runeterra-original.png"
               alt="符文大陆"
-              className="absolute inset-0 w-full h-full object-cover opacity-70"
+              className="absolute inset-0 w-full h-full object-cover opacity-75"
               onError={() => setImgFailed(true)}
             />
           )}
@@ -93,7 +93,7 @@ export default function RuneterraMap({ onClose, onRegionClick }: Props) {
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
               <p className="font-mono text-sm text-center leading-relaxed"
                 style={{ color: "rgba(200,200,220,0.12)" }}>
-                将符文大陆地图放入 public/runeterra-map.jpg<br/>
+                将符文大陆地图放入 public/runeterra-original.png<br/>
                 <span style={{ fontSize: 11 }}>
                   参考：League of Legends Universe 官方地图
                 </span>
