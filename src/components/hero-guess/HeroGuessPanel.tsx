@@ -182,9 +182,9 @@ export default function HeroGuessPanel({ isOpen, onClose, initialMode }: Props) 
       const fresh = pickRandom(ALL_DIMS, stainCount);
       setStains(fresh);
       setStainSnapshots(prev => [...prev, fresh]);
-      if (isCorrect) giveReward("uzi"); if (isCorrect || newHistory.length >= UZI_MAX) setSolved(true); try { localStorage.setItem("hero-solved-uzi", new Date().toISOString().split("T")[0]); } catch {} 
+      if (isCorrect) giveReward("uzi"); if (isCorrect || newHistory.length >= UZI_MAX) setSolved(true); try { localStorage.setItem("hero-solved-uzi", new Date().toISOString().split("T")[0]); } catch {} try { window.dispatchEvent(new Event("orb-check")); } catch {}
     } else {
-      const gk=getGroupKey();if(gk&&!isCorrect)checkWrongGuesses(gk);if(isCorrect) { giveReward("standard"); setSolved(true); } try { localStorage.setItem("hero-solved-standard", new Date().toISOString().split("T")[0]); } catch {} 
+      const gk=getGroupKey();if(gk&&!isCorrect)checkWrongGuesses(gk);if(isCorrect) { giveReward("standard"); setSolved(true); } try { localStorage.setItem("hero-solved-standard", new Date().toISOString().split("T")[0]); } catch {} try { window.dispatchEvent(new Event("orb-check")); } catch {}
     }
   };
 

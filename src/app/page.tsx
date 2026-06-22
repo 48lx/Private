@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EditModeProvider } from "@/lib/edit-mode";
 import SkinBackground from "@/components/cyber/SkinBackground";
 import CyberParticles from "@/components/cyber/CyberParticles";
 import IdentityCore from "@/components/cyber/IdentityCore";
 import HudBar from "@/components/cyber/HudBar";
+import FloatingOrb from "@/components/cyber/FloatingOrb";
+import RuneterraMap from "@/components/cyber/RuneterraMap";
 import PhotoEntrance from "@/components/photos/PhotoEntrance";
 import HeroGuessEntrance from "@/components/hero-guess/HeroGuessEntrance";
 import CardPanel from "@/components/cards/CardPanel";
@@ -26,6 +28,28 @@ export default function Home() {
   const [coreDismissed, setCoreDismissed] = useState(false);
   const [coreFading, setCoreFading] = useState(false);
   const [coreLocked, setCoreLocked] = useState(true);
+  const [showMap, setShowMap] = useState(false);
+  const [orbUnlocked, setOrbUnlocked] = useState(false);
+
+  // 检查今日猜英双挑战是否完成
+  const checkOrbUnlock = () => {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const std = localStorage.getItem("hero-solved-standard");
+      const uzi = localStorage.getItem("hero-solved-uzi");
+      if (std === today && uzi === today) {
+        setOrbUnlocked(true);
+      }
+    } catch {}
+  };
+
+  useEffect(() => { checkOrbUnlock(); }, []);
+  // 监听猜英完成事件
+  useEffect(() => {
+    const onCheck = () => checkOrbUnlock();
+    window.addEventListener("orb-check", onCheck);
+    return () => window.removeEventListener("orb-check", onCheck);
+  }, []);
 
   const unlockCore = () => {
     setCoreFading(true);
@@ -56,7 +80,21 @@ export default function Home() {
               <PhotoEntrance />
               <CardPanel />
               <AchievementPanel />
+              <FloatingOrb
+                unlocked={orbUnlocked}
+                onClick={() => { if (orbUnlocked) setShowMap(true); }}
+              />
             </>
+          )}
+
+          {showMap && (
+            <RuneterraMap
+              onClose={() => setShowMap(false)}
+              onRegionClick={(region) => {
+                // TODO: 地区事件系统（下一阶段）
+                setShowMap(false);
+              }}
+            />
           )}
 
           <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
