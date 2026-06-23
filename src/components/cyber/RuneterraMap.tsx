@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { getProgress, setProgress } from "@/lib/card-storage";
+import { getAttrs, PlayerAttrs } from "@/lib/player-state";
 
 interface Region {
   id: string; name: string;
@@ -55,6 +56,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [vitality, setVitality] = useState(0);
   const [currentRegion, setCurrentRegion] = useState(START_REGION);
   const [toast, setToast] = useState<string | null>(null);
+  const [attrs, setAttrs] = useState<PlayerAttrs>({ 力量: 3, 智力: 3, 敏捷: 3, 魅力: 3 });
 
   const adjacentSet = useMemo(() => {
     return new Set(ADJACENCY[currentRegion] || []);
@@ -64,8 +66,11 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   useEffect(() => {
     if (!groupKey) return;
     (async () => {
-      const today = new Date().toISOString().split("T")[0];
+      // 属性
+      const a = await getAttrs(groupKey);
+      setAttrs(a);
       // 活力
+      const today = new Date().toISOString().split("T")[0];
       const vRaw = await getProgress(groupKey, "map-vitality");
       let vData: { v: number; date: string };
       if (vRaw) {
@@ -149,6 +154,17 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
               <span style={{ color: "#00ff88" }}>⚡</span>
               <span style={{ color: vitality > 2 ? "#00ff88" : "#ff3355" }}>{vitality}</span>
               <span style={{ color: "rgba(200,200,208,0.3)", fontSize: 10 }}>/8</span>
+            </div>
+            {/* Divider */}
+            <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.08)" }} />
+            {/* Attrs */}
+            <div className="flex items-center gap-3 font-mono text-xs">
+              {(["力量","智力","敏捷","魅力"] as (keyof PlayerAttrs)[]).map(k => {
+                const colors: Record<string, string> = { 力量: "#ff6666", 智力: "#6699ff", 敏捷: "#66ff66", 魅力: "#ff88ff" };
+                return (
+                  <span key={k} style={{ color: colors[k] }} title={k}>{attrs[k]}</span>
+                );
+              })}
             </div>
           </div>
           <div className="flex items-center gap-3">
