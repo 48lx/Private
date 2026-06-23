@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { GameEvent, EventType, EventOutcome } from "@/lib/event-types";
 import { PlayerState } from "@/lib/player-state";
 import { executeChoice, getAvailableChoices } from "@/lib/event-engine";
+import { ALL_CARDS } from "@/lib/cards";
 
 const REGION_IMAGES: Record<string, string[]> = {
   demacia: [
@@ -62,7 +63,10 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
     if (o.addTags?.length) parts.push(`标签: ${o.addTags.join(", ")}`);
     if (o.removeTags?.length) parts.push(`失去标签: ${o.removeTags.join(", ")}`);
     if (o.addItems?.length) parts.push(`道具: ${o.addItems.join(", ")}`);
-    if (o.addCards?.length) parts.push(`卡牌: ${o.addCards.join(", ")}`);
+    if (o.addCards?.length) {
+      const names = o.addCards.map(id => ALL_CARDS.find(c => c.id === id)?.name || id);
+      parts.push(`卡牌: ${names.join(", ")}`);
+    }
     return parts.join(" · ");
   };
 
@@ -80,8 +84,7 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center"
-      style={{ background: "rgba(4,2,18,0.94)", backdropFilter: "blur(6px)" }}
-      onClick={onClose}>
+      style={{ background: "rgba(4,2,18,0.94)", backdropFilter: "blur(6px)" }}>
       <div className="flex border overflow-hidden" style={{
         width: "min(900px, 94vw)", height: "min(600px, 82vh)",
         borderColor: "rgba(180,160,255,0.15)", borderRadius: 8,
@@ -177,10 +180,8 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
                   {c.disabled && c.reason && (
                     <span className="block text-xs mt-1" style={{ color: "rgba(255,51,85,0.4)" }}>需要 {c.reason}</span>
                   )}
-                  {c.choice.check?.attrs && !c.disabled && (
-                    <span className="block text-xs mt-1" style={{ color: "rgba(255,215,0,0.4)" }}>
-                      检定: {Object.entries(c.choice.check.attrs).map(([k, v]) => `${k}≥${v}`).join(", ")}
-                    </span>
+                  {c.checkLabel && (
+                    <span className="block text-xs mt-1" style={{ color: "rgba(255,215,0,0.4)" }}>{c.checkLabel}</span>
                   )}
                 </button>
               ))

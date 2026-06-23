@@ -93,43 +93,43 @@ export function executeChoice(
 
 // ─── 获取适用选项 ───
 
-/** 根据玩家状态，筛选当前可用的选项（不满足条件的选项置灰） */
+/** 根据玩家状态获取选项（属性不达标不隐藏，仅标记检定类型） */
 export function getAvailableChoices(
   event: GameEvent,
   playerState: PlayerState,
-): { choice: EventChoice; disabled: boolean; reason: string }[] {
-  // 检查是否有 altChoices
+): { choice: EventChoice; disabled: boolean; reason: string; checkLabel: string }[] {
   let choices = event.choices;
   if (event.altChoices && event.altRequire && checkRequire(event.altRequire, playerState)) {
     choices = event.altChoices;
   }
 
-  return choices.map((c, i) => {
+  return choices.map((c) => {
     const check = c.check;
-    if (!check) return { choice: c, disabled: false, reason: "" };
+    if (!check) return { choice: c, disabled: false, reason: "", checkLabel: "" };
 
-    const reasons: string[] = [];
-    if (check.attrs) {
-      for (const k of Object.keys(check.attrs) as (keyof typeof check.attrs)[]) {
-        const need = check.attrs[k] || 0;
-        const have = playerState.attrs[k] || 0;
-        if (have < need) reasons.push(`${k}≥${need}(当前${have})`);
-      }
-    }
+    const hardReasons: string[] = [];
     if (check.hasTag && !playerState.tags.includes(check.hasTag)) {
-      reasons.push(`需要标签:${check.hasTag}`);
+      hardReasons.push(`需要标签:${check.hasTag}`);
     }
     if (check.hasItem && !playerState.items.some(i => i.itemId === check.hasItem && i.qty > 0)) {
-      reasons.push(`需要道具:${check.hasItem}`);
+      hardReasons.push(`需要道具:${check.hasItem}`);
     }
     if (check.hasCard) {
-      reasons.push(`需要卡牌:${check.hasCard}`);
+      hardReasons.push(`需要卡牌:${check.hasCard}`);
+    }
+
+    // 属性检定：不隐藏，只显示检定类型
+    let checkLabel = "";
+    if (check.attrs) {
+      const names: Record<string, string> = { 力量: "力", 智力: "智", 敏捷: "敏", 魅力: "魅" };
+      checkLabel = "检定：" + Object.keys(check.attrs).map(k => names[k] || k).join(" ");
     }
 
     return {
       choice: c,
-      disabled: reasons.length > 0,
-      reason: reasons.join(", "),
+      disabled: hardReasons.length > 0,
+      reason: hardReasons.join(", "),
+      checkLabel,
     };
   });
 }
