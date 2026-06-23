@@ -84,7 +84,15 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       const v = vitality + outcome.vitality;
       await saveVitality(Math.max(0, v));
     }
-    if (outcome.attrDelta) await adjustAttrs(groupKey, outcome.attrDelta);
+    if (outcome.attrDelta) {
+      // 属性奖励仅首次生效（用事件ID做标记）
+      const attrKey = `ev-attr-${currentEvent?.id || "unknown"}`;
+      const already = await getProgress(groupKey, attrKey);
+      if (already !== "1") {
+        await adjustAttrs(groupKey, outcome.attrDelta);
+        await setProgress(groupKey, attrKey, "1");
+      }
+    }
     if (outcome.addTags) for (const t of outcome.addTags) await addTag(groupKey, t);
     if (outcome.removeTags) for (const t of outcome.removeTags) await removeTag(groupKey, t);
     if (outcome.addItems) for (const i of outcome.addItems) await addItem(groupKey, i);
@@ -367,7 +375,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                 {/* Full background image, cropped from bottom */}
                 {overviewImage && (
                   <img src={overviewImage} alt="" className="absolute inset-0 w-full h-full"
-                    style={{ objectFit: "cover", objectPosition: "50% 80%", filter: "brightness(0.45) contrast(0.85)" }} />
+                    style={{ objectFit: "cover", objectPosition: "50% 70%", filter: "brightness(0.4) contrast(0.7)" }} />
                 )}
                 {/* Content centered over background */}
                 <div className="relative z-10 flex flex-col items-center h-full p-6">
