@@ -74,7 +74,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
 
   const ALL_EVENTS = [...demaciaEvents];
 
-  const applyOutcome = async (outcome: import("@/lib/event-types").EventOutcome) => {
+  const applyOutcome = async (outcome: import("@/lib/event-types").EventOutcome, choiceIndex: number) => {
     if (!groupKey) return;
     if (outcome.tokens) {
       if (outcome.tokens > 0) await addTokens(groupKey, outcome.tokens);
@@ -85,8 +85,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       await saveVitality(Math.max(0, v));
     }
     if (outcome.attrDelta) {
-      // 属性奖励仅首次生效（用事件ID做标记）
-      const attrKey = `ev-attr-${currentEvent?.id || "unknown"}`;
+      // 属性奖励按选项追踪（同事件不同选项各自独立）
+      const attrKey = `ev-attr-${currentEvent?.id || "unknown"}-${choiceIndex}`;
       const already = await getProgress(groupKey, attrKey);
       if (already !== "1") {
         await adjustAttrs(groupKey, outcome.attrDelta);
@@ -375,7 +375,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                 {/* Full background image, cropped from bottom */}
                 {overviewImage && (
                   <img src={overviewImage} alt="" className="absolute inset-0 w-full h-full"
-                    style={{ objectFit: "cover", objectPosition: "50% 70%", filter: "brightness(0.4) contrast(0.7)" }} />
+                    style={{ objectFit: "contain", objectPosition: "50% 0%", filter: "brightness(0.35) contrast(0.65)" }} />
                 )}
                 {/* Content centered over background */}
                 <div className="relative z-10 flex flex-col items-center h-full p-6">
@@ -448,8 +448,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             attrs={attrs}
             tokens={tokenBalance}
             fixedImage={eventImage}
-            onResult={async (outcome) => {
-              await applyOutcome(outcome);
+            onResult={async (outcome, choiceIndex) => {
+              await applyOutcome(outcome, choiceIndex);
             }}
             onClose={() => {
               setCurrentEvent(null);

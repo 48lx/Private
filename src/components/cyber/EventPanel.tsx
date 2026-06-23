@@ -33,7 +33,7 @@ const TYPE_COLORS: Record<EventType, string> = {
 interface Props {
   event: GameEvent;
   playerState: PlayerState;
-  onResult: (outcome: EventOutcome) => void;
+  onResult: (outcome: EventOutcome, choiceIndex: number) => void;
   onClose: () => void;
   attrs: { 力量: number; 智力: number; 敏捷: number; 魅力: number };
   tokens: number;
@@ -82,7 +82,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
       success: r.success,
       message: r.outcome.message || (r.success ? "成功！" : "失败…"),
     });
-    onResult(r.outcome);
+    onResult(r.outcome, index);
   };
 
   return (
