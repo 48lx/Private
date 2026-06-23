@@ -8,7 +8,6 @@ import { GameEvent, DailyLog } from "@/lib/event-types";
 import { demaciaEvents } from "@/data/events/demacia";
 import InventoryPanel from "./InventoryPanel";
 import EventPanel from "./EventPanel";
-import TeemoTransition from "./TeemoTransition";
 
 interface Region {
   id: string; name: string;
@@ -65,11 +64,11 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [attrs, setAttrs] = useState<PlayerAttrs>({ 力量: 3, 智力: 3, 敏捷: 3, 魅力: 3 });
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(null);
+  const [eventImage, setEventImage] = useState("");
   const [showOverview, setShowOverview] = useState(false);
   const [overviewRegion, setOverviewRegion] = useState("");
   const [overviewExplored, setOverviewExplored] = useState(false);
-  const [showTransition, setShowTransition] = useState(false);
-  const [transitionTarget, setTransitionTarget] = useState<"event" | "overview" | null>(null);
+  const [overviewImage, setOverviewImage] = useState("");
 
   const ALL_EVENTS = [...demaciaEvents];
 
@@ -162,6 +161,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       if (vitality < EXPLORE_COST) { showToast(`活力不足（需${EXPLORE_COST}点）`); return; }
       setOverviewRegion(rid);
       setOverviewExplored(false);
+      // 总览固定用04，事件背景从01/02/03随机
+      setOverviewImage("/events/德玛西亚_04.png");
       setShowOverview(true);
       return;
     }
@@ -339,29 +340,9 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
           </div>
         </div>
 
-        {/* Teemo Transition */}
-        {showTransition && (
-          <TeemoTransition onDone={async () => {
-            setShowTransition(false);
-            if (transitionTarget === "event" && overviewRegion === "demacia" && playerState) {
-              const picked = pickEvent(overviewRegion, ALL_EVENTS, playerState, null);
-              if (picked) { setCurrentEvent(picked); setShowOverview(false); }
-              else { setShowOverview(true); showToast("该地区暂无可用事件"); }
-            } else if (transitionTarget === "overview") {
-              setShowOverview(true);
-            }
-            setTransitionTarget(null);
-          }} />
-        )}
-
         {/* Region Overview */}
         {showOverview && !currentEvent && (() => {
           const regionName = REGIONS.find(r => r.id === overviewRegion)?.name || overviewRegion;
-          const images: Record<string, string[]> = {
-            demacia: ["/events/德玛西亚_01.png","/events/德玛西亚_02.png","/events/德玛西亚_03.png","/events/德玛西亚_04.png"],
-          };
-          const pool = images[overviewRegion] || [];
-          const bg = pool[Math.floor(Math.random() * pool.length)] || "";
           return (
             <div className="fixed inset-0 z-[130] flex items-center justify-center"
               style={{ background: "rgba(4,2,18,0.94)", backdropFilter: "blur(6px)" }}>
@@ -373,27 +354,25 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
               }}>
                 {/* LEFT: Image */}
                 <div className="shrink-0 relative" style={{ width: "38%" }}>
-                  {bg ? <img src={bg} alt="" className="absolute inset-0 w-full h-full object-cover" /> : null}
+                  {overviewImage ? <img src={overviewImage} alt="" className="absolute inset-0 w-full h-full object-cover" /> : null}
                   <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, transparent 60%, rgba(8,4,24,0.95) 100%)", pointerEvents: "none" }} />
                 </div>
                 {/* RIGHT */}
-                <div className="flex-1 flex flex-col p-5 justify-between relative">
-                  {/* Close button — right side of panel, not viewport */}
+                <div className="flex-1 flex flex-col p-5 justify-center relative">
+                  {/* Close button */}
                   <button onClick={() => setShowOverview(false)}
                     className="absolute top-3 right-3 z-10 font-mono text-xl hover:scale-110 transition-transform"
                     style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
-                  <div>
-                    <h3 className="font-heading text-2xl mb-4 tracking-[0.1em]" style={{ color: "#ffd700" }}>{regionName}</h3>
-                    {/* 5 clue slots */}
-                    <div className="grid grid-cols-5 gap-2 mb-6">
-                      {["A","B","C","D","E"].map((t, i) => (
-                        <div key={t} className="aspect-square border border-dashed flex items-center justify-center"
-                          style={{ borderColor: "rgba(255,255,255,0.06)", borderRadius: 4 }}>
-                          <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.1)" }}>{t}</span>
-                        </div>
-                      ))}
-                    </div>
+                  {/* 5 clue slots — top */}
+                  <div className="grid grid-cols-5 gap-2 mb-8">
+                    {["A","B","C","D","E"].map((t, i) => (
+                      <div key={t} className="aspect-square border border-dashed flex items-center justify-center"
+                        style={{ borderColor: "rgba(255,255,255,0.06)", borderRadius: 4 }}>
+                        <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.1)" }}>{t}</span>
+                      </div>
+                    ))}
                   </div>
+                  {/* Welcome text — centered */}
                   <div className="text-center">
                     <p className="font-heading tracking-[0.15em]"
                       style={{ fontSize: "2rem", color: "#ffd700", textShadow: "0 0 16px rgba(255,215,0,0.25)", lineHeight: 1.3 }}>
@@ -406,9 +385,16 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                     <button onClick={async () => {
                       if (vitality < EXPLORE_COST) { showToast(`活力不足`); return; }
                       await saveVitality(vitality - EXPLORE_COST);
-                      setShowOverview(false);
-                      setTransitionTarget("event");
-                      setShowTransition(true);
+                      if (overviewRegion === "demacia" && playerState) {
+                        const picked = pickEvent(overviewRegion, ALL_EVENTS, playerState, null);
+                        if (picked) {
+                          const imgPool = ["/events/德玛西亚_01.png", "/events/德玛西亚_02.png", "/events/德玛西亚_03.png"];
+                          setEventImage(picked.image || imgPool[Math.floor(Math.random() * imgPool.length)]);
+                          setCurrentEvent(picked);
+                          return;
+                        }
+                      }
+                      showToast("该地区暂无可用事件");
                     }}
                       className="font-mono text-base w-full py-3 border transition-all hover:scale-[1.02]"
                       style={{ borderColor: "rgba(180,160,255,0.25)", color: "#ffd700", background: "rgba(120,40,220,0.08)" }}>
@@ -427,14 +413,13 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             event={currentEvent}
             playerState={playerState}
             attrs={attrs}
+            fixedImage={eventImage}
             onResult={async (outcome) => {
               await applyOutcome(outcome);
             }}
             onClose={() => {
               setCurrentEvent(null);
               setOverviewExplored(true);
-              setTransitionTarget("overview");
-              setShowTransition(true);
             }}
           />
         )}

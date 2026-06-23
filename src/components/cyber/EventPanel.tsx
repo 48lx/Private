@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { GameEvent, EventType, EventOutcome } from "@/lib/event-types";
 import { PlayerState } from "@/lib/player-state";
 import { executeChoice, getAvailableChoices } from "@/lib/event-engine";
@@ -11,7 +11,6 @@ const REGION_IMAGES: Record<string, string[]> = {
     "/events/德玛西亚_01.png",
     "/events/德玛西亚_02.png",
     "/events/德玛西亚_03.png",
-    "/events/德玛西亚_04.png",
   ],
 };
 
@@ -37,18 +36,14 @@ interface Props {
   onResult: (outcome: EventOutcome) => void;
   onClose: () => void;
   attrs: { 力量: number; 智力: number; 敏捷: number; 魅力: number };
+  fixedImage: string;
 }
 
-export default function EventPanel({ event, playerState, onResult, onClose, attrs }: Props) {
+export default function EventPanel({ event, playerState, onResult, onClose, attrs, fixedImage }: Props) {
   const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string } | null>(null);
   const [cardSlot, setCardSlot] = useState<string | null>(null);
 
-  const bgImage = useMemo(() => {
-    if (event.image) return event.image;
-    const pool = REGION_IMAGES[event.region] || [];
-    if (pool.length === 0) return "";
-    return pool[Math.floor(Math.random() * pool.length)];
-  }, [event]);
+  const bgImage = fixedImage;
 
   const choices = useMemo(() => getAvailableChoices(event, playerState), [event, playerState]);
 
@@ -148,7 +143,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
           </div>
 
           {/* Choices / Result */}
-          <div className="flex-1 flex flex-col justify-end gap-2" style={{ paddingBottom: "4.75rem" }}>
+          <div className="flex-1 flex flex-col justify-end" style={{ gap: "0.75rem", paddingBottom: "1.25rem" }}>
             {result ? (() => {
               const rewardText = buildRewardText(choices[result.choiceIndex]?.choice
                 ? (result.success ? choices[result.choiceIndex].choice.success : (choices[result.choiceIndex].choice.failure || choices[result.choiceIndex].choice.success))
