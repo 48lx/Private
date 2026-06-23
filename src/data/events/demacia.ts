@@ -9,6 +9,7 @@ export const demaciaEvents: GameEvent[] = [
     type: "fun",
     weight: 12,
     name: "巡逻兵的赌局",
+    image: "/events/德玛西亚_01.png",
     desc: "一群巡逻兵在营地里偷偷赌博。看到你过来，他们赶紧把东西藏起来，然后假装在讨论战术。演技非常拙劣。",
     choices: [
       {
@@ -35,6 +36,7 @@ export const demaciaEvents: GameEvent[] = [
     type: "fun",
     weight: 12,
     name: "偶遇骑兵连",
+    image: "/events/德玛西亚_02.png",
     vitalityCost: 1,
     desc: "一位表情严肃的游骑兵队长拦住你，说最近人手不足，问你要不要临时顶班。工作内容是站在城门口，对每个进城的人喊「为了德玛西亚」。",
     choices: [
@@ -69,6 +71,7 @@ export const demaciaEvents: GameEvent[] = [
     type: "clue",
     weight: 6,
     name: "禁魔石矿洞的倒霉矿工",
+    image: "/events/德玛西亚_03.png",
     desc: "一个满脸煤灰的矿工从矿洞里跑出来，哭着说他的鹤嘴锄掉进了禁魔石裂缝里。禁魔石吸魔，但吸不吸铁？他不知道，也不敢下去。",
     choices: [
       {
@@ -101,6 +104,7 @@ export const demaciaEvents: GameEvent[] = [
     type: "fun",
     weight: 12,
     name: "贵族少爷的决斗邀请",
+    image: "/events/德玛西亚_01.png",
     desc: "一个穿着浮夸的贵族少爷用白手套甩了你一脸，大声宣布你「多看了他未婚妻一眼」，要求与你决斗。围观群众开始嗑瓜子。",
     choices: [
       {

@@ -25,10 +25,21 @@ export default function InventoryPanel() {
     setItems(state.items);
   };
 
+  const ITEM_DESC: Record<string, string> = {
+    "矿工护身符": "跨地区移动时自动消耗，抵消本次移动的活力消耗（一次性）",
+    "禁魔石之心表面纹路": "秘宝线索——也许拿着它，能询问到更多的线索",
+  };
+
+  const getItemDesc = (itemId: string): string => {
+    if (ITEM_DESC[itemId]) return ITEM_DESC[itemId];
+    const match = itemId.match(/^(力量|智力|敏捷|魅力)([+-]1)$/);
+    if (match) return `${match[1]} ${match[2] === "+1" ? "永久+1" : "永久-1"}（点击使用）`;
+    return "暂无说明";
+  };
+
   const useItem = async (itemId: string) => {
     const gk = getGroupKey();
     if (!gk) return;
-    // 属性道具: 力/智/敏/魅 +1 or -1
     const match = itemId.match(/^(力量|智力|敏捷|魅力)([+-]1)$/);
     if (match) {
       const attr = match[1] as keyof PlayerAttrs;
@@ -115,10 +126,15 @@ export default function InventoryPanel() {
                 ? <p className="font-mono text-sm text-center py-12" style={{ color: "rgba(200,200,220,0.15)" }}>空空如也</p>
                 : <div className="space-y-2">
                   {normalItems.map(item => (
-                    <div key={item.itemId} className="flex items-center justify-between p-3 border cursor-pointer hover:border-opacity-60 transition-all"
+                    <div key={item.itemId} className="flex items-center justify-between p-3 border cursor-pointer hover:border-opacity-60 transition-all group"
                       style={{ borderColor: "rgba(0,200,255,0.08)", background: "rgba(0,200,255,0.02)" }}
-                      onClick={() => useItem(item.itemId)}>
-                      <span className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.7)" }}>{item.itemId}</span>
+                      onClick={() => useItem(item.itemId)}
+                      title={getItemDesc(item.itemId)}>
+                      <div className="flex flex-col">
+                        <span className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.7)" }}>{item.itemId}</span>
+                        <span className="font-mono text-[10px] mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          style={{ color: "rgba(200,200,220,0.3)" }}>{getItemDesc(item.itemId)}</span>
+                      </div>
                       <span className="font-mono text-xs" style={{ color: "#00f0ff" }}>×{item.qty}</span>
                     </div>
                   ))}

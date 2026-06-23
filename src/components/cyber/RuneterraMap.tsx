@@ -209,7 +209,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       setCurrentRegion(rid);
       await saveVitality(vitality - cost);
       if (!hasCharm) showToast(`🚶 前往 ${region.name}（-${cost}活力）`);
-      onRegionClick(region);
+      setOverviewRegion(rid);
+      setOverviewExplored(false);
+      setOverviewImage("/events/德玛西亚_04.png");
+      setShowOverview(true);
       return;
     }
 
@@ -434,8 +437,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                         if (overviewRegion === "demacia" && playerState) {
                           const picked = pickEvent(overviewRegion, ALL_EVENTS, playerState, null);
                           if (picked) {
-                            const imgPool = ["/events/德玛西亚_01.png", "/events/德玛西亚_02.png", "/events/德玛西亚_03.png"];
-                            setEventImage(picked.image || imgPool[Math.floor(Math.random() * imgPool.length)]);
+                            setEventImage(picked.image || "/events/德玛西亚_01.png");
                             setCurrentEvent(picked);
                             return;
                           }
