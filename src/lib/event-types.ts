@@ -60,6 +60,7 @@ export interface EventChoice {
   success: EventOutcome;           // 成功结果
   failure?: EventOutcome;          // 失败结果
   repeatable?: boolean;            // 是否可重复选择（默认 false）
+  consumeCard?: boolean;           // 选择后是否消耗卡槽中的卡
 }
 
 // ─── 事件 ───

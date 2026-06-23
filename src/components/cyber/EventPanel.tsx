@@ -38,9 +38,10 @@ interface Props {
   attrs: { 力量: number; 智力: number; 敏捷: number; 魅力: number };
   tokens: number;
   fixedImage: string;
+  cardCollection: { card_id: string; count: number }[];
 }
 
-export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage }: Props) {
+export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage, cardCollection }: Props) {
   const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string; attrApplied: boolean } | null>(null);
   const [cardSlot, setCardSlot] = useState<string | null>(null);
   const outcomeApplied = useRef(false);
@@ -142,15 +143,39 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
             </p>
           </div>
 
-          {/* Card slot placeholder */}
-          <div className="mb-4 p-2 border border-dashed flex items-center justify-center"
-            style={{ borderColor: "rgba(255,255,255,0.06)", borderRadius: 6, minHeight: 48 }}>
-            {cardSlot ? (
-              <span className="font-mono text-sm" style={{ color: "#ffd700" }}>🃏 {cardSlot}</span>
-            ) : (
-              <span className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.12)" }}>+ 卡槽（暂未开放）</span>
-            )}
-          </div>
+          {/* Card slot — 只显示事件需要的卡 */}
+          {(() => {
+            const neededCards = event.choices
+              .filter(c => c.check?.hasCard)
+              .map(c => c.check!.hasCard!);
+            const altNeeded = (event.altChoices || [])
+              .filter(c => c.check?.hasCard)
+              .map(c => c.check!.hasCard!);
+            const allNeeded = [...new Set([...neededCards, ...altNeeded])];
+            if (allNeeded.length === 0) return null;
+            return (
+              <div className="mb-4 p-2 border border-dashed flex items-center justify-center cursor-pointer hover:border-opacity-40 transition-all"
+                style={{ borderColor: cardSlot ? "rgba(255,215,0,0.3)" : "rgba(255,255,255,0.08)", borderRadius: 6, minHeight: 48 }}
+                onClick={() => {
+                  // 循环选择可用卡片
+                  const owned = allNeeded.filter(id => cardCollection.some(c => c.card_id === id && c.count > 0));
+                  if (owned.length === 0) return;
+                  const currentIdx = owned.indexOf(cardSlot || "");
+                  const next = owned[(currentIdx + 1) % owned.length];
+                  setCardSlot(next === cardSlot ? null : next);
+                }}>
+                {cardSlot ? (
+                  <span className="font-mono text-sm" style={{ color: "#ffd700" }}>
+                    🃏 {ALL_CARDS.find(c => c.id === cardSlot)?.name || cardSlot}
+                  </span>
+                ) : (
+                  <span className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.25)" }}>
+                    + {allNeeded.map(id => ALL_CARDS.find(c => c.id === id)?.name || id).join(" / ")}
+                  </span>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Choices / Result */}
           <div className="flex-1 flex flex-col justify-end" style={{ gap: "0.75rem", paddingBottom: "1.25rem" }}>

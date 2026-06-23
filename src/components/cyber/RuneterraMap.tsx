@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { getProgress, setProgress, addTokens, spendTokens, addCardsBulk, getTokens } from "@/lib/card-storage";
+import { getProgress, setProgress, addTokens, spendTokens, addCardsBulk, getTokens, getCollection } from "@/lib/card-storage";
 import { getAttrs, getTags, getItems, adjustAttrs, addTag, removeTag, addItem, removeItem, PlayerAttrs, PlayerState } from "@/lib/player-state";
 import { pickEvent, checkRequire } from "@/lib/event-engine";
 import { GameEvent, DailyLog } from "@/lib/event-types";
@@ -71,6 +71,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [overviewRegion, setOverviewRegion] = useState("");
   const [overviewExplored, setOverviewExplored] = useState(false);
   const [overviewImage, setOverviewImage] = useState("");
+  const [cardCollection, setCardCollection] = useState<{ card_id: string; count: number }[]>([]);
 
   const ALL_EVENTS = [...demaciaEvents];
 
@@ -113,8 +114,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     const tags = await getTags(groupKey);
     const items = await getItems(groupKey);
     const t = await getTokens(groupKey);
+    const coll = await getCollection(groupKey);
     setAttrs(a);
     setTokenBalance(t);
+    setCardCollection(coll);
     const vRaw = await getProgress(groupKey, "map-vitality");
     if (vRaw) {
       const vd = JSON.parse(vRaw);
@@ -140,6 +143,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       setPlayerState({ attrs: a, tags, items });
       const t = await getTokens(groupKey);
       setTokenBalance(t);
+      const coll = await getCollection(groupKey);
+      setCardCollection(coll);
       // 活力
       const today = new Date().toISOString().split("T")[0];
       const vRaw = await getProgress(groupKey, "map-vitality");
@@ -449,6 +454,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             attrs={attrs}
             tokens={tokenBalance}
             fixedImage={eventImage}
+            cardCollection={cardCollection}
             onResult={async (outcome, choiceIndex) => {
               return await applyOutcome(outcome, choiceIndex);
             }}
