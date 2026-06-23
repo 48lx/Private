@@ -371,41 +371,45 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                   <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, transparent 60%, rgba(8,4,24,0.95) 100%)", pointerEvents: "none" }} />
                 </div>
                 {/* RIGHT */}
-                <div className="flex-1 flex flex-col p-5 justify-center relative">
+                <div className="flex-1 flex flex-col p-5 relative">
                   {/* Close button */}
                   <button onClick={() => setShowOverview(false)}
                     className="absolute top-3 right-3 z-10 font-mono text-xl hover:scale-110 transition-transform"
                     style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
-                  {/* 5 clue slots — top */}
-                  <div className="grid grid-cols-5 gap-2 mb-8" style={{ paddingTop: "6px" }}>
+                  {/* TOP: 5 clue slots */}
+                  <div className="grid grid-cols-5 gap-2" style={{ paddingTop: "6px" }}>
                     {[
                       { label: "秘宝图片" },
                       { label: "秘宝名称" },
-                      { label: "守护者图" },
-                      { label: "守护种族" },
-                      { label: "守护声音" },
+                      { label: "守护者图片" },
+                      { label: "守护者信息" },
+                      { label: "守护者声音" },
                     ].map(({ label }) => (
                       <div key={label} className="text-center">
-                        <span className="font-mono block mb-1" style={{ fontSize: "9px", color: "rgba(200,200,220,0.35)" }}>{label}</span>
+                        <span className="font-mono block mb-1" style={{ fontSize: "10px", color: "rgba(200,200,220,0.4)" }}>{label}</span>
                         <div className="aspect-square border flex items-center justify-center"
-                          style={{ borderColor: "rgba(255,255,255,0.12)", borderRadius: 4, background: "rgba(255,255,255,0.02)" }}>
-                          <span style={{ fontSize: "24px", color: "rgba(200,200,220,0.5)", fontWeight: 200 }}>+</span>
+                          style={{ borderColor: "rgba(255,255,255,0.15)", borderRadius: 4, background: "rgba(255,255,255,0.03)" }}>
+                          <span style={{ fontSize: "28px", color: "rgba(200,200,220,0.55)", fontWeight: 200 }}>+</span>
                         </div>
                       </div>
                     ))}
                   </div>
-                  {/* Welcome text — centered */}
-                  <div className="text-center">
-                    <p className="font-heading tracking-[0.15em]"
-                      style={{ fontSize: "2rem", color: "#ffd700", textShadow: "0 0 16px rgba(255,215,0,0.25)", lineHeight: 1.3 }}>
-                      欢迎来到
-                    </p>
-                    <p className="font-heading tracking-[0.1em]"
-                      style={{ fontSize: "3.5rem", color: "#ffd700", textShadow: "0 0 28px rgba(255,215,0,0.4)", lineHeight: 1.3, fontWeight: 900 }}>
-                      {regionName}
-                    </p>
-                    <div style={{ padding: "0 8px 6px 8px" }}>
-                      <button onClick={async () => {
+                  {/* MIDDLE: Welcome text — flex-1 centered */}
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="font-heading tracking-[0.15em]"
+                        style={{ fontSize: "2rem", color: "#ffd700", textShadow: "0 0 16px rgba(255,215,0,0.25)", lineHeight: 1.3 }}>
+                        欢迎来到
+                      </p>
+                      <p className="font-heading tracking-[0.1em]"
+                        style={{ fontSize: "3.5rem", color: "#ffd700", textShadow: "0 0 28px rgba(255,215,0,0.4)", lineHeight: 1.3, fontWeight: 900 }}>
+                        {regionName}
+                      </p>
+                    </div>
+                  </div>
+                  {/* BOTTOM: Explore button */}
+                  <div style={{ padding: "0 8px 6px 8px" }}>
+                    <button onClick={async () => {
                         if (vitality < EXPLORE_COST) { showToast(`活力不足`); return; }
                         await saveVitality(vitality - EXPLORE_COST);
                         if (overviewRegion === "demacia" && playerState) {
