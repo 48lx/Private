@@ -48,7 +48,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
 
   const bgImage = fixedImage;
 
-  const choices = useMemo(() => getAvailableChoices(event, playerState), [event, playerState]);
+  const choices = useMemo(() => getAvailableChoices(event, playerState, cardSlot), [event, playerState, cardSlot]);
 
   const buildRewardText = (o: EventOutcome): string => {
     const parts: string[] = [];
@@ -77,6 +77,16 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     const c = choices[index]?.choice;
     if (!c) return;
     const r = executeChoice(c, index, playerState);
+    // 解析占位符卡片
+    if (r.outcome.addCards) {
+      r.outcome.addCards = r.outcome.addCards.map(id => {
+        if (id === "__random_blue__") {
+          const blues = ALL_CARDS.filter(card => card.rarity === "blue" && !card.id.startsWith("mimic-"));
+          return blues[Math.floor(Math.random() * blues.length)]?.id || id;
+        }
+        return id;
+      });
+    }
     outcomeApplied.current = true;
     const attrApplied = await onResult(r.outcome, index);
     setResult({

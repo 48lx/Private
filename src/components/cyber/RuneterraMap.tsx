@@ -48,7 +48,7 @@ const ADJACENCY: Record<string, string[]> = {
 
 const START_REGION = "demacia";
 const EXPLORE_COST = 2;
-const MOVE_COST = 3;
+const MOVE_COST = 1;
 
 interface Props {
   groupKey: string;
@@ -197,11 +197,18 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
 
     // 相邻区域：移动
     if (adjacentSet.has(rid)) {
-      if (vitality < MOVE_COST) { showToast(`活力不足（需${MOVE_COST}点）`); return; }
+      // 矿工护身符：抵消本次移动消耗
+      const hasCharm = playerState?.items?.some(i => i.itemId === "矿工护身符" && i.qty > 0);
+      const cost = hasCharm ? 0 : MOVE_COST;
+      if (vitality < cost) { showToast(`活力不足（需${cost}点）`); return; }
+      if (hasCharm) {
+        await removeItem(groupKey, "矿工护身符", 1);
+        showToast(`🍀 矿工护身符抵消了移动消耗！`);
+      }
       await setProgress(groupKey, "map-region", rid);
       setCurrentRegion(rid);
-      await saveVitality(vitality - MOVE_COST);
-      showToast(`🚶 前往 ${region.name}（-${MOVE_COST}活力）`);
+      await saveVitality(vitality - cost);
+      if (!hasCharm) showToast(`🚶 前往 ${region.name}（-${cost}活力）`);
       onRegionClick(region);
       return;
     }

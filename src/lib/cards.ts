@@ -175,7 +175,7 @@ export const SPECIAL_CARD_COLORS: Record<string, string> = {
   "mimic-blue": "#4da8da",
   "mimic-gold": "#ffd700",
   "twisted-gamble": "#ffd700",
-  "lonely-pull": "#00ccff",
+  "lonely-pull": "#ffd700",
   "windfall": "#4da8da",
   "autumn": "#ffd700",
   "oldwei-iou": "#4da8da",

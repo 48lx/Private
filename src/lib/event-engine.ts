@@ -97,6 +97,7 @@ export function executeChoice(
 export function getAvailableChoices(
   event: GameEvent,
   playerState: PlayerState,
+  cardSlot?: string | null,
 ): { choice: EventChoice; disabled: boolean; reason: string; checkLabel: string }[] {
   let choices = event.choices;
   if (event.altChoices && event.altRequire && checkRequire(event.altRequire, playerState)) {
@@ -114,7 +115,7 @@ export function getAvailableChoices(
     if (check.hasItem && !playerState.items.some(i => i.itemId === check.hasItem && i.qty > 0)) {
       hardReasons.push(`需要道具:${check.hasItem}`);
     }
-    if (check.hasCard) {
+    if (check.hasCard && cardSlot !== check.hasCard) {
       hardReasons.push(`需要卡牌:${check.hasCard}`);
     }
 
