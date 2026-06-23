@@ -377,19 +377,19 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                     className="absolute top-3 right-3 z-10 font-mono text-xl hover:scale-110 transition-transform"
                     style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
                   {/* 5 clue slots — top */}
-                  <div className="grid grid-cols-5 gap-2 mb-8" style={{ paddingTop: "1.25rem" }}>
+                  <div className="grid grid-cols-5 gap-2 mb-8" style={{ paddingTop: "6px" }}>
                     {[
-                      { t: "A", label: "秘宝图片" },
-                      { t: "B", label: "秘宝名称" },
-                      { t: "C", label: "守护者图" },
-                      { t: "D", label: "守护种族" },
-                      { t: "E", label: "守护声音" },
-                    ].map(({ t, label }) => (
-                      <div key={t} className="text-center">
+                      { label: "秘宝图片" },
+                      { label: "秘宝名称" },
+                      { label: "守护者图" },
+                      { label: "守护种族" },
+                      { label: "守护声音" },
+                    ].map(({ label }) => (
+                      <div key={label} className="text-center">
                         <span className="font-mono block mb-1" style={{ fontSize: "8px", color: "rgba(200,200,208,0.2)" }}>{label}</span>
                         <div className="aspect-square border flex items-center justify-center"
                           style={{ borderColor: "rgba(255,255,255,0.12)", borderRadius: 4, background: "rgba(255,255,255,0.02)" }}>
-                          <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.12)" }}>{t}</span>
+                          <span style={{ fontSize: "16px", color: "rgba(200,200,208,0.3)" }}>+</span>
                         </div>
                       </div>
                     ))}
@@ -419,7 +419,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                       showToast("该地区暂无可用事件");
                     }}
                       className="font-mono text-base py-3 border transition-all hover:scale-[1.02]"
-                      style={{ margin: "0 12px 12px 12px", borderColor: "rgba(180,160,255,0.25)", color: "#ffd700", background: "rgba(120,40,220,0.08)" }}>
+                      style={{ margin: "0 8px 6px 8px", borderColor: "rgba(180,160,255,0.25)", color: "#ffd700", background: "rgba(120,40,220,0.08)" }}>
                       {vitality >= EXPLORE_COST ? `${overviewExplored ? "继续" : "开始"}探索（-${EXPLORE_COST}⚡）` : "活力不足"}
                     </button>
                   </div>
