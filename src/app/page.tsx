@@ -12,7 +12,6 @@ import PhotoEntrance from "@/components/photos/PhotoEntrance";
 import HeroGuessEntrance from "@/components/hero-guess/HeroGuessEntrance";
 import CardPanel from "@/components/cards/CardPanel";
 import AchievementPanel from "@/components/achievements/AchievementPanel";
-import InventoryPanel from "@/components/cyber/InventoryPanel";
 import { getGroupKey, getProgress, setProgress } from "@/lib/card-storage";
 
 const PARTICLES = Array.from({ length: 15 }, (_, i) => ({
@@ -92,7 +91,6 @@ export default function Home() {
             <PhotoEntrance />
             <CardPanel />
             <AchievementPanel />
-            <InventoryPanel />
             <FloatingOrb
               unlocked={orbUnlocked}
               onClick={() => { if (orbUnlocked) setShowMap(true); }}

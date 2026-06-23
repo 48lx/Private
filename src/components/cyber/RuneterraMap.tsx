@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { getProgress, setProgress } from "@/lib/card-storage";
 import { getAttrs, PlayerAttrs } from "@/lib/player-state";
+import InventoryPanel from "./InventoryPanel";
 
 interface Region {
   id: string; name: string;
@@ -161,8 +162,12 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             <div className="flex items-center gap-3 font-mono text-xs">
               {(["力量","智力","敏捷","魅力"] as (keyof PlayerAttrs)[]).map(k => {
                 const colors: Record<string, string> = { 力量: "#ff6666", 智力: "#6699ff", 敏捷: "#66ff66", 魅力: "#ff88ff" };
+                const labels: Record<string, string> = { 力量: "力", 智力: "智", 敏捷: "敏", 魅力: "魅" };
                 return (
-                  <span key={k} style={{ color: colors[k] }} title={k}>{attrs[k]}</span>
+                  <span key={k} className="flex items-center gap-0.5">
+                    <span style={{ color: "rgba(200,200,208,0.3)" }}>{labels[k]}</span>
+                    <span style={{ color: colors[k] }}>{attrs[k]}</span>
+                  </span>
                 );
               })}
             </div>
@@ -171,6 +176,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.3)" }}>
               📍 {REGIONS.find(r => r.id === currentRegion)?.name || ""}
             </span>
+            <InventoryPanel />
             <button onClick={onClose} className="font-mono text-xl hover:scale-110 transition-transform"
               style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
           </div>

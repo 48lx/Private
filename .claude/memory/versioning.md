@@ -5,10 +5,11 @@ metadata:
   type: project
 ---
 
-The project version is displayed in [src/components/cyber/HudBar.tsx](src/components/cyber/HudBar.tsx) line 36 as `N.E.X.U.S. vX.Y.Z`.
+The project version is displayed in [src/components/cyber/HudBar.tsx](src/components/cyber/HudBar.tsx) line 36 as `N.E.X.U.S. vX.Y.ZZ`.
 
 **Version bump rules:**
-- **Small update** (minor fix/tweak): increment the third number by 0.01. E.g., v0.2.1 → v0.2.11 (meaning v0.2.1 → v0.2.2 → … treat each 0.01 as a step).
-- **Major update** (significant new feature or rewrite): increment the second number and reset third to 0.1. E.g., v0.2.x → v0.3.1.
+- **Normal update**: increment the minor version by 0.01. E.g., v0.4.5 → v0.4.6 → v0.4.7 (not v0.4.51).
+- **Major milestone**: increment the second number. E.g., v0.4.x → v0.5.0 when all Demacia events are complete.
+- Format: `v{major}.{minor}.{patch}` where patch is two digits padded.
 
-Current version as of the last update: **v0.2.1**.
+Current version: **v0.4.5**.
