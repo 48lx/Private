@@ -350,6 +350,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                 background: "rgba(8,4,24,0.98)",
                 boxShadow: "0 0 60px rgba(120,40,220,0.2)",
               }} onClick={e => e.stopPropagation()}>
+                {/* Close button */}
+                <button onClick={() => setShowOverview(false)}
+                  className="absolute top-4 right-4 z-10 font-mono text-xl hover:scale-110 transition-transform"
+                  style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
                 {/* LEFT: Image */}
                 <div className="shrink-0 relative" style={{ width: "38%" }}>
                   {bg ? <img src={bg} alt="" className="absolute inset-0 w-full h-full object-cover" /> : null}
@@ -370,7 +374,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                     </div>
                   </div>
                   <div>
-                    <p className="font-mono text-sm mb-4" style={{ color: "rgba(200,200,208,0.5)" }}>
+                    <p className="font-heading text-3xl mb-4 text-center tracking-[0.15em]"
+                      style={{ color: "#ffd700", textShadow: "0 0 20px rgba(255,215,0,0.3)" }}>
                       欢迎来到{regionName}
                     </p>
                     <button onClick={async () => {
@@ -398,6 +403,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
           <EventPanel
             event={currentEvent}
             playerState={playerState}
+            attrs={attrs}
             onResult={async (outcome) => {
               await applyOutcome(outcome);
             }}

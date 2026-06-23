@@ -36,9 +36,10 @@ interface Props {
   playerState: PlayerState;
   onResult: (outcome: EventOutcome) => void;
   onClose: () => void;
+  attrs: { 力量: number; 智力: number; 敏捷: number; 魅力: number };
 }
 
-export default function EventPanel({ event, playerState, onResult, onClose }: Props) {
+export default function EventPanel({ event, playerState, onResult, onClose, attrs }: Props) {
   const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string } | null>(null);
   const [cardSlot, setCardSlot] = useState<string | null>(null);
 
@@ -114,6 +115,14 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
 
           {/* Header */}
           <div className="mb-4">
+            {/* Attrs bar */}
+            <div className="flex items-center gap-3 mb-2 font-mono text-xs">
+              {(["力量","智力","敏捷","魅力"] as const).map(k => {
+                const colors: Record<string, string> = { 力量: "#ff6666", 智力: "#6699ff", 敏捷: "#66ff66", 魅力: "#ff88ff" };
+                const labels: Record<string, string> = { 力量: "力", 智力: "智", 敏捷: "敏", 魅力: "魅" };
+                return <span key={k}><span style={{ color: "rgba(200,200,208,0.3)" }}>{labels[k]}</span> <span style={{ color: colors[k] }}>{attrs[k]}</span></span>;
+              })}
+            </div>
             <div className="flex items-center gap-2 mb-2">
               <span className="font-mono text-xs px-2 py-0.5 border rounded"
                 style={{ color: TYPE_COLORS[event.type], borderColor: TYPE_COLORS[event.type] + "44", background: TYPE_COLORS[event.type] + "11" }}>
@@ -139,7 +148,7 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
           </div>
 
           {/* Choices / Result */}
-          <div className="flex-1 flex flex-col justify-end gap-2">
+          <div className="flex-1 flex flex-col justify-end gap-2 pb-4">
             {result ? (() => {
               const rewardText = buildRewardText(choices[result.choiceIndex]?.choice
                 ? (result.success ? choices[result.choiceIndex].choice.success : (choices[result.choiceIndex].choice.failure || choices[result.choiceIndex].choice.success))
