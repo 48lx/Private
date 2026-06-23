@@ -431,7 +431,6 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                   </div>
                 </div>
               </div>
-            </div>
           );
         })()}
 
