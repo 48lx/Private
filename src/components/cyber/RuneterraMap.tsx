@@ -386,10 +386,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                       { label: "守护声音" },
                     ].map(({ label }) => (
                       <div key={label} className="text-center">
-                        <span className="font-mono block mb-1" style={{ fontSize: "8px", color: "rgba(200,200,208,0.2)" }}>{label}</span>
+                        <span className="font-mono block mb-1" style={{ fontSize: "9px", color: "rgba(200,200,220,0.35)" }}>{label}</span>
                         <div className="aspect-square border flex items-center justify-center"
                           style={{ borderColor: "rgba(255,255,255,0.12)", borderRadius: 4, background: "rgba(255,255,255,0.02)" }}>
-                          <span style={{ fontSize: "16px", color: "rgba(200,200,208,0.3)" }}>+</span>
+                          <span style={{ fontSize: "24px", color: "rgba(200,200,220,0.5)", fontWeight: 200 }}>+</span>
                         </div>
                       </div>
                     ))}
@@ -404,24 +404,26 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                       style={{ fontSize: "3.5rem", color: "#ffd700", textShadow: "0 0 28px rgba(255,215,0,0.4)", lineHeight: 1.3, fontWeight: 900 }}>
                       {regionName}
                     </p>
-                    <button onClick={async () => {
-                      if (vitality < EXPLORE_COST) { showToast(`活力不足`); return; }
-                      await saveVitality(vitality - EXPLORE_COST);
-                      if (overviewRegion === "demacia" && playerState) {
-                        const picked = pickEvent(overviewRegion, ALL_EVENTS, playerState, null);
-                        if (picked) {
-                          const imgPool = ["/events/德玛西亚_01.png", "/events/德玛西亚_02.png", "/events/德玛西亚_03.png"];
-                          setEventImage(picked.image || imgPool[Math.floor(Math.random() * imgPool.length)]);
-                          setCurrentEvent(picked);
-                          return;
+                    <div style={{ padding: "0 8px 6px 8px" }}>
+                      <button onClick={async () => {
+                        if (vitality < EXPLORE_COST) { showToast(`活力不足`); return; }
+                        await saveVitality(vitality - EXPLORE_COST);
+                        if (overviewRegion === "demacia" && playerState) {
+                          const picked = pickEvent(overviewRegion, ALL_EVENTS, playerState, null);
+                          if (picked) {
+                            const imgPool = ["/events/德玛西亚_01.png", "/events/德玛西亚_02.png", "/events/德玛西亚_03.png"];
+                            setEventImage(picked.image || imgPool[Math.floor(Math.random() * imgPool.length)]);
+                            setCurrentEvent(picked);
+                            return;
+                          }
                         }
-                      }
-                      showToast("该地区暂无可用事件");
-                    }}
-                      className="font-mono text-base py-3 border transition-all hover:scale-[1.02]"
-                      style={{ margin: "0 8px 6px 8px", borderColor: "rgba(180,160,255,0.25)", color: "#ffd700", background: "rgba(120,40,220,0.08)" }}>
-                      {vitality >= EXPLORE_COST ? `${overviewExplored ? "继续" : "开始"}探索（-${EXPLORE_COST}⚡）` : "活力不足"}
-                    </button>
+                        showToast("该地区暂无可用事件");
+                      }}
+                        className="font-mono text-base w-full py-3 border transition-all hover:scale-[1.02]"
+                        style={{ borderColor: "rgba(180,160,255,0.25)", color: "#ffd700", background: "rgba(120,40,220,0.08)" }}>
+                        {vitality >= EXPLORE_COST ? `${overviewExplored ? "继续" : "开始"}探索（-${EXPLORE_COST}⚡）` : "活力不足"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
