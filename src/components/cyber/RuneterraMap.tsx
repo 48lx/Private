@@ -374,13 +374,9 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                 border: "1px solid rgba(180,160,255,0.15)", borderRadius: 8,
                 boxShadow: "0 0 60px rgba(120,40,220,0.2)",
               }}>
-                {/* Full bg image: cover fills panel, 120% zooms out 20%, top-aligned */}
                 {overviewImage && (
-                  <div className="absolute inset-0 overflow-hidden">
-                    <img src={overviewImage} alt=""
-                      style={{ position: "absolute", width: "120%", height: "120%", top: 0, left: "-10%",
-                        objectFit: "cover", objectPosition: "50% 0%", filter: "brightness(0.35) contrast(0.65)" }} />
-                  </div>
+                  <img src={overviewImage} alt="" className="absolute inset-0 w-full h-full"
+                    style={{ objectFit: "cover", objectPosition: "50% 0%", filter: "brightness(0.35) contrast(0.65)" }} />
                 )}
                 {/* Content centered over background */}
                 <div className="relative z-10 flex flex-col items-center h-full p-6">
