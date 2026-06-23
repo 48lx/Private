@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { getProgress, setProgress } from "@/lib/card-storage";
-import { getAttrs, PlayerAttrs } from "@/lib/player-state";
+import { getProgress, setProgress, addTokens, spendTokens } from "@/lib/card-storage";
+import { getAttrs, getTags, getItems, adjustAttrs, addTag, removeTag, addItem, removeItem, PlayerAttrs, PlayerState } from "@/lib/player-state";
+import { pickEvent, checkRequire } from "@/lib/event-engine";
+import { GameEvent, DailyLog } from "@/lib/event-types";
+import { demaciaEvents } from "@/data/events/demacia";
 import InventoryPanel from "./InventoryPanel";
+import EventPanel from "./EventPanel";
 
 interface Region {
   id: string; name: string;
@@ -58,6 +62,37 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [currentRegion, setCurrentRegion] = useState(START_REGION);
   const [toast, setToast] = useState<string | null>(null);
   const [attrs, setAttrs] = useState<PlayerAttrs>({ 力量: 3, 智力: 3, 敏捷: 3, 魅力: 3 });
+  const [playerState, setPlayerState] = useState<PlayerState | null>(null);
+  const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(null);
+
+  const ALL_EVENTS = [...demaciaEvents];
+
+  const applyOutcome = async (outcome: import("@/lib/event-types").EventOutcome) => {
+    if (!groupKey) return;
+    if (outcome.tokens) {
+      if (outcome.tokens > 0) await addTokens(groupKey, outcome.tokens);
+      else await spendTokens(groupKey, -outcome.tokens);
+    }
+    if (outcome.vitality) {
+      const v = vitality + outcome.vitality;
+      await saveVitality(Math.max(0, v));
+    }
+    if (outcome.attrDelta) await adjustAttrs(groupKey, outcome.attrDelta);
+    if (outcome.addTags) for (const t of outcome.addTags) await addTag(groupKey, t);
+    if (outcome.removeTags) for (const t of outcome.removeTags) await removeTag(groupKey, t);
+    if (outcome.addItems) for (const i of outcome.addItems) await addItem(groupKey, i);
+    // Refresh state
+    const a = await getAttrs(groupKey);
+    const tags = await getTags(groupKey);
+    const items = await getItems(groupKey);
+    setAttrs(a);
+    const vRaw = await getProgress(groupKey, "map-vitality");
+    if (vRaw) {
+      const vd = JSON.parse(vRaw);
+      setVitality(vd.v);
+    }
+    setPlayerState({ attrs: a, tags, items });
+  };
 
   const adjacentSet = useMemo(() => {
     return new Set(ADJACENCY[currentRegion] || []);
@@ -69,7 +104,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     (async () => {
       // 属性
       const a = await getAttrs(groupKey);
+      const tags = await getTags(groupKey);
+      const items = await getItems(groupKey);
       setAttrs(a);
+      setPlayerState({ attrs: a, tags, items });
       // 活力
       const today = new Date().toISOString().split("T")[0];
       const vRaw = await getProgress(groupKey, "map-vitality");
@@ -113,6 +151,15 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     if (rid === currentRegion) {
       if (vitality < EXPLORE_COST) { showToast(`活力不足（需${EXPLORE_COST}点）`); return; }
       await saveVitality(vitality - EXPLORE_COST);
+      // 如果是德玛西亚，尝试触发事件
+      if (rid === "demacia" && playerState) {
+        const dailyLog: DailyLog | null = null; // 测试阶段不限重复
+        const picked = pickEvent(rid, ALL_EVENTS, playerState, dailyLog);
+        if (picked) {
+          setCurrentEvent(picked);
+          return;
+        }
+      }
       showToast(`🔍 探索 ${region.name}（-${EXPLORE_COST}活力）`);
       onRegionClick(region);
       return;
@@ -290,6 +337,22 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             <span>🚶 移动 -{MOVE_COST}⚡</span>
           </div>
         </div>
+
+        {/* Event Panel */}
+        {currentEvent && playerState && (
+          <EventPanel
+            event={currentEvent}
+            playerState={playerState}
+            onResult={async (choiceIndex, success) => {
+              const choice = currentEvent.choices[choiceIndex];
+              if (choice) {
+                const outcome = success ? choice.success : (choice.failure || choice.success);
+                await applyOutcome(outcome);
+              }
+            }}
+            onClose={() => setCurrentEvent(null)}
+          />
+        )}
 
         {/* Toast */}
         {toast && (

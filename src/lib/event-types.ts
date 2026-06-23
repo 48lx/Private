@@ -3,7 +3,7 @@
 import { PlayerAttrs } from "./player-state";
 
 // ─── 事件分类 ───
-export type EventType = "normal" | "side" | "clue" | "hero";
+export type EventType = "normal" | "side" | "clue" | "hero" | "fun";
 
 // ─── 线索五类型 ───
 export type ClueType = "A" | "B" | "C" | "D" | "E";
@@ -31,6 +31,7 @@ export interface EventCheck {
 /** 选项的结果 */
 export interface EventOutcome {
   // 基础奖励
+  message?: string;           // 结果描述（直接显示给玩家）
   tokens?: number;
   vitality?: number;
   attrDelta?: Partial<PlayerAttrs>;
@@ -81,6 +82,7 @@ export interface GameEvent {
   desc: string;             // 事件描述（正文）
   summary?: string;         // 简短摘要（面板顶栏显示）
   image?: string;           // 自定义背景图（空则用地区默认图）
+  vitalityCost?: number;    // 触发事件消耗活力（默认0）
   require?: EventRequire;   // 前置条件
   choices: EventChoice[];   // 选项列表
 
