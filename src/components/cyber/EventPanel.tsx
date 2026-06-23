@@ -148,7 +148,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
           </div>
 
           {/* Choices / Result */}
-          <div className="flex-1 flex flex-col justify-end gap-2 pb-4">
+          <div className="flex-1 flex flex-col justify-end gap-2" style={{ paddingBottom: "4.75rem" }}>
             {result ? (() => {
               const rewardText = buildRewardText(choices[result.choiceIndex]?.choice
                 ? (result.success ? choices[result.choiceIndex].choice.success : (choices[result.choiceIndex].choice.failure || choices[result.choiceIndex].choice.success))
