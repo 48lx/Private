@@ -74,8 +74,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
 
   const ALL_EVENTS = [...demaciaEvents];
 
-  const applyOutcome = async (outcome: import("@/lib/event-types").EventOutcome, choiceIndex: number) => {
-    if (!groupKey) return;
+  const applyOutcome = async (outcome: import("@/lib/event-types").EventOutcome, choiceIndex: number): Promise<boolean> => {
+    if (!groupKey) return false;
     if (outcome.tokens) {
       if (outcome.tokens > 0) await addTokens(groupKey, outcome.tokens);
       else await spendTokens(groupKey, -outcome.tokens);
@@ -84,13 +84,14 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       const v = vitality + outcome.vitality;
       await saveVitality(Math.max(0, v));
     }
+    let attrApplied = false;
     if (outcome.attrDelta) {
-      // 属性奖励按选项追踪（同事件不同选项各自独立）
       const attrKey = `ev-attr-${currentEvent?.id || "unknown"}-${choiceIndex}`;
       const already = await getProgress(groupKey, attrKey);
       if (already !== "1") {
         await adjustAttrs(groupKey, outcome.attrDelta);
         await setProgress(groupKey, attrKey, "1");
+        attrApplied = true;
       }
     }
     if (outcome.addTags) for (const t of outcome.addTags) await addTag(groupKey, t);
@@ -120,6 +121,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       setVitality(vd.v);
     }
     setPlayerState({ attrs: a, tags, items });
+    return attrApplied;
   };
 
   const adjacentSet = useMemo(() => {
@@ -372,10 +374,13 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                 border: "1px solid rgba(180,160,255,0.15)", borderRadius: 8,
                 boxShadow: "0 0 60px rgba(120,40,220,0.2)",
               }}>
-                {/* Full background image, cropped from bottom */}
+                {/* Full bg image: cover fills panel, 120% zooms out 20%, top-aligned */}
                 {overviewImage && (
-                  <img src={overviewImage} alt="" className="absolute inset-0 w-full h-full"
-                    style={{ objectFit: "contain", objectPosition: "50% 0%", filter: "brightness(0.35) contrast(0.65)" }} />
+                  <div className="absolute inset-0 overflow-hidden">
+                    <img src={overviewImage} alt=""
+                      style={{ position: "absolute", width: "120%", height: "120%", top: 0, left: "-10%",
+                        objectFit: "cover", objectPosition: "50% 0%", filter: "brightness(0.35) contrast(0.65)" }} />
+                  </div>
                 )}
                 {/* Content centered over background */}
                 <div className="relative z-10 flex flex-col items-center h-full p-6">
@@ -449,7 +454,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             tokens={tokenBalance}
             fixedImage={eventImage}
             onResult={async (outcome, choiceIndex) => {
-              await applyOutcome(outcome, choiceIndex);
+              return await applyOutcome(outcome, choiceIndex);
             }}
             onClose={() => {
               setCurrentEvent(null);

@@ -33,7 +33,7 @@ const TYPE_COLORS: Record<EventType, string> = {
 interface Props {
   event: GameEvent;
   playerState: PlayerState;
-  onResult: (outcome: EventOutcome, choiceIndex: number) => void;
+  onResult: (outcome: EventOutcome, choiceIndex: number) => Promise<boolean>; // returns true if attrs were applied
   onClose: () => void;
   attrs: { 力量: number; 智力: number; 敏捷: number; 魅力: number };
   tokens: number;
@@ -41,7 +41,7 @@ interface Props {
 }
 
 export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage }: Props) {
-  const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string } | null>(null);
+  const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string; attrApplied: boolean } | null>(null);
   const [cardSlot, setCardSlot] = useState<string | null>(null);
   const outcomeApplied = useRef(false);
 
@@ -71,18 +71,19 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     return parts.join(" · ");
   };
 
-  const handleChoice = (index: number) => {
+  const handleChoice = async (index: number) => {
     if (outcomeApplied.current) return;
     const c = choices[index]?.choice;
     if (!c) return;
     const r = executeChoice(c, index, playerState);
     outcomeApplied.current = true;
+    const attrApplied = await onResult(r.outcome, index);
     setResult({
       choiceIndex: index,
       success: r.success,
       message: r.outcome.message || (r.success ? "成功！" : "失败…"),
+      attrApplied,
     });
-    onResult(r.outcome, index);
   };
 
   return (
@@ -154,9 +155,12 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
           {/* Choices / Result */}
           <div className="flex-1 flex flex-col justify-end" style={{ gap: "0.75rem", paddingBottom: "1.25rem" }}>
             {result ? (() => {
-              const rewardText = buildRewardText(choices[result.choiceIndex]?.choice
+              const raw = choices[result.choiceIndex]?.choice
                 ? (result.success ? choices[result.choiceIndex].choice.success : (choices[result.choiceIndex].choice.failure || choices[result.choiceIndex].choice.success))
-                : {});
+                : {};
+              // 若属性未实际应用，从显示中移除
+              const displayOutcome = result.attrApplied ? raw : { ...raw, attrDelta: undefined };
+              const rewardText = buildRewardText(displayOutcome);
               return (
               <div className="p-4 border rounded" style={{
                 borderColor: result.success ? "rgba(0,255,136,0.25)" : "rgba(255,51,85,0.25)",
