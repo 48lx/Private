@@ -359,56 +359,54 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
           return (
             <div className="fixed inset-0 z-[130] flex items-center justify-center"
               style={{ background: "rgba(4,2,18,0.94)", backdropFilter: "blur(6px)" }}>
-              <div className="flex border overflow-hidden" style={{
+              <div className="relative overflow-hidden" style={{
                 width: "min(900px, 94vw)", height: "min(600px, 82vh)",
-                borderColor: "rgba(180,160,255,0.15)", borderRadius: 8,
-                background: "rgba(8,4,24,0.98)",
+                border: "1px solid rgba(180,160,255,0.15)", borderRadius: 8,
                 boxShadow: "0 0 60px rgba(120,40,220,0.2)",
               }}>
-                {/* LEFT: Image */}
-                <div className="shrink-0 relative" style={{ width: "38%" }}>
-                  {overviewImage ? <img src={overviewImage} alt="" className="absolute inset-0 w-full h-full object-cover" /> : null}
-                  <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, transparent 60%, rgba(8,4,24,0.95) 100%)", pointerEvents: "none" }} />
-                </div>
-                {/* RIGHT */}
-                <div className="flex-1 flex flex-col p-5 relative">
-                  {/* Close button */}
+                {/* Full background image, cropped from bottom */}
+                {overviewImage && (
+                  <img src={overviewImage} alt="" className="absolute inset-0 w-full h-full"
+                    style={{ objectFit: "cover", objectPosition: "50% 80%", filter: "brightness(0.45) contrast(0.85)" }} />
+                )}
+                {/* Content centered over background */}
+                <div className="relative z-10 flex flex-col items-center h-full p-6">
                   <button onClick={() => setShowOverview(false)}
-                    className="absolute top-3 right-3 z-10 font-mono text-xl hover:scale-110 transition-transform"
-                    style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
+                    className="absolute top-3 right-3 z-20 font-mono text-xl hover:scale-110"
+                    style={{ color: "rgba(255,255,255,0.5)" }}>✕</button>
+
                   {/* TOP: 5 clue slots */}
-                  <div className="grid grid-cols-5 gap-2" style={{ paddingTop: "6px" }}>
+                  <div className="grid grid-cols-5 gap-3 w-full" style={{ maxWidth: "520px", paddingTop: "6px" }}>
                     {[
-                      { label: "秘宝图片" },
-                      { label: "秘宝名称" },
-                      { label: "守护者图片" },
-                      { label: "守护者信息" },
-                      { label: "守护者声音" },
+                      { label: "秘宝图片" }, { label: "秘宝名称" },
+                      { label: "守护者图片" }, { label: "守护者信息" }, { label: "守护者声音" },
                     ].map(({ label }) => (
                       <div key={label} className="text-center">
-                        <span className="font-mono block mb-1" style={{ fontSize: "10px", color: "rgba(200,200,220,0.4)" }}>{label}</span>
+                        <span className="font-mono block mb-1.5" style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)" }}>{label}</span>
                         <div className="aspect-square border flex items-center justify-center"
-                          style={{ borderColor: "rgba(255,255,255,0.15)", borderRadius: 4, background: "rgba(255,255,255,0.03)" }}>
-                          <span style={{ fontSize: "28px", color: "rgba(200,200,220,0.55)", fontWeight: 200 }}>+</span>
+                          style={{ borderColor: "rgba(255,255,255,0.2)", borderRadius: 4, background: "rgba(0,0,0,0.2)" }}>
+                          <span style={{ fontSize: "30px", color: "rgba(255,255,255,0.5)", fontWeight: 200 }}>+</span>
                         </div>
                       </div>
                     ))}
                   </div>
-                  {/* MIDDLE: Welcome text — flex-1 centered */}
+
+                  {/* MIDDLE: Welcome text */}
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                       <p className="font-heading tracking-[0.15em]"
-                        style={{ fontSize: "2rem", color: "#ffd700", textShadow: "0 0 16px rgba(255,215,0,0.25)", lineHeight: 1.3 }}>
+                        style={{ fontSize: "2.2rem", color: "#ffd700", textShadow: "0 0 24px rgba(255,215,0,0.5), 0 0 40px rgba(0,0,0,0.7)", lineHeight: 1.3 }}>
                         欢迎来到
                       </p>
                       <p className="font-heading tracking-[0.1em]"
-                        style={{ fontSize: "3.5rem", color: "#ffd700", textShadow: "0 0 28px rgba(255,215,0,0.4)", lineHeight: 1.3, fontWeight: 900 }}>
+                        style={{ fontSize: "3.8rem", color: "#ffd700", textShadow: "0 0 36px rgba(255,215,0,0.6), 0 0 60px rgba(0,0,0,0.7)", lineHeight: 1.3, fontWeight: 900 }}>
                         {regionName}
                       </p>
                     </div>
                   </div>
+
                   {/* BOTTOM: Explore button */}
-                  <div style={{ padding: "0 8px 6px 8px" }}>
+                  <div className="w-full" style={{ maxWidth: "520px", paddingBottom: "6px" }}>
                     <button onClick={async () => {
                         if (vitality < EXPLORE_COST) { showToast(`活力不足`); return; }
                         await saveVitality(vitality - EXPLORE_COST);
@@ -424,13 +422,13 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                         showToast("该地区暂无可用事件");
                       }}
                         className="font-mono text-base w-full py-3 border transition-all hover:scale-[1.02]"
-                        style={{ borderColor: "rgba(180,160,255,0.25)", color: "#ffd700", background: "rgba(120,40,220,0.08)" }}>
+                        style={{ borderColor: "rgba(255,215,0,0.3)", color: "#ffd700", background: "rgba(0,0,0,0.35)" }}>
                         {vitality >= EXPLORE_COST ? `${overviewExplored ? "继续" : "开始"}探索（-${EXPLORE_COST}⚡）` : "活力不足"}
                       </button>
                     </div>
                   </div>
-                </div>
               </div>
+            </div>
           );
         })()}
 
