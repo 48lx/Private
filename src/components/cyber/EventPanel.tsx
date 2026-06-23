@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { GameEvent, EventType, EventOutcome } from "@/lib/event-types";
 import { PlayerState } from "@/lib/player-state";
 import { executeChoice, getAvailableChoices } from "@/lib/event-engine";
@@ -36,12 +36,14 @@ interface Props {
   onResult: (outcome: EventOutcome) => void;
   onClose: () => void;
   attrs: { 力量: number; 智力: number; 敏捷: number; 魅力: number };
+  tokens: number;
   fixedImage: string;
 }
 
-export default function EventPanel({ event, playerState, onResult, onClose, attrs, fixedImage }: Props) {
+export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage }: Props) {
   const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string } | null>(null);
   const [cardSlot, setCardSlot] = useState<string | null>(null);
+  const outcomeApplied = useRef(false);
 
   const bgImage = fixedImage;
 
@@ -60,16 +62,21 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     if (o.removeTags?.length) parts.push(`失去标签: ${o.removeTags.join(", ")}`);
     if (o.addItems?.length) parts.push(`道具: ${o.addItems.join(", ")}`);
     if (o.addCards?.length) {
-      const names = o.addCards.map(id => ALL_CARDS.find(c => c.id === id)?.name || id);
+      const names = o.addCards.map(id => {
+        if (id === "__random_blue__") return "随机蓝卡";
+        return ALL_CARDS.find(c => c.id === id)?.name || id;
+      });
       parts.push(`卡牌: ${names.join(", ")}`);
     }
     return parts.join(" · ");
   };
 
   const handleChoice = (index: number) => {
+    if (outcomeApplied.current) return;
     const c = choices[index]?.choice;
     if (!c) return;
     const r = executeChoice(c, index, playerState);
+    outcomeApplied.current = true;
     setResult({
       choiceIndex: index,
       success: r.success,
@@ -110,13 +117,15 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
 
           {/* Header */}
           <div className="mb-4">
-            {/* Attrs bar */}
+            {/* Attrs + Tokens bar */}
             <div className="flex items-center gap-3 mb-2 font-mono text-xs">
               {(["力量","智力","敏捷","魅力"] as const).map(k => {
                 const colors: Record<string, string> = { 力量: "#ff6666", 智力: "#6699ff", 敏捷: "#66ff66", 魅力: "#ff88ff" };
                 const labels: Record<string, string> = { 力量: "力", 智力: "智", 敏捷: "敏", 魅力: "魅" };
                 return <span key={k}><span style={{ color: "rgba(200,200,208,0.3)" }}>{labels[k]}</span> <span style={{ color: colors[k] }}>{attrs[k]}</span></span>;
               })}
+              <span style={{ color: "rgba(200,200,208,0.15)" }}>|</span>
+              <span><span style={{ color: "rgba(200,200,208,0.3)" }}>🪙</span> <span style={{ color: "#ffd700" }}>{tokens}</span></span>
             </div>
             <div className="flex items-center gap-2 mb-2">
               <span className="font-mono text-xs px-2 py-0.5 border rounded"
