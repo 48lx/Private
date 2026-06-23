@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { GameEvent, EventType } from "@/lib/event-types";
+import { GameEvent, EventType, EventOutcome } from "@/lib/event-types";
 import { PlayerState } from "@/lib/player-state";
 import { executeChoice, getAvailableChoices } from "@/lib/event-engine";
 
@@ -33,7 +33,7 @@ const TYPE_COLORS: Record<EventType, string> = {
 interface Props {
   event: GameEvent;
   playerState: PlayerState;
-  onResult: (choiceIndex: number, success: boolean) => void;
+  onResult: (outcome: EventOutcome) => void;
   onClose: () => void;
 }
 
@@ -50,8 +50,24 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
 
   const choices = useMemo(() => getAvailableChoices(event, playerState), [event, playerState]);
 
+  const buildRewardText = (o: EventOutcome): string => {
+    const parts: string[] = [];
+    if (o.tokens) parts.push(`代币 ${o.tokens > 0 ? "+" : ""}${o.tokens}`);
+    if (o.vitality) parts.push(`活力 ${o.vitality > 0 ? "+" : ""}${o.vitality}`);
+    if (o.attrDelta) {
+      for (const [k, v] of Object.entries(o.attrDelta)) {
+        if (v) parts.push(`${k} ${v > 0 ? "+" : ""}${v}`);
+      }
+    }
+    if (o.addTags?.length) parts.push(`标签: ${o.addTags.join(", ")}`);
+    if (o.removeTags?.length) parts.push(`失去标签: ${o.removeTags.join(", ")}`);
+    if (o.addItems?.length) parts.push(`道具: ${o.addItems.join(", ")}`);
+    if (o.addCards?.length) parts.push(`卡牌: ${o.addCards.join(", ")}`);
+    return parts.join(" · ");
+  };
+
   const handleChoice = (index: number) => {
-    const c = event.choices[index];
+    const c = choices[index]?.choice;
     if (!c) return;
     const r = executeChoice(c, index, playerState);
     setResult({
@@ -59,7 +75,7 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
       success: r.success,
       message: r.outcome.message || (r.success ? "成功！" : "失败…"),
     });
-    onResult(index, r.success);
+    onResult(r.outcome);
   };
 
   return (
@@ -100,14 +116,6 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
                 style={{ color: TYPE_COLORS[event.type], borderColor: TYPE_COLORS[event.type] + "44", background: TYPE_COLORS[event.type] + "11" }}>
                 {TYPE_LABELS[event.type]}
               </span>
-              <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.3)" }}>
-                权重 {event.weight}
-              </span>
-              {event.vitalityCost && (
-                <span className="font-mono text-xs" style={{ color: "#ff3355" }}>
-                  -{event.vitalityCost}⚡
-                </span>
-              )}
             </div>
             <h3 className="font-heading text-xl mb-2 tracking-[0.05em]" style={{ color: "#ffd700" }}>
               {event.name}
@@ -129,7 +137,11 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
 
           {/* Choices / Result */}
           <div className="flex-1 flex flex-col justify-end gap-2">
-            {result ? (
+            {result ? (() => {
+              const rewardText = buildRewardText(choices[result.choiceIndex]?.choice
+                ? (result.success ? choices[result.choiceIndex].choice.success : (choices[result.choiceIndex].choice.failure || choices[result.choiceIndex].choice.success))
+                : {});
+              return (
               <div className="p-4 border rounded" style={{
                 borderColor: result.success ? "rgba(0,255,136,0.25)" : "rgba(255,51,85,0.25)",
                 background: result.success ? "rgba(0,255,136,0.06)" : "rgba(255,51,85,0.06)",
@@ -139,12 +151,17 @@ export default function EventPanel({ event, playerState, onResult, onClose }: Pr
                 }}>
                   {result.success ? "✦ " : "✗ "}{result.message}
                 </p>
+                {rewardText && (
+                  <p className="font-mono text-xs text-center mt-2" style={{ color: "rgba(255,215,0,0.6)" }}>
+                    🎁 {rewardText}
+                  </p>
+                )}
                 <button onClick={onClose} className="font-mono text-sm mt-3 mx-auto block px-6 py-2 border transition-all hover:scale-105"
                   style={{ borderColor: "rgba(180,160,255,0.2)", color: "#ffd700", background: "rgba(120,40,220,0.06)" }}>
                   继续探索
                 </button>
               </div>
-            ) : (
+            )})() : (
               choices.map((c, i) => (
                 <button key={i}
                   onClick={() => !c.disabled && handleChoice(i)}

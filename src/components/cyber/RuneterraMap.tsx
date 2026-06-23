@@ -343,12 +343,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
           <EventPanel
             event={currentEvent}
             playerState={playerState}
-            onResult={async (choiceIndex, success) => {
-              const choice = currentEvent.choices[choiceIndex];
-              if (choice) {
-                const outcome = success ? choice.success : (choice.failure || choice.success);
-                await applyOutcome(outcome);
-              }
+            onResult={async (outcome) => {
+              await applyOutcome(outcome);
             }}
             onClose={() => setCurrentEvent(null)}
           />

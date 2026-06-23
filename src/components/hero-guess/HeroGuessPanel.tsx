@@ -384,7 +384,7 @@ export default function HeroGuessPanel({ isOpen, onClose, initialMode }: Props) 
 
           {/* Footer */}
           <div className="px-5 py-3 border-t flex items-center justify-center gap-4" style={{ borderColor: "rgba(0,240,255,0.06)" }}>
-            {history.length > 0 && !uziMode && (
+            {history.length > 0 && !uziMode && !solved && (
               <button onClick={resetRound}
                 className="font-heading tracking-[0.15em] px-6 py-2.5 transition-all cursor-pointer hover:scale-105"
                 style={{ fontSize: "17px", border: "1px solid rgba(0,240,255,0.3)", color: "#00f0ff", background: "rgba(0,240,255,0.06)" }}>

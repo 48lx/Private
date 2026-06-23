@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
 import { getGroupKey } from "@/lib/card-storage";
-import { getPlayerState, PlayerAttrs, InventoryItem } from "@/lib/player-state";
+import { getPlayerState, PlayerAttrs, InventoryItem, adjustAttrs, removeItem } from "@/lib/player-state";
 
 type Tab = "items" | "clues" | "tags";
 
@@ -23,6 +23,22 @@ export default function InventoryPanel() {
     setAttrs(state.attrs);
     setTags(state.tags);
     setItems(state.items);
+  };
+
+  const useItem = async (itemId: string) => {
+    const gk = getGroupKey();
+    if (!gk) return;
+    // 属性道具: 力/智/敏/魅 +1 or -1
+    const match = itemId.match(/^(力量|智力|敏捷|魅力)([+-]1)$/);
+    if (match) {
+      const attr = match[1] as keyof PlayerAttrs;
+      const delta = parseInt(match[2]);
+      const ok = await removeItem(gk, itemId, 1);
+      if (!ok) return;
+      await adjustAttrs(gk, { [attr]: delta });
+      await load();
+      return;
+    }
   };
 
   useEffect(() => {
@@ -99,11 +115,11 @@ export default function InventoryPanel() {
                 ? <p className="font-mono text-sm text-center py-12" style={{ color: "rgba(200,200,220,0.15)" }}>空空如也</p>
                 : <div className="space-y-2">
                   {normalItems.map(item => (
-                    <div key={item.itemId} className="flex items-center justify-between p-3 border" style={{ borderColor: "rgba(0,200,255,0.08)", background: "rgba(0,200,255,0.02)" }}>
+                    <div key={item.itemId} className="flex items-center justify-between p-3 border cursor-pointer hover:border-opacity-60 transition-all"
+                      style={{ borderColor: "rgba(0,200,255,0.08)", background: "rgba(0,200,255,0.02)" }}
+                      onClick={() => useItem(item.itemId)}>
                       <span className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.7)" }}>{item.itemId}</span>
-                      {item.qty > 1 && (
-                        <span className="font-mono text-xs" style={{ color: "#00f0ff" }}>×{item.qty}</span>
-                      )}
+                      <span className="font-mono text-xs" style={{ color: "#00f0ff" }}>×{item.qty}</span>
                     </div>
                   ))}
                 </div>
