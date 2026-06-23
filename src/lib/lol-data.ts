@@ -2,46 +2,9 @@
 // 维度：性别、种族、分路、地区、上线年份、攻击方式、技能消耗方式
 
 export type Gender = "男性" | "女性" | "其他";
-export type Species =
-  | "人类"
-  | "约德尔人"
-  | "亡灵"
-  | "暗裔"
-  | "神灵"
-  | "恶魔"
-  | "虚空生物"
-  | "飞升者"
-  | "星灵"
-  | "半神"
-  | "机械"
-  | "冰裔"
-  | "瓦斯塔亚"
-  | "龙"
-  | "灵体"
-  | "亡灵"
-  | "巨魔"
-  | "元素生物"
-  | "吉祥物"
-  | "改造人"
-  | "蛇人"
-  | "魔像"
-  | "未知";
+export type Species = string;   // 支持多值，用 / 分隔
 export type Lane = "上单" | "打野" | "中单" | "下路" | "辅助" | "全能";
-export type Region =
-  | "德玛西亚"
-  | "诺克萨斯"
-  | "艾欧尼亚"
-  | "祖安"
-  | "皮尔特沃夫"
-  | "弗雷尔卓德"
-  | "恕瑞玛"
-  | "暗影岛"
-  | "比尔吉沃特"
-  | "巨神峰"
-  | "班德尔城"
-  | "虚空"
-  | "艾卡西亚"
-  | "以绪塔尔";
+export type Region = string;    // 支持多值，用 / 分隔
 export type AttackType = "近战" | "远程" | "双形态";
 export type ResourceType = "法力值" | "能量" | "怒气" | "生命值" | "无消耗" | "热量" | "护盾";
 
@@ -339,7 +302,7 @@ export const champions: Champion[] = [
     id: "ashe",
     name: "艾希",
     gender: "女性",
-    species: "冰裔",
+    species: "冰裔/人类",
     lanes: ["下路", "辅助"],
     region: "弗雷尔卓德",
     releaseYear: 2009,
@@ -429,7 +392,7 @@ export const champions: Champion[] = [
     id: "braum",
     name: "布隆",
     gender: "男性",
-    species: "冰裔",
+    species: "冰裔/人类",
     lanes: ["辅助"],
     region: "弗雷尔卓德",
     releaseYear: 2014,
@@ -464,7 +427,7 @@ export const champions: Champion[] = [
     id: "camille",
     name: "卡蜜尔",
     gender: "女性",
-    species: "改造人",
+    species: "改造人/人类",
     lanes: ["上单"],
     region: "皮尔特沃夫",
     releaseYear: 2016,
@@ -475,9 +438,9 @@ export const champions: Champion[] = [
     id: "cassiopeia",
     name: "卡西奥佩娅",
     gender: "女性",
-    species: "蛇人",
+    species: "蛇人/人类",
     lanes: ["中单"],
-    region: "诺克萨斯",
+    region: "诺克萨斯/恕瑞玛",
     releaseYear: 2010,
     attackType: "远程",
     resourceType: "法力值",
@@ -567,7 +530,7 @@ export const champions: Champion[] = [
     id: "elise",
     name: "伊莉丝",
     gender: "女性",
-    species: "人类",
+    species: "人类/改造人",
     lanes: ["打野"],
     region: "暗影岛",
     releaseYear: 2012,
@@ -823,7 +786,7 @@ export const champions: Champion[] = [
     lanes: ["上单", "中单"],
     region: "皮尔特沃夫",
     releaseYear: 2012,
-    attackType: "远程",
+    attackType: "双形态",
     resourceType: "法力值",
   },
   {
@@ -856,7 +819,7 @@ export const champions: Champion[] = [
     gender: "女性",
     species: "虚空生物",
     lanes: ["下路"],
-    region: "虚空",
+    region: "虚空/恕瑞玛",
     releaseYear: 2018,
     attackType: "远程",
     resourceType: "法力值",
@@ -900,7 +863,7 @@ export const champions: Champion[] = [
     gender: "男性",
     species: "人类",
     lanes: ["中单"],
-    region: "虚空",
+    region: "虚空/恕瑞玛",
     releaseYear: 2009,
     attackType: "近战",
     resourceType: "法力值",
@@ -931,7 +894,7 @@ export const champions: Champion[] = [
     id: "kayn",
     name: "凯隐",
     gender: "男性",
-    species: "暗裔",
+    species: "暗裔/人类",
     lanes: ["打野"],
     region: "艾欧尼亚",
     releaseYear: 2017,
@@ -1054,7 +1017,7 @@ export const champions: Champion[] = [
     id: "lissandra",
     name: "丽桑卓",
     gender: "女性",
-    species: "冰裔",
+    species: "冰裔/人类",
     lanes: ["中单"],
     region: "弗雷尔卓德",
     releaseYear: 2013,
@@ -1102,7 +1065,7 @@ export const champions: Champion[] = [
     gender: "男性",
     species: "元素生物",
     lanes: ["上单"],
-    region: "以绪塔尔",
+    region: "以绪塔尔/恕瑞玛",
     releaseYear: 2009,
     attackType: "近战",
     resourceType: "法力值",
@@ -1260,7 +1223,7 @@ export const champions: Champion[] = [
     lanes: ["打野"],
     region: "以绪塔尔",
     releaseYear: 2009,
-    attackType: "远程",
+    attackType: "双形态",
     resourceType: "法力值",
   },
   {
@@ -1519,7 +1482,7 @@ export const champions: Champion[] = [
     id: "sejuani",
     name: "瑟庄妮",
     gender: "女性",
-    species: "冰裔",
+    species: "冰裔/人类",
     lanes: ["打野"],
     region: "弗雷尔卓德",
     releaseYear: 2012,
@@ -1530,7 +1493,7 @@ export const champions: Champion[] = [
     id: "senna",
     name: "赛娜",
     gender: "女性",
-    species: "亡灵",
+    species: "亡灵/人类",
     lanes: ["下路", "辅助"],
     region: "暗影岛",
     releaseYear: 2019,
@@ -1842,7 +1805,7 @@ export const champions: Champion[] = [
     id: "urgot",
     name: "厄加特",
     gender: "男性",
-    species: "机械",
+    species: "改造人/人类",
     lanes: ["上单"],
     region: "祖安",
     releaseYear: 2010,
@@ -1912,7 +1875,7 @@ export const champions: Champion[] = [
     gender: "女性",
     species: "人类",
     lanes: ["打野"],
-    region: "皮尔特沃夫",
+    region: "皮尔特沃夫/祖安",
     releaseYear: 2012,
     attackType: "近战",
     resourceType: "法力值",
@@ -1967,7 +1930,7 @@ export const champions: Champion[] = [
     id: "warwick",
     name: "沃里克",
     gender: "男性",
-    species: "机械",
+    species: "改造人/人类",
     lanes: ["打野", "上单"],
     region: "祖安",
     releaseYear: 2009,
@@ -2219,7 +2182,13 @@ export function compareGuess(guess: Champion, answer: Champion): GuessResult[] {
     {
       dimension: "species", label: "种族",
       guessValue: guess.species, answerValue: answer.species,
-      matchLevel: guess.species === answer.species ? "full" : "none",
+      matchLevel: (() => {
+        const gs = guess.species.split("/");
+        const as_ = answer.species.split("/");
+        if (gs.length === as_.length && gs.every(s => as_.includes(s))) return "full";
+        if (gs.some(s => as_.includes(s))) return "partial";
+        return "none";
+      })(),
     },
     {
       dimension: "lanes", label: "分路",
@@ -2229,7 +2198,13 @@ export function compareGuess(guess: Champion, answer: Champion): GuessResult[] {
     {
       dimension: "region", label: "地区",
       guessValue: guess.region, answerValue: answer.region,
-      matchLevel: guess.region === answer.region ? "full" : "none",
+      matchLevel: (() => {
+        const gr = guess.region.split("/");
+        const ar = answer.region.split("/");
+        if (gr.length === ar.length && gr.every(r => ar.includes(r))) return "full";
+        if (gr.some(r => ar.includes(r))) return "partial";
+        return "none";
+      })(),
     },
     {
       dimension: "releaseYear", label: "上线年份",
