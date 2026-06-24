@@ -35,14 +35,14 @@ const REGIONS: Region[] = [
 const ADJACENCY: Record<string, string[]> = {
   freljord:   ["demacia"],
   demacia:    ["freljord", "noxus"],
-  noxus:      ["piltover", "freljord", "demacia", "ionia"],
+  noxus:      ["piltover", "freljord", "demacia", "ionia", "shurima"],
   ionia:      ["noxus", "piltover", "bilgewater"],
   piltover:   ["zaun", "noxus", "ionia", "bilgewater"],
   zaun:       ["piltover", "bilgewater", "ixtal", "shurima"],
   ixtal:      ["zaun", "shurima", "bilgewater"],
   bilgewater: ["ionia", "piltover", "zaun", "ixtal", "shadow"],
   shadow:     ["bilgewater", "ixtal"],
-  shurima:    ["ixtal", "targon", "zaun"],
+  shurima:    ["ixtal", "targon", "zaun", "noxus"],
   targon:     ["shurima"],
 };
 
