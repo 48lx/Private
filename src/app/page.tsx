@@ -40,7 +40,7 @@ export default function Home() {
       setGroupKey(gk);
       const today = new Date().toISOString().split("T")[0];
       const v = await getProgress(gk, `orb-${today}`);
-      if (v === "1") setOrbUnlocked(true);
+      setOrbUnlocked(v === "1");
     } catch {}
   };
 

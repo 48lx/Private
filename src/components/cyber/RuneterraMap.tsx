@@ -97,7 +97,18 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     }
     if (outcome.addTags) for (const t of outcome.addTags) await addTag(groupKey, t);
     if (outcome.removeTags) for (const t of outcome.removeTags) await removeTag(groupKey, t);
-    if (outcome.addItems) for (const i of outcome.addItems) await addItem(groupKey, i);
+    if (outcome.addItems) {
+      for (const itemId of outcome.addItems) {
+        const existing = playerState?.items?.find(i => i.itemId === itemId);
+        if (existing && existing.qty > 0) {
+          // 已有此道具，自动分解为500代币
+          await addTokens(groupKey, 500);
+          showToast(`已拥有「${itemId}」，自动分解为500代币`);
+        } else {
+          await addItem(groupKey, itemId);
+        }
+      }
+    }
     if (outcome.addCards?.length) {
       const resolved = outcome.addCards.map(id => {
         if (id === "__random_blue__") {
@@ -151,7 +162,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       let vData: { v: number; date: string };
       if (vRaw) {
         vData = JSON.parse(vRaw);
-        if (vData.date !== today) vData = { v: 8, date: today };
+        if (vData.date !== today) vData = { v: Math.max(8, vData.v), date: today };
       } else {
         vData = { v: 8, date: today };
       }
