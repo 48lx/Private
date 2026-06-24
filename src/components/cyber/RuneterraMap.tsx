@@ -78,38 +78,52 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
 
   const applyOutcome = async (outcome: import("@/lib/event-types").EventOutcome, choiceIndex: number): Promise<boolean> => {
     if (!groupKey) return false;
-    if (outcome.tokens) {
-      if (outcome.tokens > 0) await addTokens(groupKey, outcome.tokens);
-      else await spendTokens(groupKey, -outcome.tokens);
-    }
-    if (outcome.vitality) {
-      const v = vitality + outcome.vitality;
-      await saveVitality(Math.max(0, v));
-    }
+
+    // Phase 1: 收集所有写操作 + attr 检查
+    const writes: Promise<any>[] = [];
+    const today = new Date().toISOString().split("T")[0];
+    let tokenDelta = outcome.tokens || 0;
     let attrApplied = false;
-    if (outcome.attrDelta) {
-      const attrKey = `ev-attr-${currentEvent?.id || "unknown"}-${choiceIndex}`;
-      const already = await getProgress(groupKey, attrKey);
-      if (already !== "1") {
-        await adjustAttrs(groupKey, outcome.attrDelta);
-        await setProgress(groupKey, attrKey, "1");
-        attrApplied = true;
-      }
-    }
-    if (outcome.addTags) for (const t of outcome.addTags) await addTag(groupKey, t);
-    if (outcome.removeTags) for (const t of outcome.removeTags) await removeTag(groupKey, t);
+
+    // 道具重复检查（本地判断，不用网络）
     if (outcome.addItems) {
       for (const itemId of outcome.addItems) {
         const existing = playerState?.items?.find(i => i.itemId === itemId);
         if (existing && existing.qty > 0) {
-          // 已有此道具，自动分解为500代币
-          await addTokens(groupKey, 500);
+          tokenDelta += 500;
           showToast(`已拥有「${itemId}」，自动分解为500代币`);
         } else {
-          await addItem(groupKey, itemId);
+          writes.push(addItem(groupKey, itemId));
         }
       }
     }
+
+    // 代币（合并后一次写入）
+    if (tokenDelta > 0) writes.push(addTokens(groupKey, tokenDelta));
+    else if (tokenDelta < 0) writes.push(spendTokens(groupKey, -tokenDelta));
+
+    // 活力
+    if (outcome.vitality) {
+      const v = vitality + outcome.vitality;
+      writes.push(setProgress(groupKey, "map-vitality", JSON.stringify({ v: Math.max(0, v), max: maxVitality, date: today })));
+    }
+
+    // 属性（需先检查进度，独立读写）
+    if (outcome.attrDelta) {
+      const attrKey = `ev-attr-${currentEvent?.id || "unknown"}-${choiceIndex}`;
+      const already = await getProgress(groupKey, attrKey);
+      if (already !== "1") {
+        writes.push(adjustAttrs(groupKey, outcome.attrDelta));
+        writes.push(setProgress(groupKey, attrKey, "1"));
+        attrApplied = true;
+      }
+    }
+
+    // 标签
+    if (outcome.addTags) for (const t of outcome.addTags) writes.push(addTag(groupKey, t));
+    if (outcome.removeTags) for (const t of outcome.removeTags) writes.push(removeTag(groupKey, t));
+
+    // 卡牌
     if (outcome.addCards?.length) {
       const resolved = outcome.addCards.map(id => {
         if (id === "__random_blue__") {
@@ -118,24 +132,28 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
         }
         return id;
       });
-      await addCardsBulk(groupKey, resolved);
+      writes.push(addCardsBulk(groupKey, resolved));
       try { window.dispatchEvent(new Event("card-reload")); } catch {}
     }
-    // Refresh state
-    const a = await getAttrs(groupKey);
-    const tags = await getTags(groupKey);
-    const items = await getItems(groupKey);
-    const t = await getTokens(groupKey);
-    const coll = await getCollection(groupKey);
+
+    // Phase 2: 并行执行所有写操作
+    if (writes.length > 0) await Promise.all(writes);
+
+    // Phase 3: 并行读取所有最新状态
+    const [a, tags, items, t, coll, vRaw] = await Promise.all([
+      getAttrs(groupKey),
+      getTags(groupKey),
+      getItems(groupKey),
+      getTokens(groupKey),
+      getCollection(groupKey),
+      getProgress(groupKey, "map-vitality"),
+    ]);
+
+    // Phase 4: 更新 React state
     setAttrs(a);
     setTokenBalance(t);
     setCardCollection(coll);
-    const vRaw = await getProgress(groupKey, "map-vitality");
-    if (vRaw) {
-      const vd = JSON.parse(vRaw);
-      setVitality(vd.v);
-      setMaxVitality(vd.max || 8);
-    }
+    if (vRaw) { const vd = JSON.parse(vRaw); setVitality(vd.v); setMaxVitality(vd.max || 8); }
     setPlayerState({ attrs: a, tags, items });
     return attrApplied;
   };
