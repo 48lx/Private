@@ -60,6 +60,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [hovered, setHovered] = useState<string | null>(null);
   const [imgFailed, setImgFailed] = useState(false);
   const [vitality, setVitality] = useState(0);
+  const [maxVitality, setMaxVitality] = useState(8);
   const [currentRegion, setCurrentRegion] = useState(START_REGION);
   const [toast, setToast] = useState<string | null>(null);
   const [attrs, setAttrs] = useState<PlayerAttrs>({ 力量: 3, 智力: 3, 敏捷: 3, 魅力: 3 });
@@ -133,6 +134,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     if (vRaw) {
       const vd = JSON.parse(vRaw);
       setVitality(vd.v);
+      setMaxVitality(vd.max || 8);
     }
     setPlayerState({ attrs: a, tags, items });
     return attrApplied;
@@ -159,14 +161,18 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       // 活力
       const today = new Date().toISOString().split("T")[0];
       const vRaw = await getProgress(groupKey, "map-vitality");
-      let vData: { v: number; date: string };
+      let vData: { v: number; max: number; date: string };
       if (vRaw) {
         vData = JSON.parse(vRaw);
-        if (vData.date !== today) vData = { v: Math.max(8, vData.v), date: today };
+        if (vData.date !== today) {
+          const maxV = vData.max || 8;
+          vData = { v: Math.max(maxV, vData.v), max: maxV, date: today };
+        }
       } else {
-        vData = { v: 8, date: today };
+        vData = { v: 8, max: 8, date: today };
       }
       setVitality(vData.v);
+      setMaxVitality(vData.max || 8);
       // 位置
       const region = await getProgress(groupKey, "map-region");
       if (region && REGIONS.some(r => r.id === region)) setCurrentRegion(region);
@@ -178,7 +184,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
 
   const saveVitality = async (v: number) => {
     const today = new Date().toISOString().split("T")[0];
-    await setProgress(groupKey, "map-vitality", JSON.stringify({ v, date: today }));
+    await setProgress(groupKey, "map-vitality", JSON.stringify({ v, max: maxVitality, date: today }));
     setVitality(v);
   };
 
@@ -252,7 +258,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             <div className="flex items-center gap-2 font-mono text-sm">
               <span style={{ color: "#00ff88" }}>⚡</span>
               <span style={{ color: vitality > 2 ? "#00ff88" : "#ff3355" }}>{vitality}</span>
-              <span style={{ color: "rgba(200,200,208,0.3)", fontSize: 10 }}>/8</span>
+              <span style={{ color: "rgba(200,200,208,0.3)", fontSize: 10 }}>/{maxVitality}</span>
             </div>
             {/* Divider */}
             <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.08)" }} />
