@@ -78,7 +78,6 @@ export const demaciaEvents: GameEvent[] = [
         label: "帮他捡回来",
         check: { attrs: { 敏捷: 7 } },
         success: {
-          tokens: 500,
           addItems: ["禁魔石之心表面纹路"],
           message: "你跳下裂缝，发现鹤嘴锄被一块散发着微光的石头压住了。你把石头一起带上来，矿工说这石头没用，送你了。",
         },
