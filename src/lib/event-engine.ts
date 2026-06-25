@@ -3,6 +3,7 @@
 
 import { GameEvent, EventChoice, EventOutcome, EventRequire, DailyLog } from "./event-types";
 import { PlayerState } from "./player-state";
+import { ALL_CARDS } from "./cards";
 
 // ─── 事件选取 ───
 
@@ -104,7 +105,20 @@ export function getAvailableChoices(
     choices = event.altChoices;
   }
 
-  return choices.map((c) => {
+  return choices.filter(c => {
+    // hideCheck: 不满足则完全隐藏
+    if (c.hideCheck) {
+      const hc = c.hideCheck;
+      if (hc.attrs) {
+        for (const k of Object.keys(hc.attrs) as (keyof typeof hc.attrs)[]) {
+          if ((playerState.attrs[k] || 0) < (hc.attrs[k] || 0)) return false;
+        }
+      }
+      if (hc.hasTag && !playerState.tags.includes(hc.hasTag)) return false;
+      if (hc.hasItem && !playerState.items.some(i => i.itemId === hc.hasItem && i.qty > 0)) return false;
+    }
+    return true;
+  }).map((c) => {
     const check = c.check;
     if (!check) return { choice: c, disabled: false, reason: "", checkLabel: "" };
 
@@ -117,6 +131,13 @@ export function getAvailableChoices(
     }
     if (check.hasCard && cardSlot !== check.hasCard) {
       hardReasons.push(`需要卡牌:${check.hasCard}`);
+    }
+    if (check.hasCardType && cardSlot) {
+      // 检查卡槽中的卡类型是否匹配
+      const slotCard = ALL_CARDS?.find(c => c.id === cardSlot);
+      if (!slotCard || slotCard.type !== check.hasCardType) {
+        hardReasons.push(`需要${check.hasCardType}类型卡牌`);
+      }
     }
 
     // 属性检定：不隐藏，只显示检定类型

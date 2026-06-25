@@ -120,4 +120,74 @@ export const demaciaEvents: GameEvent[] = [
       },
     ],
   },
+
+  // ─── 会说话的石像鬼 ───
+  {
+    id: "demacia-gargoyle",
+    region: "demacia",
+    type: "fun",
+    weight: 10,
+    name: "会说话的石像鬼",
+    image: "/events/德玛西亚_02.png",
+    desc: "城墙角落有一尊石像鬼，它居然会说话。但它只会说一句：「你鞋带开了。」反复说，从早说到晚。",
+    choices: [
+      {
+        label: "低头看鞋",
+        success: { vitality: 3, message: "你低头了。石像鬼发出了嘎嘎的笑声，像鸭子叫。你本想骂他无聊，结果看到他憨厚的模样，你也被蠢笑了。" },
+      },
+      {
+        label: "骂它无聊",
+        success: { tokens: 5, message: "石像鬼沉默了三秒，然后说：「你拉链开了。」你骂得更狠了。" },
+      },
+      {
+        label: "尝试解除诅咒",
+        hideCheck: { attrs: { 智力: 10 } },
+        check: { attrs: { 智力: 14 } },
+        success: {
+          addItems: ["叽叽的口哨"],
+          message: "你居然解开了！约德尔人恢复原形，感激涕零，说他叫「叽叽」，以后在班德尔城遇到他可以帮忙。",
+        },
+        failure: {
+          vitality: -1,
+          message: "你用尽毕生所学也无法解开诅咒。",
+        },
+      },
+    ],
+  },
+
+  // ─── 黎明城堡的管风琴师 ───
+  {
+    id: "demacia-organist",
+    region: "demacia",
+    type: "clue",
+    weight: 8,
+    name: "黎明城堡的管风琴师",
+    image: "/events/德玛西亚_03.png",
+    desc: "黎明城堡的小教堂里，一位盲眼老琴师正在弹奏管风琴。他弹的曲子叫《沉默的守护者》，据说是为了纪念一个「不说话的大个子」。",
+    choices: [
+      {
+        label: "静静聆听",
+        success: {
+          addClues: [{ region: "demacia", type: "E", data: "/加里奥/线索.wav" }],
+          message: "琴声中有沉重脚步的节奏，还有翅膀扇动的风声。老琴师说：「守护者听得到这曲子，每次弹奏，我都能与他有所感应。」",
+        },
+      },
+      {
+        label: "和他聊聊",
+        success: {
+          addClues: [{ region: "demacia", type: "B", data: "禁魔石之心" }],
+          message: "老琴师讲起他年轻时见过秘宝的威力，那是「大魔法战争」时期，秘宝像一颗心脏般唤醒了沉睡的加里奥。",
+        },
+      },
+      {
+        label: "点歌",
+        check: { hasCardType: "gem", costTokens: 200, consumeCard: true },
+        success: {
+          vitality: 8,
+          attrDelta: { 魅力: 1 },
+          message: "你点了一首流行曲。老琴师用管风琴弹出了专辑里振奋人心的音律，所有人都听愣了。",
+        },
+      },
+    ],
+  },
 ];

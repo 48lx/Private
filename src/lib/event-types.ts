@@ -23,6 +23,7 @@ export interface EventCheck {
   hasTag?: string;                // 必须拥有的标签
   hasItem?: string;               // 必须拥有的道具
   hasCard?: string;               // 卡槽中必须放入的卡牌ID
+  hasCardType?: string;            // 卡槽中放入的卡牌类型（如 "gem"）
   costTokens?: number;            // 消耗代币
   consumeItem?: string;           // 消耗的道具
   consumeCard?: boolean;          // 是否消耗卡槽中的卡
@@ -61,6 +62,7 @@ export interface EventChoice {
   failure?: EventOutcome;          // 失败结果
   repeatable?: boolean;            // 是否可重复选择（默认 false）
   consumeCard?: boolean;           // 选择后是否消耗卡槽中的卡
+  hideCheck?: Partial<EventCheck>; // 不满足时完全隐藏该选项
 }
 
 // ─── 事件 ───

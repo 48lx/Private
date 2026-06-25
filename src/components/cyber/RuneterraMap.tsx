@@ -35,8 +35,8 @@ const REGIONS: Region[] = [
 const ADJACENCY: Record<string, string[]> = {
   freljord:   ["demacia"],
   demacia:    ["freljord", "noxus"],
-  noxus:      ["piltover", "freljord", "demacia", "ionia", "shurima"],
-  ionia:      ["noxus", "piltover", "bilgewater"],
+  noxus:      ["piltover", "freljord", "demacia", "shurima"],
+  ionia:      ["piltover", "bilgewater"],
   piltover:   ["zaun", "noxus", "ionia", "bilgewater"],
   zaun:       ["piltover", "bilgewater", "ixtal", "shurima"],
   ixtal:      ["zaun", "shurima", "bilgewater"],
@@ -72,6 +72,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [overviewRegion, setOverviewRegion] = useState("");
   const [overviewExplored, setOverviewExplored] = useState(false);
   const [overviewImage, setOverviewImage] = useState("");
+  const [overviewClues, setOverviewClues] = useState<(string | null)[]>(Array(5).fill(null));
   const [cardCollection, setCardCollection] = useState<{ card_id: string; count: number }[]>([]);
 
   const ALL_EVENTS = [...demaciaEvents];
@@ -119,6 +120,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       }
     }
 
+    // 线索
+    if (outcome.addClues) for (const cl of outcome.addClues) {
+      writes.push(setProgress(groupKey, `clue-${cl.region}-${cl.type}`, cl.data));
+    }
     // 标签
     if (outcome.addTags) for (const t of outcome.addTags) writes.push(addTag(groupKey, t));
     if (outcome.removeTags) for (const t of outcome.removeTags) writes.push(removeTag(groupKey, t));
@@ -243,8 +248,13 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       if (vitality < EXPLORE_COST) { showToast(`活力不足（需${EXPLORE_COST}点）`); return; }
       setOverviewRegion(rid);
       setOverviewExplored(false);
-      // 总览固定用04，事件背景从01/02/03随机
       setOverviewImage("/events/德玛西亚_04.png");
+      // 加载该地区已获得的线索
+      const clueTypes = ["A","B","C","D","E"];
+      const clues: (string | null)[] = await Promise.all(
+        clueTypes.map(t => getProgress(groupKey, `clue-${rid}-${t}`))
+      );
+      setOverviewClues(clues.map(c => c || null));
       setShowOverview(true);
       return;
     }
@@ -470,17 +480,38 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                   {/* TOP: 5 clue slots */}
                   <div className="grid grid-cols-5 gap-3 w-full" style={{ maxWidth: "520px", paddingTop: "6px" }}>
                     {[
-                      { label: "秘宝图片" }, { label: "秘宝名称" },
-                      { label: "守护者图片" }, { label: "守护者信息" }, { label: "守护者声音" },
-                    ].map(({ label }) => (
-                      <div key={label} className="text-center">
+                      { type: "A", label: "秘宝图片" },
+                      { type: "B", label: "秘宝名称" },
+                      { type: "C", label: "守护者图片" },
+                      { type: "D", label: "守护者信息" },
+                      { type: "E", label: "守护者声音" },
+                    ].map(({ type, label }, i) => {
+                      const clue = overviewClues[i];
+                      const hasClue = !!clue;
+                      return (
+                      <div key={type} className="text-center">
                         <span className="font-mono block mb-1.5" style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)" }}>{label}</span>
                         <div className="aspect-square border flex items-center justify-center"
-                          style={{ borderColor: "rgba(255,255,255,0.2)", borderRadius: 4, background: "rgba(0,0,0,0.2)" }}>
-                          <span style={{ fontSize: "30px", color: "rgba(255,255,255,0.5)", fontWeight: 200 }}>+</span>
+                          style={{
+                            borderColor: hasClue ? "rgba(255,215,0,0.4)" : "rgba(255,255,255,0.2)",
+                            borderRadius: 4,
+                            background: hasClue ? "rgba(255,215,0,0.1)" : "rgba(0,0,0,0.2)",
+                          }}>
+                          {hasClue ? (
+                            type === "E" ? (
+                              <button onClick={(e) => { e.stopPropagation(); new Audio(clue!).play(); }}
+                                style={{ fontSize: "18px", cursor: "pointer", background: "none", border: "none" }}>🔊</button>
+                            ) : type === "B" ? (
+                              <span style={{ fontSize: "11px", color: "#ffd700", fontWeight: "bold", padding: "2px" }}>{clue}</span>
+                            ) : (
+                              <span style={{ fontSize: "20px", color: "#ffd700" }}>✓</span>
+                            )
+                          ) : (
+                            <span style={{ fontSize: "30px", color: "rgba(255,255,255,0.5)", fontWeight: 200 }}>+</span>
+                          )}
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
 
                   {/* MIDDLE: Welcome text */}

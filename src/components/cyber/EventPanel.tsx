@@ -158,17 +158,26 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
             const neededCards = event.choices
               .filter(c => c.check?.hasCard)
               .map(c => c.check!.hasCard!);
+            const neededTypes = event.choices
+              .filter(c => c.check?.hasCardType)
+              .map(c => c.check!.hasCardType!);
             const altNeeded = (event.altChoices || [])
               .filter(c => c.check?.hasCard)
               .map(c => c.check!.hasCard!);
             const allNeeded = [...new Set([...neededCards, ...altNeeded])];
-            if (allNeeded.length === 0) return null;
+            const hasTypeFilter = neededTypes.length > 0;
+            if (allNeeded.length === 0 && !hasTypeFilter) return null;
             return (
               <div className="mb-4 p-2 border border-dashed flex items-center justify-center cursor-pointer hover:border-opacity-40 transition-all"
                 style={{ borderColor: cardSlot ? "rgba(255,215,0,0.3)" : "rgba(255,255,255,0.08)", borderRadius: 6, minHeight: 48 }}
                 onClick={() => {
                   // 循环选择可用卡片
-                  const owned = allNeeded.filter(id => cardCollection.some(c => c.card_id === id && c.count > 0));
+                  let owned = allNeeded.filter(id => cardCollection.some(c => c.card_id === id && c.count > 0));
+                  if (hasTypeFilter) {
+                    owned = cardCollection
+                      .filter(c => c.count > 0 && ALL_CARDS.find(x => x.id === c.card_id)?.type === neededTypes[0])
+                      .map(c => c.card_id);
+                  }
                   if (owned.length === 0) return;
                   const currentIdx = owned.indexOf(cardSlot || "");
                   const next = owned[(currentIdx + 1) % owned.length];
