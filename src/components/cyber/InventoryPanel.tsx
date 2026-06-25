@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
-import { getGroupKey } from "@/lib/card-storage";
+import { getGroupKey, getProgress } from "@/lib/card-storage";
 import { getPlayerState, PlayerAttrs, InventoryItem, adjustAttrs, removeItem } from "@/lib/player-state";
 
-type Tab = "items" | "clues" | "tags";
+type Tab = "items" | "clues" | "tags" | "events";
 
 export default function InventoryPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +13,7 @@ export default function InventoryPanel() {
   const [attrs, setAttrs] = useState<PlayerAttrs>({ 力量: 0, 智力: 0, 敏捷: 0, 魅力: 0 });
   const [tags, setTags] = useState<string[]>([]);
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const [seenEvents, setSeenEvents] = useState<Record<string, { name: string; weight: number; lastResult: string }>>({});
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -23,6 +24,9 @@ export default function InventoryPanel() {
     setAttrs(state.attrs);
     setTags(state.tags);
     setItems(state.items);
+    // 加载已见事件
+    const seenRaw = await getProgress(gk, "seen-events");
+    setSeenEvents(seenRaw ? JSON.parse(seenRaw) : {});
   };
 
   const ITEM_DESC: Record<string, string> = {
@@ -110,6 +114,7 @@ export default function InventoryPanel() {
               { key: "items" as Tab, label: "道具", icon: "📦" },
               { key: "clues" as Tab, label: "秘宝", icon: "🔮" },
               { key: "tags" as Tab, label: "标签", icon: "🏷️" },
+              { key: "events" as Tab, label: "事件", icon: "📜" },
             ]).map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className="flex-1 py-2.5 font-mono text-xs transition-colors"
@@ -164,6 +169,23 @@ export default function InventoryPanel() {
                     <span key={tag} className="font-mono text-xs px-3 py-1.5 border" style={{ color: "rgba(200,200,220,0.6)", borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)", borderRadius: 3 }}>
                       {tag}
                     </span>
+                  ))}
+                </div>
+            )}
+            {tab === "events" && (
+              Object.keys(seenEvents).length === 0
+                ? <p className="font-mono text-sm text-center py-12" style={{ color: "rgba(200,200,220,0.15)" }}>暂无已探索事件</p>
+                : <div className="space-y-2">
+                  {Object.entries(seenEvents).map(([id, ev]) => (
+                    <div key={id} className="p-3 border" style={{ borderColor: "rgba(255,215,0,0.08)", background: "rgba(255,215,0,0.02)" }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.7)" }}>{ev.name}</span>
+                        <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.3)" }}>权重 {ev.weight}</span>
+                      </div>
+                      {ev.lastResult && (
+                        <p className="font-mono text-xs mt-1" style={{ color: "rgba(200,200,220,0.4)" }}>最近：{ev.lastResult}</p>
+                      )}
+                    </div>
                   ))}
                 </div>
             )}

@@ -144,6 +144,17 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     // Phase 2: 并行执行所有写操作
     if (writes.length > 0) await Promise.all(writes);
 
+    // 记录事件结果
+    if (currentEvent) {
+      const seenKey = `seen-events`;
+      const seenRaw = await getProgress(groupKey, seenKey);
+      const seen: Record<string, any> = seenRaw ? JSON.parse(seenRaw) : {};
+      if (seen[currentEvent.id]) {
+        seen[currentEvent.id].lastResult = outcome.message || "";
+      }
+      writes.push(setProgress(groupKey, seenKey, JSON.stringify(seen)));
+    }
+
     // Phase 3: 并行读取所有最新状态
     const [a, tags, items, t, coll, vRaw] = await Promise.all([
       getAttrs(groupKey),
@@ -541,6 +552,12 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                           if (picked) {
                             dailyLog.triggeredEvents.push(picked.id);
                             await setProgress(groupKey, `daily-events-${today2}`, JSON.stringify(dailyLog));
+                            // 记录事件到日志
+                            const seenKey = `seen-events`;
+                            const seenRaw = await getProgress(groupKey, seenKey);
+                            const seen: Record<string, { name: string; weight: number; lastResult: string }> = seenRaw ? JSON.parse(seenRaw) : {};
+                            seen[picked.id] = { name: picked.name, weight: picked.weight, lastResult: "" };
+                            await setProgress(groupKey, seenKey, JSON.stringify(seen));
                             setEventImage(picked.image || "/events/德玛西亚_01.png");
                             setCurrentEvent(picked);
                             return;
