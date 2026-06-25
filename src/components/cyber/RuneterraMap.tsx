@@ -150,7 +150,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       const seenRaw = await getProgress(groupKey, seenKey);
       const seen: Record<string, any> = seenRaw ? JSON.parse(seenRaw) : {};
       if (seen[currentEvent.id]) {
-        seen[currentEvent.id].lastResult = outcome.message || "";
+        seen[currentEvent.id].lastChoice = choiceIndex;
+        seen[currentEvent.id].lastMsg = outcome.message || "";
       }
       writes.push(setProgress(groupKey, seenKey, JSON.stringify(seen)));
     }
@@ -555,8 +556,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                             // 记录事件到日志
                             const seenKey = `seen-events`;
                             const seenRaw = await getProgress(groupKey, seenKey);
-                            const seen: Record<string, { name: string; weight: number; lastResult: string }> = seenRaw ? JSON.parse(seenRaw) : {};
-                            seen[picked.id] = { name: picked.name, weight: picked.weight, lastResult: "" };
+                            const seen: Record<string, any> = seenRaw ? JSON.parse(seenRaw) : {};
+                            seen[picked.id] = { name: picked.name, weight: picked.weight, lastChoice: -1, lastSuccess: false, lastMsg: "" };
                             await setProgress(groupKey, seenKey, JSON.stringify(seen));
                             setEventImage(picked.image || "/events/德玛西亚_01.png");
                             setCurrentEvent(picked);
