@@ -4,7 +4,7 @@ import { useState, useMemo, useRef } from "react";
 import { GameEvent, EventType, EventOutcome } from "@/lib/event-types";
 import { PlayerState } from "@/lib/player-state";
 import { executeChoice, getAvailableChoices } from "@/lib/event-engine";
-import { ALL_CARDS } from "@/lib/cards";
+import { ALL_CARDS, REVELATION_CARDS } from "@/lib/cards";
 
 const REGION_IMAGES: Record<string, string[]> = {
   demacia: [
@@ -164,7 +164,9 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
             const altNeeded = (event.altChoices || [])
               .filter(c => c.check?.hasCard)
               .map(c => c.check!.hasCard!);
-            const allNeeded = [...new Set([...neededCards, ...altNeeded])];
+            let allNeeded = [...new Set([...neededCards, ...altNeeded])];
+            // 解析占位符卡组
+            allNeeded = allNeeded.flatMap(id => id === "__revelation__" ? REVELATION_CARDS : [id]);
             const hasTypeFilter = neededTypes.length > 0;
             if (allNeeded.length === 0 && !hasTypeFilter) return null;
             return (
@@ -189,7 +191,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
                   </span>
                 ) : (
                   <span className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.25)" }}>
-                    + {allNeeded.map(id => ALL_CARDS.find(c => c.id === id)?.name || id).join(" / ")}
+                    + 启示录专辑卡（点击选择）
                   </span>
                 )}
               </div>

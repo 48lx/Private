@@ -181,7 +181,7 @@ export const demaciaEvents: GameEvent[] = [
       },
       {
         label: "点歌",
-        check: { hasCardType: "gem", costTokens: 200, consumeCard: true },
+        check: { hasCard: "__revelation__", costTokens: 200, consumeCard: true },
         success: {
           vitality: 8,
           attrDelta: { 魅力: 1 },

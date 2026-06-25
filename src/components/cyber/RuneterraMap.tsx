@@ -499,7 +499,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                           }}>
                           {hasClue ? (
                             type === "E" ? (
-                              <button onClick={(e) => { e.stopPropagation(); new Audio(clue!).play(); }}
+                              <button onClick={(e) => { e.stopPropagation(); const a = new Audio(clue!); a.play().catch(() => {}); }}
                                 style={{ fontSize: "18px", cursor: "pointer", background: "none", border: "none" }}>🔊</button>
                             ) : type === "B" ? (
                               <span style={{ fontSize: "11px", color: "#ffd700", fontWeight: "bold", padding: "2px" }}>{clue}</span>
@@ -534,8 +534,13 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                         if (vitality < EXPLORE_COST) { showToast(`活力不足`); return; }
                         await saveVitality(vitality - EXPLORE_COST);
                         if (overviewRegion === "demacia" && playerState) {
-                          const picked = pickEvent(overviewRegion, ALL_EVENTS, playerState, null);
+                          const today2 = new Date().toISOString().split("T")[0];
+                          const raw = await getProgress(groupKey, `daily-events-${today2}`);
+                          const dailyLog: DailyLog = raw ? JSON.parse(raw) : { date: today2, triggeredEvents: [], vitalityUsed: 0 };
+                          const picked = pickEvent(overviewRegion, ALL_EVENTS, playerState, dailyLog);
                           if (picked) {
+                            dailyLog.triggeredEvents.push(picked.id);
+                            await setProgress(groupKey, `daily-events-${today2}`, JSON.stringify(dailyLog));
                             setEventImage(picked.image || "/events/德玛西亚_01.png");
                             setCurrentEvent(picked);
                             return;

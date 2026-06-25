@@ -195,6 +195,17 @@ const DRAW_POOL = ALL_CARDS.filter(c => c.rarity !== "special" && !c.hidden);
 // 灌篮高手·二合一（2张灌篮高手 → 随机NBA球星卡）
 export const DUNK_MERGE_POOL = ["max_NBA_文班亚马", "max_NBA_勒布朗詹姆斯"];
 
+// 启示录专辑卡组（用于事件卡槽过滤）
+export const REVELATION_CARDS = [
+  "blue_邓紫棋_Find You", "blue_邓紫棋_Gloria", "blue_邓紫棋_Hell 白", "blue_邓紫棋_Hell 黑",
+  "blue_邓紫棋_你不是第一个离开的人", "blue_邓紫棋_冰河时代", "blue_邓紫棋_受难曲",
+  "blue_邓紫棋_只有我和你的地方", "blue_邓紫棋_少年与海", "blue_邓紫棋_老人与海",
+  "blue_邓紫棋_让世界暂停一分钟", "blue_邓紫棋_金鱼嘴",
+  "gold_邓紫棋_不想回家", "gold_邓紫棋_夜的尽头", "gold_邓紫棋_天空没有极限",
+  "gold_邓紫棋_离心力", "gold_邓紫棋_金鱼嘴",
+  "max_邓紫棋_启示录", "max_邓紫棋_金鱼嘴",
+];
+
 // ─── 抽卡引擎 ───
 export function drawCard(): CardDef {
   const totalWeight = DRAW_POOL.reduce((sum, c) => sum + CARD_WEIGHT_BY_RARITY[c.rarity], 0);

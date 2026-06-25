@@ -3,7 +3,7 @@
 
 import { GameEvent, EventChoice, EventOutcome, EventRequire, DailyLog } from "./event-types";
 import { PlayerState } from "./player-state";
-import { ALL_CARDS } from "./cards";
+import { ALL_CARDS, REVELATION_CARDS } from "./cards";
 
 // ─── 事件选取 ───
 
@@ -129,8 +129,11 @@ export function getAvailableChoices(
     if (check.hasItem && !playerState.items.some(i => i.itemId === check.hasItem && i.qty > 0)) {
       hardReasons.push(`需要道具:${check.hasItem}`);
     }
-    if (check.hasCard && cardSlot !== check.hasCard) {
-      hardReasons.push(`需要卡牌:${check.hasCard}`);
+    if (check.hasCard) {
+      const required = check.hasCard === "__revelation__" ? REVELATION_CARDS : [check.hasCard];
+      if (!cardSlot || !required.includes(cardSlot)) {
+        hardReasons.push(check.hasCard === "__revelation__" ? "需要启示录专辑卡" : `需要卡牌:${check.hasCard}`);
+      }
     }
     if (check.hasCardType && cardSlot) {
       // 检查卡槽中的卡类型是否匹配
