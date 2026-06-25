@@ -211,6 +211,25 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     setTimeout(() => setToast(null), 2200);
   };
 
+  // BFS 最短路径
+  const findShortestPath = (from: string, to: string): string[] | null => {
+    if (from === to) return [];
+    const visited = new Set<string>();
+    const queue: { node: string; path: string[] }[] = [{ node: from, path: [] }];
+    visited.add(from);
+    while (queue.length > 0) {
+      const { node, path } = queue.shift()!;
+      for (const next of (ADJACENCY[node] || [])) {
+        if (next === to) return [...path, next];
+        if (!visited.has(next)) {
+          visited.add(next);
+          queue.push({ node: next, path: [...path, next] });
+        }
+      }
+    }
+    return null; // 无路径（不应该发生）
+  };
+
   const handleRegionClick = async (region: Region) => {
     if (region.locked) {
       showToast("暂未开放");
@@ -251,8 +270,22 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       return;
     }
 
-    // 不相邻
-    showToast(`无法直接到达${region.name}，需要从相邻区域移动`);
+    // 不相邻 → 计算最快路径
+    const path = findShortestPath(currentRegion, rid);
+    if (!path) { showToast(`无法到达${region.name}`); return; }
+    const totalCost = path.length * MOVE_COST;
+    const curName = REGIONS.find(r => r.id === currentRegion)?.name || currentRegion;
+    const regionNames = path.map(id => REGIONS.find(r => r.id === id)?.name || id).join(" → ");
+    if (!confirm(`前往 ${region.name}\n路径：${curName} → ${regionNames}\n消耗 ${totalCost} 活力（${path.length} 次移动）`)) return;
+    if (vitality < totalCost) { showToast(`活力不足（需${totalCost}点）`); return; }
+    await setProgress(groupKey, "map-region", rid);
+    setCurrentRegion(rid);
+    await saveVitality(vitality - totalCost);
+    showToast(`🚶 前往 ${region.name}（-${totalCost}活力）`);
+    setOverviewRegion(rid);
+    setOverviewExplored(false);
+    setOverviewImage("/events/德玛西亚_04.png");
+    setShowOverview(true);
   };
 
   const isAdjacent = (id: string) => adjacentSet.has(id) || id === currentRegion;
