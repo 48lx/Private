@@ -9,6 +9,7 @@ import { ALL_CARDS } from "@/lib/cards";
 import { demaciaEvents } from "@/data/events/demacia";
 import InventoryPanel from "./InventoryPanel";
 import EventPanel from "./EventPanel";
+import EventJournal from "./EventJournal";
 
 interface Region {
   id: string; name: string;
@@ -354,6 +355,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
               📍 {REGIONS.find(r => r.id === currentRegion)?.name || ""}
             </span>
             <InventoryPanel />
+            <EventJournal groupKey={groupKey} />
             <button onClick={onClose} className="font-mono text-xl hover:scale-110 transition-transform"
               style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
           </div>
