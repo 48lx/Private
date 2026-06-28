@@ -39,11 +39,21 @@ export default function Home() {
       if (!gk) { setOrbUnlocked(false); return; }
       setGroupKey(gk);
       const today = new Date().toISOString().split("T")[0];
+      // 优先 Supabase，回退 localStorage
       const [std, uzi] = await Promise.all([
         getProgress(gk, `orb-std-${today}`),
         getProgress(gk, `orb-uzi-${today}`),
       ]);
-      setOrbUnlocked(std === "1" && uzi === "1");
+      const stdOk = std === "1" || localStorage.getItem("hero-solved-standard") === today;
+      const uziOk = uzi === "1" || localStorage.getItem("hero-solved-uzi") === today;
+      // 同步到 Supabase
+      if (!std && localStorage.getItem("hero-solved-standard") === today) {
+        await setProgress(gk, `orb-std-${today}`, "1");
+      }
+      if (!uzi && localStorage.getItem("hero-solved-uzi") === today) {
+        await setProgress(gk, `orb-uzi-${today}`, "1");
+      }
+      setOrbUnlocked(stdOk && uziOk);
     } catch {}
   };
 

@@ -218,6 +218,21 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     })();
   }, [groupKey]);
 
+  // 监听秋的活力回满事件
+  useEffect(() => {
+    const onRefill = async (e: Event) => {
+      const gk = (e as CustomEvent).detail?.groupKey;
+      if (gk !== groupKey) return;
+      const today = new Date().toISOString().split("T")[0];
+      await setProgress(groupKey, "map-vitality", JSON.stringify({ v: maxVitality, max: maxVitality, date: today }));
+      setVitality(maxVitality);
+      // 通知card panel刷新
+      try { window.dispatchEvent(new Event("card-reload")); } catch {}
+    };
+    window.addEventListener("vitality-refill", onRefill);
+    return () => window.removeEventListener("vitality-refill", onRefill);
+  }, [groupKey, maxVitality]);
+
   const saveVitality = async (v: number) => {
     const today = new Date().toISOString().split("T")[0];
     await setProgress(groupKey, "map-vitality", JSON.stringify({ v, max: maxVitality, date: today }));

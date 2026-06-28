@@ -147,7 +147,14 @@ export default function CardPanel() {
       showToast(`🔍 获得 ${picked.name} (${RARITY_LABELS[picked.rarity]})`, "#00ff88");
       await loadData(groupKey);
     }
-    // 秋：装备到合成界面（下次合成失败时保护卡牌）
+    // 秋：回满活力
+    else if (cardId === "autumn-vitality") {
+      await decomposeCard(groupKey, cardId, 1, 0);
+      try { window.dispatchEvent(new CustomEvent("vitality-refill", { detail: { groupKey } })); } catch {}
+      showToast("🍂 活力回满！", "#ffd700");
+      await loadData(groupKey);
+    }
+    // 合成守护符：装备到合成界面（下次合成失败时保护卡牌）
     else if (cardId === "autumn") {
       if (autumnEquipped) { showToast("🍂 秋已装备，前往合成界面使用", "#ffd700"); return; }
       setAutumnEquipped(true);
@@ -242,7 +249,7 @@ export default function CardPanel() {
     return ALL_CARDS.find(c => c.id === nextId) || null;
   };
 
-  const isSpecial = (id: string) => id.startsWith("mimic-") || id === "twisted-gamble" || id === "lonely-pull" || id === "windfall" || id === "autumn" || id === "oldwei-iou";
+  const isSpecial = (id: string) => id.startsWith("mimic-") || id === "twisted-gamble" || id === "lonely-pull" || id === "windfall" || id === "autumn" || id === "autumn-vitality" || id === "oldwei-iou";
   const getCardColor = (card: CardDef) => card.rarity === "special" ? (SPECIAL_CARD_COLORS[card.id] || RARITY_COLORS.special) : RARITY_COLORS[card.rarity];
   const filteredCards = ALL_CARDS.filter(c => {
     if (filter === "all") return true;
@@ -341,7 +348,7 @@ export default function CardPanel() {
                   {filteredCards.map(card => {
                     const have = collectionMap.get(card.id) || 0;
                     const isUpgradable = card.upgradable && card.upgradableGroup;
-                    const isFunctional = card.id.startsWith("mimic-") || card.id === "twisted-gamble" || card.id === "lonely-pull" || card.id === "windfall" || card.id === "autumn" || card.id === "oldwei-iou";
+                    const isFunctional = card.id.startsWith("mimic-") || card.id === "twisted-gamble" || card.id === "lonely-pull" || card.id === "windfall" || card.id === "autumn" || card.id === "autumn-vitality" || card.id === "oldwei-iou";
                     const isDunk = card.id === "gold_德莱厄斯_灌篮高手";
                     const hidden = card.hidden && have === 0;
                     const canPreview = card.imageFile && !isUpgradable && !hidden;
@@ -564,7 +571,8 @@ export default function CardPanel() {
                   { name: "崔斯特的赌约", desc: "🎰头彩(1%)=触发一次百连抽 / 红牌(29%)=扣200币 / 蓝牌(60%)=随机蓝卡 / 金牌(10%)=妮蔻之助·金。", color: "#ffd700" },
                   { name: "孤立无援", desc: "从图鉴中你尚未拥有的所有卡里，按稀有度权重随机抽一张（已全图鉴则无效）。", color: "#ffd700" },
                   { name: "意外之财", desc: "直接获得500代币，简单粗暴。", color: "#4da8da" },
-                  { name: "秋", desc: "在合成界面装备后，若合成失败则不扣除任何卡牌（仅消耗秋本身）。一次性消耗品。", color: "#ffd700" },
+                  { name: "合成守护符", desc: "在合成界面装备后，若合成失败则不扣除任何卡牌（仅消耗守护符本身）。一次性消耗品。", color: "#ffd700" },
+                  { name: "秋", desc: "使用后活力值回满至上限。", color: "#ffd700" },
                   { name: "老维的欠条", desc: "消耗1张「老维」卡，进行一次十连抽。需要先拥有至少一张老维。", color: "#4da8da" },
                 ].map(item => (
                   <div key={item.name} className="p-3 border" style={{ borderColor: `${item.color}30`, background: `${item.color}0a` }}>

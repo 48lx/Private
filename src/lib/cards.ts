@@ -162,7 +162,8 @@ const SPECIAL_CARDS: CardDef[] = [
   { id: "twisted-gamble", name: "崔斯特的赌约", rarity: "special", type: "gem" },
   { id: "lonely-pull", name: "孤立无援", rarity: "special", type: "gem" },
   { id: "windfall", name: "意外之财", rarity: "special", type: "gem" },
-  { id: "autumn", name: "秋", rarity: "special", type: "gem" },
+  { id: "autumn", name: "合成守护符", rarity: "special", type: "gem" },
+  { id: "autumn-vitality", name: "秋", rarity: "special", type: "gem" },
   { id: "oldwei-iou", name: "老维的欠条", rarity: "special", type: "gem" },
 ];
 
@@ -178,6 +179,7 @@ export const SPECIAL_CARD_COLORS: Record<string, string> = {
   "lonely-pull": "#ffd700",
   "windfall": "#4da8da",
   "autumn": "#ffd700",
+  "autumn-vitality": "#ffd700",
   "oldwei-iou": "#4da8da",
 };
 
