@@ -252,6 +252,7 @@ export const demaciaEvents: GameEvent[] = [
             success: {
               vitality: 8,
               tokens: 500,
+              addItems: ["__random_attr__", "__random_attr__"],
               message: "你接受了摊主们的好意，预祝大赛越办越好，并狂炫面包。",
             },
           },
@@ -294,7 +295,7 @@ export const demaciaEvents: GameEvent[] = [
           {
             label: "你笑笑表示今天没有备赛，只是来试吃的",
             success: {
-              attrDelta: { 力量: 1, 智力: 1, 敏捷: 1, 魅力: 1 },
+              addItems: ["__random_attr__"],
               message: "你吃了十二种面包制品。身为大胃王的你，腮帮子更能经受考验了。",
             },
           },

@@ -61,7 +61,10 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     }
     if (o.addTags?.length) parts.push(`标签: ${o.addTags.join(", ")}`);
     if (o.removeTags?.length) parts.push(`失去标签: ${o.removeTags.join(", ")}`);
-    if (o.addItems?.length) parts.push(`道具: ${o.addItems.join(", ")}`);
+    if (o.addItems?.length) {
+      const names = o.addItems.map((id: string) => id === "__random_attr__" ? "随机属性+1" : id);
+      parts.push(`道具: ${names.join(", ")}`);
+    }
     if (o.addCards?.length) {
       const names = o.addCards.map(id => {
         if (id === "__random_blue__") return "随机蓝卡";
