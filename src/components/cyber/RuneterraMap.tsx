@@ -75,6 +75,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [overviewExplored, setOverviewExplored] = useState(false);
   const [overviewImage, setOverviewImage] = useState("");
   const [overviewClues, setOverviewClues] = useState<(string | null)[]>(Array(5).fill(null));
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [cardCollection, setCardCollection] = useState<{ card_id: string; count: number }[]>([]);
 
   const ALL_EVENTS = [...demaciaEvents];
@@ -557,7 +558,20 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                             type === "E" ? (
                               <button onClick={(e) => { e.stopPropagation(); const a = new Audio(clue!); a.play().catch(() => {}); }}
                                 style={{ fontSize: "18px", cursor: "pointer", background: "none", border: "none" }}>🔊</button>
-                            ) : type === "B" ? (
+                            ) : type === "A" || type === "C" ? (
+                              (clue!.endsWith(".webm") || clue!.endsWith(".mp4")) ? (
+                                <video src={clue!} className="w-full h-full object-cover cursor-pointer"
+                                  style={{ borderRadius: 2 }}
+                                  muted loop autoPlay playsInline
+                                  onClick={(e) => { e.stopPropagation(); setLightboxImage(clue!); }}
+                                />
+                              ) : (
+                                <img src={clue!} alt={label} className="w-full h-full object-cover cursor-pointer"
+                                  style={{ borderRadius: 2 }}
+                                  onClick={(e) => { e.stopPropagation(); setLightboxImage(clue!); }}
+                                />
+                              )
+                            ) : type === "B" || type === "D" ? (
                               <span style={{ fontSize: "11px", color: "#ffd700", fontWeight: "bold", padding: "2px" }}>{clue}</span>
                             ) : (
                               <span style={{ fontSize: "20px", color: "#ffd700" }}>✓</span>
@@ -650,6 +664,27 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
               textShadow: "0 0 8px rgba(255,215,0,0.3)",
             }}>
             {toast}
+          </div>
+        )}
+
+        {/* Lightbox for clue images/videos */}
+        {lightboxImage && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center cursor-pointer"
+            style={{ background: "rgba(0,0,0,0.9)", backdropFilter: "blur(4px)" }}
+            onClick={() => setLightboxImage(null)}>
+            {(lightboxImage.endsWith(".webm") || lightboxImage.endsWith(".mp4")) ? (
+              <video src={lightboxImage} controls autoPlay loop
+                className="max-w-[90vw] max-h-[90vh] object-contain border"
+                style={{ borderColor: "rgba(255,215,0,0.2)", borderRadius: 4 }}
+                onClick={(e) => e.stopPropagation()} />
+            ) : (
+              <img src={lightboxImage} alt="线索图片"
+                className="max-w-[90vw] max-h-[90vh] object-contain border"
+                style={{ borderColor: "rgba(255,215,0,0.2)", borderRadius: 4 }} />
+            )}
+            <button onClick={() => setLightboxImage(null)}
+              className="absolute top-4 right-4 font-mono text-2xl hover:scale-110"
+              style={{ color: "rgba(255,255,255,0.5)" }}>✕</button>
           </div>
         )}
       </div>

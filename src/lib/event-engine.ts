@@ -7,6 +7,8 @@ import { ALL_CARDS, REVELATION_CARDS } from "./cards";
 
 // 禁魔石共鸣反应 — 魔法相关卡牌
 export const MAGIC_CARDS = ["gold_拉克丝_灭国魔女", "max_邓紫棋_启示录", "gold_拉克丝_善意虚影"];
+// 拉克丝相关卡牌
+export const LUX_CARDS = ["gold_拉克丝_善意虚影", "gold_拉克丝_灭国魔女"];
 
 // ─── 事件选取 ───
 
@@ -136,11 +138,13 @@ export function getAvailableChoices(
       let required: string[];
       if (check.hasCard === "__revelation__") required = REVELATION_CARDS;
       else if (check.hasCard === "__magic__") required = MAGIC_CARDS;
+      else if (check.hasCard === "__lux__") required = LUX_CARDS;
       else required = [check.hasCard];
       if (!cardSlot || !required.includes(cardSlot)) {
         hardReasons.push(
           check.hasCard === "__revelation__" ? "需要启示录专辑卡"
           : check.hasCard === "__magic__" ? "需要魔法卡牌(灭国魔女/启示录/善意虚影)"
+          : check.hasCard === "__lux__" ? "需要拉克丝卡牌(善意虚影/灭国魔女)"
           : `需要卡牌:${check.hasCard}`
         );
       }

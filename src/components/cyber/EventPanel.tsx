@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef } from "react";
 import { GameEvent, EventType, EventOutcome } from "@/lib/event-types";
 import { PlayerState } from "@/lib/player-state";
-import { executeChoice, getAvailableChoices } from "@/lib/event-engine";
+import { executeChoice, getAvailableChoices, MAGIC_CARDS, LUX_CARDS } from "@/lib/event-engine";
 import { ALL_CARDS, REVELATION_CARDS } from "@/lib/cards";
 
 const REGION_IMAGES: Record<string, string[]> = {
@@ -171,9 +171,22 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
             const altNeeded = (event.altChoices || [])
               .filter(c => c.check?.hasCard)
               .map(c => c.check!.hasCard!);
-            let allNeeded = [...new Set([...neededCards, ...altNeeded])];
-            // 解析占位符卡组
-            allNeeded = allNeeded.flatMap(id => id === "__revelation__" ? REVELATION_CARDS : [id]);
+            let rawNeeded = [...new Set([...neededCards, ...altNeeded])];
+            // 占位符标签映射
+            const PLACEHOLDER_LABELS: Record<string, string> = {
+              "__revelation__": "启示录专辑卡",
+              "__magic__": "魔法卡牌(灭国魔女/启示录/善意虚影)",
+              "__lux__": "拉克丝卡牌(善意虚影/灭国魔女)",
+            };
+            let allNeeded: string[] = [];
+            let placeholderLabel: string | null = null;
+            for (const id of rawNeeded) {
+              if (id === "__revelation__") { allNeeded.push(...REVELATION_CARDS); placeholderLabel = placeholderLabel || PLACEHOLDER_LABELS[id]; }
+              else if (id === "__magic__") { allNeeded.push(...MAGIC_CARDS); placeholderLabel = placeholderLabel || PLACEHOLDER_LABELS[id]; }
+              else if (id === "__lux__") { allNeeded.push(...LUX_CARDS); placeholderLabel = placeholderLabel || PLACEHOLDER_LABELS[id]; }
+              else { allNeeded.push(id); }
+            }
+            allNeeded = [...new Set(allNeeded)];
             const hasTypeFilter = neededTypes.length > 0;
             if (allNeeded.length === 0 && !hasTypeFilter) return null;
             return (
@@ -198,7 +211,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
                   </span>
                 ) : (
                   <span className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.25)" }}>
-                    + {allNeeded.length === 1 ? (ALL_CARDS.find(c => c.id === allNeeded[0])?.name || allNeeded[0]) : "启示录专辑卡"}（点击选择）
+                    + {allNeeded.length === 1 ? (ALL_CARDS.find(c => c.id === allNeeded[0])?.name || allNeeded[0]) : (placeholderLabel || "卡牌")}（点击选择）
                   </span>
                 )}
               </div>
