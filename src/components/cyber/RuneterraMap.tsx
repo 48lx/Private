@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { getProgress, setProgress, addTokens, spendTokens, addCardsBulk, getTokens, getCollection } from "@/lib/card-storage";
 import { getAttrs, getTags, getItems, adjustAttrs, addTag, removeTag, addItem, removeItem, PlayerAttrs, PlayerState } from "@/lib/player-state";
-import { pickEvent, checkRequire } from "@/lib/event-engine";
+import { pickEvent } from "@/lib/event-engine";
 import { GameEvent, DailyLog } from "@/lib/event-types";
 import { ALL_CARDS } from "@/lib/cards";
 import { demaciaEvents } from "@/data/events/demacia";

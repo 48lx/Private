@@ -1,4 +1,4 @@
-# N.E.X.U.S. v0.4.79 — 项目总览
+# N.E.X.U.S. v0.4.88 — 项目总览
 
 ## 项目定位
 LOL + 赛博朋克2077 卡牌收集/事件探索Web游戏，Next.js 16 (Turbopack) + Supabase 后端。
@@ -46,19 +46,23 @@ LOL + 赛博朋克2077 卡牌收集/事件探索Web游戏，Next.js 16 (Turbopac
 - 道具系统：矿工护身符(跨区免消耗) / 大胃王绶带(+上限) / 叽叽的口哨
 
 ### 5. 事件系统 (`src/lib/event-types.ts`, `event-engine.ts`, `src/data/events/demacia.ts`)
-- **8个德玛西亚事件**:
+- **11个德玛西亚事件**:
   1. 巡逻兵的赌局 (fun, w12) — 智≥7
   2. 偶遇骑兵连 (fun, w12, v1) — 告密者分支
   3. 禁魔石矿工 (clue, w6) — 敏≥9 / 护身符
   4. 贵族少爷决斗 (fun, w12) — 力≥8 / 菲奥娜卡
   5. 会说话的石像鬼 (fun, w10) — 智<13隐藏/智≥18解咒
   6. 管风琴师 (clue, w8) — B/E线索 / 启示录卡
-  7. 美食节 (side, w8) — 三阶段branches(绶带→终极大胃王)
+  7. 美食节 I (side, w8) — 试吃/大胃王比赛(力≥17)/吐槽
+  8. 美食节 II (side, w8, require:被赶出来的人) — 忏悔/嘲讽
+  9. 美食节 III (side, w8, require:大胃王绶带) — 挑战良子(力≥27)
+  10. 美食节 IV (side, w8, require:终极大胃王) — HE结局
+  11. __待续__
 - **事件属性门槛**(+25%后): 详见事件数据
-- **引擎**: pickEvent(权重随机+每日过滤), getAvailableChoices(含hideCheck/branches), executeChoice(属性判定+成功率)
-- **产出**: tokens/vitality/attrDelta/addTags/addItems/addClues/addCards
+- **引擎**: pickEvent(权重随机+每日过滤), getAvailableChoices(含hideCheck/altChoices), executeChoice(属性判定+成功率)
+- **产出**: tokens/vitality/attrDelta/addTags/addItems/addClues/addCards/__random_attr__(随机属性+1)
 - **重复道具**: 自动分解500代币
-- **属性奖励**: 按选项追踪仅首次生效
+- **属性奖励**: 按选项追踪仅首次生效(ev-attr-{eventId}-{choiceIdx})
 
 ### 6. 背包/标签/属性 (`src/lib/player-state.ts`)
 - 属性: 力量/智力/敏捷/魅力 默认3
@@ -67,11 +71,12 @@ LOL + 赛博朋克2077 卡牌收集/事件探索Web游戏，Next.js 16 (Turbopac
 - UI: InventoryPanel (道具/秘宝/标签三个tab)
 
 ### 7. 事件图鉴 (`src/components/cyber/EventJournal.tsx`)
-- 地图内按钮，全屏弹窗
+- 地图内按钮(dynamic import ssr:false)，全屏弹窗
 - 左侧地区导航 / 顶部类型过滤
 - 仅显示已解锁事件
-- 已选选项显示结果+奖励，未选仅显示文字
-- 单事件重置(仅清当日触发记录)
+- 已选选项显示✅/❌+结果+奖励(成功/失败各保留最新一条)
+- 未选选项仅显示文字不显示奖励
+- 单事件重置(仅清当日触发记录，保留图鉴历史)
 
 ### 8. 其他模块
 - **NBA隐藏卡**: 文班亚马/勒布朗詹姆斯/凯尔科尔沃 (灌篮高手二合一)

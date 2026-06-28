@@ -93,10 +93,8 @@ export interface GameEvent {
   heroId?: string;          // 英雄ID
   heroStage?: 1 | 2 | 3;   // 阶段
 
-  // 特殊分支：按标签/道具走不同选项
   altChoices?: EventChoice[];
   altRequire?: EventRequire;
-  branches?: { require: EventRequire; choices: EventChoice[] }[];
 }
 
 // ─── 事件面板 UI 模型 ───

@@ -101,15 +101,7 @@ export function getAvailableChoices(
   cardSlot?: string | null,
 ): { choice: EventChoice; disabled: boolean; reason: string; checkLabel: string }[] {
   let choices = event.choices;
-  // 优先匹配 branches（按顺序，第一个满足的生效）
-  if (event.branches) {
-    for (const b of event.branches) {
-      if (checkRequire(b.require, playerState)) {
-        choices = b.choices;
-        break;
-      }
-    }
-  } else if (event.altChoices && event.altRequire && checkRequire(event.altRequire, playerState)) {
+  if (event.altChoices && event.altRequire && checkRequire(event.altRequire, playerState)) {
     choices = event.altChoices;
   }
 
