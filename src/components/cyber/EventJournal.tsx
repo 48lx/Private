@@ -7,12 +7,10 @@ import { ALL_CARDS } from "@/lib/cards";
 
 interface SeenEntry {
   name: string; weight: number;
-  lastChoice: number; lastMsg: string;
+  choices: { index: number; msg: string }[];
 }
 
-interface Props {
-  groupKey: string;
-}
+interface Props { groupKey: string; }
 
 export default function EventJournal({ groupKey }: Props) {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,14 +27,12 @@ export default function EventJournal({ groupKey }: Props) {
   const resetEvent = async (eventId: string) => {
     if (!groupKey) return;
     const today = new Date().toISOString().split("T")[0];
-    // 仅从今日日志移除，允许重新遇到
     const raw = await getProgress(groupKey, `daily-events-${today}`);
     if (raw) {
       const log = JSON.parse(raw);
       log.triggeredEvents = log.triggeredEvents.filter((id: string) => id !== eventId);
       await setProgress(groupKey, `daily-events-${today}`, JSON.stringify(log));
     }
-    // 保留属性记录和图鉴记录
   };
 
   const describeOutcome = (o: any): string => {
@@ -46,7 +42,10 @@ export default function EventJournal({ groupKey }: Props) {
     if (o.attrDelta) for (const [k, v] of Object.entries(o.attrDelta)) parts.push(`${k}${Number(v) > 0 ? "+" : ""}${v}`);
     if (o.addTags?.length) parts.push(`标签:${o.addTags.join(",")}`);
     if (o.removeTags?.length) parts.push(`移除:${o.removeTags.join(",")}`);
-    if (o.addItems?.length) parts.push(`道具:${o.addItems.join(",")}`);
+    if (o.addItems?.length) {
+      const names = o.addItems.map((id: string) => id === "__random_attr__" ? "随机属性+1" : id);
+      parts.push(`道具:${names.join(",")}`);
+    }
     if (o.addCards?.length) {
       const names = o.addCards.map((id: string) => ALL_CARDS.find(c => c.id === id)?.name || id);
       parts.push(`卡牌:${names.join(",")}`);
@@ -73,9 +72,7 @@ export default function EventJournal({ groupKey }: Props) {
       <button onClick={() => setIsOpen(true)}
         className="font-mono text-xs px-2 py-1 border transition-all hover:border-opacity-60"
         style={{ color: "rgba(200,200,208,0.3)", borderColor: "rgba(255,215,0,0.1)", background: "rgba(255,215,0,0.02)" }}
-        title="事件图鉴">
-        📜 图鉴
-      </button>
+        title="事件图鉴">📜 图鉴</button>
 
       {isOpen && (
         <div className="fixed inset-0 z-[140] flex items-center justify-center"
@@ -84,7 +81,6 @@ export default function EventJournal({ groupKey }: Props) {
           <div className="flex" style={{ width: "min(900px, 94vw)", height: "min(85vh, 700px)" }}
             onClick={e => e.stopPropagation()}>
 
-            {/* LEFT: Region sidebar */}
             <div className="shrink-0 flex flex-col border-r" style={{ width: "120px", borderColor: "rgba(255,255,255,0.06)" }}>
               <div className="p-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                 <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.25)" }}>地区</span>
@@ -100,17 +96,13 @@ export default function EventJournal({ groupKey }: Props) {
                         color: filterRegion === r ? "#ffd700" : "rgba(200,200,208,0.35)",
                         background: filterRegion === r ? "rgba(255,215,0,0.06)" : "transparent",
                         borderLeft: filterRegion === r ? "2px solid #ffd700" : "2px solid transparent",
-                      }}>
-                      {name} <span style={{ color: "rgba(200,200,208,0.15)", fontSize: 9 }}>{count}</span>
-                    </button>
+                      }}>{name} <span style={{ color: "rgba(200,200,208,0.15)", fontSize: 9 }}>{count}</span></button>
                   );
                 })}
               </div>
             </div>
 
-            {/* RIGHT: Main content */}
             <div className="flex-1 flex flex-col">
-              {/* Header + close */}
               <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                 <div className="flex items-center gap-3">
                   <h3 className="font-heading text-base tracking-[0.1em]" style={{ color: "#ffd700" }}>📜 事件图鉴</h3>
@@ -119,7 +111,6 @@ export default function EventJournal({ groupKey }: Props) {
                 <button onClick={() => setIsOpen(false)} className="font-mono text-lg" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
               </div>
 
-              {/* Type tabs */}
               <div className="flex border-b px-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                 {eventTypes.map(t => (
                   <button key={t} onClick={() => setFilterType(t)}
@@ -127,13 +118,10 @@ export default function EventJournal({ groupKey }: Props) {
                     style={{
                       color: filterType === t ? "#ffd700" : "rgba(200,200,208,0.25)",
                       borderBottom: filterType === t ? "2px solid #ffd700" : "2px solid transparent",
-                    }}>
-                    {t === "all" ? "全部" : t === "fun" ? "趣味" : t === "clue" ? "线索" : t === "normal" ? "普通" : t === "side" ? "支线" : "英雄"}
-                  </button>
+                    }}>{t === "all" ? "全部" : t === "fun" ? "趣味" : t === "clue" ? "线索" : t === "normal" ? "普通" : t === "side" ? "支线" : "英雄"}</button>
                 ))}
               </div>
 
-              {/* Event list */}
               <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ scrollbarWidth: "thin" }}>
               {visibleEvents.length === 0 ? (
                 <p className="font-mono text-sm text-center py-20" style={{ color: "rgba(200,200,220,0.12)" }}>暂无已解锁事件</p>
@@ -150,25 +138,23 @@ export default function EventJournal({ groupKey }: Props) {
                         style={{ color: "rgba(255,51,85,0.4)", borderColor: "rgba(255,51,85,0.15)" }}>🔄</button>
                     </div>
                     <p className="font-mono text-xs mb-3" style={{ color: "rgba(200,200,208,0.35)" }}>{ev.desc}</p>
-                    <div className="space-y-3 ml-2">
+                    <div className="space-y-2 ml-2">
                       {ev.choices.map((c, i) => {
-                        const isChosen = seen.lastChoice === i;
+                        const hits = seen.choices.filter(ch => ch.index === i);
+                        const isChosen = hits.length > 0;
                         return (
                           <div key={i} className="flex items-start gap-2 font-mono text-xs">
                             <span style={{ color: isChosen ? "#ffd700" : "rgba(200,200,208,0.2)" }}>{isChosen ? "▶" : "·"}</span>
                             <div className="flex-1">
                               <span style={{ color: isChosen ? "#ffd700" : "rgba(200,200,208,0.35)" }}>
-                                {c.label}
-                                {c.check?.attrs ? ` [${Object.entries(c.check.attrs).map(([k,v]) => `${k}≥${v}`).join(",")}]` : ""}
+                                {c.label}{c.check?.attrs ? ` [${Object.entries(c.check.attrs).map(([k,v]) => `${k}≥${v}`).join(",")}]` : ""}
                               </span>
-                              {isChosen && (
-                                <div className="mt-0.5">
-                                  <span style={{ color: "rgba(255,215,0,0.5)" }}>{seen.lastMsg}</span>
-                                  <div className="mt-0.5" style={{ color: "rgba(200,200,220,0.4)" }}>
-                                    🎁 {describeOutcome(c.success)}
-                                  </div>
+                              {hits.map((h, hi) => (
+                                <div key={hi} className="mt-0.5">
+                                  <span style={{ color: "rgba(255,215,0,0.5)" }}>{h.msg}</span>
+                                  <div className="mt-0.5" style={{ color: "rgba(200,200,220,0.4)" }}>🎁 {describeOutcome(c.success)}</div>
                                 </div>
-                              )}
+                              ))}
                             </div>
                           </div>
                         );
@@ -177,13 +163,15 @@ export default function EventJournal({ groupKey }: Props) {
                         <div className="mt-2 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
                           <span className="font-mono text-[10px]" style={{ color: "rgba(200,200,208,0.2)" }}>特殊分支（{ev.altRequire?.tags?.join(", ") || ""}）</span>
                           {ev.altChoices.map((c, i) => {
-                            const isChosen = seen.lastChoice === i + 100;
+                            const hits = seen.choices.filter(ch => ch.index === i + 100);
                             return (
                               <div key={i} className="flex items-start gap-2 font-mono text-xs mt-1">
-                                <span style={{ color: isChosen ? "#ffd700" : "rgba(200,200,208,0.2)" }}>{isChosen ? "▶" : "·"}</span>
+                                <span style={{ color: hits.length > 0 ? "#ffd700" : "rgba(200,200,208,0.2)" }}>{hits.length > 0 ? "▶" : "·"}</span>
                                 <div className="flex-1">
-                                  <span style={{ color: isChosen ? "#ffd700" : "rgba(200,200,208,0.35)" }}>{c.label}</span>
-                                  {isChosen && <div className="mt-0.5" style={{ color: "rgba(200,200,220,0.4)" }}>🎁 {describeOutcome(c.success)}</div>}
+                                  <span style={{ color: hits.length > 0 ? "#ffd700" : "rgba(200,200,208,0.35)" }}>{c.label}</span>
+                                  {hits.map((h, hi) => (
+                                    <div key={hi} className="mt-0.5" style={{ color: "rgba(200,200,220,0.4)" }}>🎁 {describeOutcome(c.success)}</div>
+                                  ))}
                                 </div>
                               </div>
                             );

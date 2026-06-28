@@ -203,18 +203,18 @@ export const demaciaEvents: GameEvent[] = [
     // 默认：阶段一
     choices: [
       {
-        label: "免费试吃（消耗「利刃充饥」免单）",
+        label: "免费试吃（出示「利刃充饥」——更能吃所以不耗活力）",
         check: { hasCard: "blue_刀妹_利刃充饥", consumeCard: true },
         success: {
-          attrDelta: { 力量: 1, 智力: 1, 敏捷: 1, 魅力: 1 },
-          message: "你吃了十二种面包制品。利刃充饥切面包特别顺手，摊主免了你的单。",
+          addItems: ["__random_attr__"],
+          message: "你亮出利刃充饥，摊主惊叹：「好刀工！」你吃了十二种面包，利刃充饥帮你切得飞快，完全不费劲。",
         },
       },
       {
         label: "免费试吃",
         success: {
           vitality: -8,
-          attrDelta: { 力量: 1, 智力: 1, 敏捷: 1, 魅力: 1 },
+          addItems: ["__random_attr__"],
           message: "你吃了十二种面包制品。味道还行，但咬得腮帮子疼。",
         },
       },

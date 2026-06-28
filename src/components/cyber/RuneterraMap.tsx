@@ -89,7 +89,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
 
     // 道具重复检查（本地判断，不用网络）
     if (outcome.addItems) {
-      for (const itemId of outcome.addItems) {
+      for (let itemId of outcome.addItems) {
+        if (itemId === "__random_attr__") {
+          itemId = ["力量+1","智力+1","敏捷+1","魅力+1"][Math.floor(Math.random() * 4)];
+        }
         const existing = playerState?.items?.find(i => i.itemId === itemId);
         if (existing && existing.qty > 0) {
           tokenDelta += 500;
@@ -152,8 +155,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       const seenRaw = await getProgress(groupKey, seenKey);
       const seen: Record<string, any> = seenRaw ? JSON.parse(seenRaw) : {};
       if (seen[currentEvent.id]) {
-        seen[currentEvent.id].lastChoice = choiceIndex;
-        seen[currentEvent.id].lastMsg = outcome.message || "";
+        seen[currentEvent.id].choices.push({ index: choiceIndex, msg: outcome.message || "" });
       }
       writes.push(setProgress(groupKey, seenKey, JSON.stringify(seen)));
     }
@@ -578,7 +580,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                             const seenKey = `seen-events`;
                             const seenRaw = await getProgress(groupKey, seenKey);
                             const seen: Record<string, any> = seenRaw ? JSON.parse(seenRaw) : {};
-                            if (!seen[picked.id]) seen[picked.id] = { name: picked.name, weight: picked.weight, lastChoice: -1, lastSuccess: false, lastMsg: "" };
+                            if (!seen[picked.id]) seen[picked.id] = { name: picked.name, weight: picked.weight, choices: [] };
                             await setProgress(groupKey, seenKey, JSON.stringify(seen));
                             setEventImage(picked.image || "/events/德玛西亚_01.png");
                             setCurrentEvent(picked);
