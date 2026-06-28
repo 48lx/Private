@@ -92,7 +92,9 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     if (outcome.addItems) {
       for (let itemId of outcome.addItems) {
         if (itemId === "__random_attr__") {
-          itemId = ["力量+1","智力+1","敏捷+1","魅力+1"][Math.floor(Math.random() * 4)];
+          const attr = ["力量","智力","敏捷","魅力"][Math.floor(Math.random() * 4)] as keyof PlayerAttrs;
+          writes.push(adjustAttrs(groupKey, { [attr]: 1 }));
+          continue;
         }
         const existing = playerState?.items?.find(i => i.itemId === itemId);
         if (existing && existing.qty > 0) {
@@ -164,6 +166,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
               seen[currentEvent.id].choices.push({ index: seen[currentEvent.id].lastChoice, msg: seen[currentEvent.id].lastMsg || "" });
             }
           }
+          // 去重：同选项只保留最新一条
+          seen[currentEvent.id].choices = seen[currentEvent.id].choices.filter((c: any) => c.index !== choiceIndex);
           seen[currentEvent.id].choices.push({ index: choiceIndex, msg: outcome.message || "" });
         }
         writes.push(setProgress(groupKey, seenKey, JSON.stringify(seen)));

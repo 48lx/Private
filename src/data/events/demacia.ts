@@ -203,11 +203,11 @@ export const demaciaEvents: GameEvent[] = [
     // 默认：阶段一
     choices: [
       {
-        label: "免费试吃（出示「利刃充饥」——更能吃所以不耗活力）",
+        label: "免费试吃（出示「利刃充饥」免活力消耗）",
         check: { hasCard: "blue_刀妹_利刃充饥", consumeCard: true },
         success: {
           addItems: ["__random_attr__"],
-          message: "你亮出利刃充饥，摊主惊叹：「好刀工！」你吃了十二种面包，利刃充饥帮你切得飞快，完全不费劲。",
+          message: "你吃了十二种面包制品。味道还行，但咬得腮帮子疼。",
         },
       },
       {
