@@ -41,18 +41,14 @@ export default function CardPanel() {
     const t = await getTokens(key);
     const c = await getCollection(key);
     setTokens(t); setCollection(c);
-    // 成就检查（await + 弹 toast）
+    // 成就检查（弹窗由 AchievementModal 全局接管）
     const results = await Promise.all([
       checkFreljordComplete(key, c),
       checkRevelation(key, c),
       checkBasketball(key, c),
     ]);
-    let anyUnlocked = false;
-    for (const r of results) {
-      if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); anyUnlocked = true; }
-    }
-    if (anyUnlocked) {
-      // 成就奖励可能包含卡牌/代币，刷新状态
+    if (results.some(r => r?.success)) {
+      // 成就奖励包含卡牌/代币，刷新状态
       const [t2, c2] = await Promise.all([getTokens(key), getCollection(key)]);
       setTokens(t2); setCollection(c2);
     }
@@ -66,7 +62,7 @@ export default function CardPanel() {
     await syncUnlocked(groupKey.trim());
     // 成就
     const r = await checkFirstLogin(groupKey.trim());
-    if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); await loadData(groupKey.trim()); }
+    if (r?.success) { await loadData(groupKey.trim()); }
   };
   const handleLogout = () => {
     try { localStorage.removeItem("card-group"); } catch {}
@@ -87,7 +83,7 @@ export default function CardPanel() {
     await addCardsBulk(groupKey, cards.map(c => c.id));
     // 成就检查
     const gemCard = cards.find(c => c.type === "gem");
-    if (gemCard) { const gr = await checkGemCard(groupKey, gemCard.id); if (gr?.success) showToast(`🏆 成就解锁！${gr.achName}`, "#ffd700"); }
+    if (gemCard) { await checkGemCard(groupKey, gemCard.id); }
     setDrawResult(cards);
     setDrawTab("nonwhite");
     await loadData(groupKey);
@@ -229,8 +225,7 @@ export default function CardPanel() {
         await decomposeCard(groupKey, "autumn", 1, 0);
         setAutumnEquipped(false);
         showToast("🍂 秋 发动！合成失败但保留全部卡牌", "#ffd700");
-        const r = await checkMergeFailed(groupKey);
-        if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); }
+        await checkMergeFailed(groupKey);
       }
       await loadData(groupKey);
       return;
@@ -244,7 +239,7 @@ export default function CardPanel() {
     } else {
       showToast("合成失败 · 保留1张", "#ff3355");
       const r = await checkMergeFailed(groupKey);
-      if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); await loadData(groupKey); }
+      if (r?.success) { await loadData(groupKey); }
     }
   };
 
@@ -546,7 +541,7 @@ export default function CardPanel() {
                   // 检查篮球成就
                   const coll = await getCollection(groupKey);
                   const r = await checkBasketball(groupKey, coll);
-                  if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); await loadData(groupKey); }
+                  if (r?.success) { await loadData(groupKey); }
                   setShowDunkMerge(false);
                 }}
                   disabled={dunkCount < 2}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Orbitron, Share_Tech_Mono } from "next/font/google";
 import "./globals.css";
+import AchievementModal from "@/components/cyber/AchievementModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-cyber-bg text-cyber-text scanlines">
         {children}
+        <AchievementModal />
       </body>
     </html>
   );

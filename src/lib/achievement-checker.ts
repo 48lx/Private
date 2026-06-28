@@ -11,11 +11,11 @@ const unlockedCache = new Set<string>();
 
 // ─── 成就触发统一入口 ───
 export async function tryUnlock(groupKey: string, achKey: string): Promise<{ success: boolean; achName?: string; achReward?: string } | null> {
-  if (!groupKey) { console.log("❌ tryUnlock: no groupKey for", achKey); return null; }
-  if (unlockedCache.has(achKey)) { console.log("⏭ tryUnlock: cached hit for", achKey); return null; }
+  if (!groupKey) return null;
+  if (unlockedCache.has(achKey)) return null;
 
   const already = await getProgress(groupKey, `ach-${achKey}`);
-  if (already === "1") { unlockedCache.add(achKey); console.log("⏭ tryUnlock: already unlocked", achKey); return null; }
+  if (already === "1") { unlockedCache.add(achKey); return null; }
 
   // 标记解锁
   await setProgress(groupKey, `ach-${achKey}`, "1");
@@ -23,7 +23,7 @@ export async function tryUnlock(groupKey: string, achKey: string): Promise<{ suc
 
   // 发放奖励
   const ach = ACHIEVEMENTS.find(a => a.key === achKey);
-  if (!ach) { console.log("❌ tryUnlock: achievement not found", achKey); return null; }
+  if (!ach) return null;
 
   if (ach.reward.type === "card" && ach.reward.cardId) {
     await addCard(groupKey, ach.reward.cardId, 1);
@@ -31,7 +31,18 @@ export async function tryUnlock(groupKey: string, achKey: string): Promise<{ suc
     await addTokens(groupKey, ach.reward.amount || 0);
   }
 
-  console.log("🏆 tryUnlock: UNLOCKED", achKey, ach.name);
+  // 所有成就统一发放10000代币
+  if (ach.reward.tokens) {
+    await addTokens(groupKey, ach.reward.tokens);
+  }
+
+  // 派发全局事件触发弹窗
+  try {
+    window.dispatchEvent(new CustomEvent("achievement-unlocked", {
+      detail: { name: ach.name, cardId: ach.reward.cardId, tokens: ach.reward.tokens || 0 }
+    }));
+  } catch {}
+
   return { success: true, achName: ach.name, achReward: ach.reward.cardId };
 }
 
@@ -116,10 +127,7 @@ export async function checkCategoryCount(groupKey: string, count: number) {
 // 10. 启示录 — 集齐所有 GEM 卡
 export async function checkRevelation(groupKey: string, collection: { card_id: string; count: number }[]) {
   const gemIds = ALL_CARDS.filter(c => c.type === "gem" && c.rarity !== "white" && c.rarity !== "special" && !c.id.includes("金鱼嘴") && !c.id.includes("启示录")).map(c => c.id);
-  const ownedIds = new Set(collection.filter(c => c.count > 0).map(c => c.card_id));
-  const missing = gemIds.filter(id => !ownedIds.has(id));
-  console.log("🔍 checkRevelation:", { total: gemIds.length, gemIds, missing, collectionSize: collection.length });
-  const hasAll = missing.length === 0;
+  const hasAll = gemIds.every(id => collection.some(c => c.card_id === id && c.count > 0));
   if (hasAll) return await tryUnlock(groupKey, "revelation");
   return null;
 }
