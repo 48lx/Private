@@ -19,7 +19,15 @@ export default function EventJournal({ groupKey }: Props) {
   const load = async () => {
     if (!groupKey) return;
     const raw = await getProgress(groupKey, "seen-events");
-    setSeenEvents(raw ? JSON.parse(raw) : {});
+    if (!raw) { setSeenEvents({}); return; }
+    const parsed = JSON.parse(raw);
+    // 兼容旧格式：lastChoice/lastMsg → choices数组
+    for (const k of Object.keys(parsed)) {
+      if (parsed[k].lastChoice !== undefined && !parsed[k].choices) {
+        parsed[k].choices = [{ index: parsed[k].lastChoice, msg: parsed[k].lastMsg || "" }];
+      }
+    }
+    setSeenEvents(parsed);
   };
 
   useEffect(() => { if (isOpen) load(); }, [isOpen, groupKey]);
@@ -140,7 +148,7 @@ export default function EventJournal({ groupKey }: Props) {
                     <p className="font-mono text-xs mb-3" style={{ color: "rgba(200,200,208,0.35)" }}>{ev.desc}</p>
                     <div className="space-y-2 ml-2">
                       {ev.choices.map((c, i) => {
-                        const hits = seen.choices.filter(ch => ch.index === i);
+                        const hits = (seen.choices || []).filter((ch: any) => ch.index === i);
                         const isChosen = hits.length > 0;
                         return (
                           <div key={i} className="flex items-start gap-2 font-mono text-xs">
@@ -163,7 +171,7 @@ export default function EventJournal({ groupKey }: Props) {
                         <div className="mt-2 pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
                           <span className="font-mono text-[10px]" style={{ color: "rgba(200,200,208,0.2)" }}>特殊分支（{ev.altRequire?.tags?.join(", ") || ""}）</span>
                           {ev.altChoices.map((c, i) => {
-                            const hits = seen.choices.filter(ch => ch.index === i + 100);
+                            const hits = (seen.choices || []).filter((ch: any) => ch.index === i + 100);
                             return (
                               <div key={i} className="flex items-start gap-2 font-mono text-xs mt-1">
                                 <span style={{ color: hits.length > 0 ? "#ffd700" : "rgba(200,200,208,0.2)" }}>{hits.length > 0 ? "▶" : "·"}</span>
