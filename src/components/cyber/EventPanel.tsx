@@ -191,7 +191,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
                   </span>
                 ) : (
                   <span className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.25)" }}>
-                    + 启示录专辑卡（点击选择）
+                    + {allNeeded.length === 1 ? (ALL_CARDS.find(c => c.id === allNeeded[0])?.name || allNeeded[0]) : "启示录专辑卡"}（点击选择）
                   </span>
                 )}
               </div>

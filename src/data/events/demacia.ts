@@ -14,7 +14,7 @@ export const demaciaEvents: GameEvent[] = [
     choices: [
       {
         label: "加入他们",
-        check: { attrs: { 智力: 5 } },
+        check: { attrs: { 智力: 7 } },
         success: { tokens: 800, message: "你连胜三局。巡逻兵们输得只剩裤衩。" },
         failure: { tokens: -200, message: "你输光了随身零钱。" },
       },
@@ -53,7 +53,7 @@ export const demaciaEvents: GameEvent[] = [
     altChoices: [
       {
         label: "接受战利品",
-        check: { attrs: { 力量: 8 } },
+        check: { attrs: { 力量: 10 } },
         success: { tokens: 1000, addCards: ["__random_blue__"], removeTags: ["告密者"], message: "你战胜了前来找茬的士兵，并从他们身上夺得了更多的战利品。" },
         failure: { vitality: -1, tokens: -200, message: "战利品被他们私吞，还被搜刮了不少物资。" },
       },
@@ -76,7 +76,7 @@ export const demaciaEvents: GameEvent[] = [
     choices: [
       {
         label: "帮他捡回来",
-        check: { attrs: { 敏捷: 7 } },
+        check: { attrs: { 敏捷: 9 } },
         success: {
           addItems: ["禁魔石之心表面纹路"],
           message: "你跳下裂缝，发现鹤嘴锄被一块散发着微光的石头压住了。你把石头一起带上来，矿工说这石头没用，送你了。",
@@ -108,7 +108,7 @@ export const demaciaEvents: GameEvent[] = [
     choices: [
       {
         label: "接受决斗",
-        check: { attrs: { 力量: 6 } },
+        check: { attrs: { 力量: 8 } },
         success: { tokens: 250, addCards: ["__random_blue__"], message: "你一招就把他剑打飞。他坐在地上愣了三秒，然后兴奋地大喊「师傅！」非要拜你为师。你多了个烦人的跟班。" },
         failure: { vitality: -2, tokens: 20, message: "你被他一顿王八剑法打翻。围观群众嗑完了瓜子散了。但他很满意，给了你出场费。" },
       },
@@ -141,8 +141,8 @@ export const demaciaEvents: GameEvent[] = [
       },
       {
         label: "尝试解除诅咒",
-        hideCheck: { attrs: { 智力: 10 } },
-        check: { attrs: { 智力: 14 } },
+        hideCheck: { attrs: { 智力: 13 } },
+        check: { attrs: { 智力: 18 } },
         success: {
           addItems: ["叽叽的口哨"],
           message: "你居然解开了！约德尔人恢复原形，感激涕零，说他叫「叽叽」，以后在班德尔城遇到他可以帮忙。",
@@ -213,14 +213,14 @@ export const demaciaEvents: GameEvent[] = [
       {
         label: "免费试吃",
         success: {
-          vitality: -99,
+          vitality: -8,
           attrDelta: { 力量: 1, 智力: 1, 敏捷: 1, 魅力: 1 },
           message: "你吃了十二种面包制品。味道还行，但咬得腮帮子疼。",
         },
       },
       {
         label: "参加大胃王比赛",
-        check: { attrs: { 力量: 13 } },
+        check: { attrs: { 力量: 17 } },
         success: {
           tokens: 500,
           addItems: ["大胃王绶带"],
@@ -300,7 +300,7 @@ export const demaciaEvents: GameEvent[] = [
           },
           {
             label: "你就是良子？我就是来挑战你的",
-            check: { attrs: { 力量: 21 } },
+            check: { attrs: { 力量: 27 } },
             success: {
               tokens: 1000,
               addTags: ["终极大胃王——德玛西亚"],

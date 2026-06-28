@@ -106,8 +106,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
 
     // 活力
     if (outcome.vitality) {
-      // -99 表示消耗全部活力
-      const v = outcome.vitality <= -99 ? 0 : Math.max(0, vitality + outcome.vitality);
+      const v = Math.max(0, vitality + outcome.vitality);
       writes.push(setProgress(groupKey, "map-vitality", JSON.stringify({ v, max: maxVitality, date: today })));
       setVitality(v);
     }
@@ -579,7 +578,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                             const seenKey = `seen-events`;
                             const seenRaw = await getProgress(groupKey, seenKey);
                             const seen: Record<string, any> = seenRaw ? JSON.parse(seenRaw) : {};
-                            seen[picked.id] = { name: picked.name, weight: picked.weight, lastChoice: -1, lastSuccess: false, lastMsg: "" };
+                            if (!seen[picked.id]) seen[picked.id] = { name: picked.name, weight: picked.weight, lastChoice: -1, lastSuccess: false, lastMsg: "" };
                             await setProgress(groupKey, seenKey, JSON.stringify(seen));
                             setEventImage(picked.image || "/events/德玛西亚_01.png");
                             setCurrentEvent(picked);
