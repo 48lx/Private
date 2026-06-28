@@ -115,7 +115,7 @@ export async function checkCategoryCount(groupKey: string, count: number) {
 
 // 10. 启示录 — 集齐所有 GEM 卡
 export async function checkRevelation(groupKey: string, collection: { card_id: string; count: number }[]) {
-  const gemIds = ALL_CARDS.filter(c => c.type === "gem" && c.rarity !== "white" && !c.id.includes("金鱼嘴") && !c.id.includes("启示录")).map(c => c.id);
+  const gemIds = ALL_CARDS.filter(c => c.type === "gem" && c.rarity !== "white" && c.rarity !== "special" && !c.id.includes("金鱼嘴") && !c.id.includes("启示录")).map(c => c.id);
   const ownedIds = new Set(collection.filter(c => c.count > 0).map(c => c.card_id));
   const missing = gemIds.filter(id => !ownedIds.has(id));
   console.log("🔍 checkRevelation:", { total: gemIds.length, gemIds, missing, collectionSize: collection.length });
