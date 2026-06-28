@@ -79,7 +79,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
 
   const ALL_EVENTS = [...demaciaEvents];
 
-  const applyOutcome = async (outcome: import("@/lib/event-types").EventOutcome, choiceIndex: number): Promise<boolean> => {
+  const applyOutcome = async (outcome: import("@/lib/event-types").EventOutcome, choiceIndex: number, choiceSuccess: boolean): Promise<boolean> => {
     if (!groupKey) return false;
 
     // Phase 1: 收集所有写操作 + attr 检查
@@ -168,7 +168,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
           }
           // 去重：同选项只保留最新一条
           seen[currentEvent.id].choices = seen[currentEvent.id].choices.filter((c: any) => c.index !== choiceIndex);
-          seen[currentEvent.id].choices.push({ index: choiceIndex, msg: outcome.message || "" });
+          seen[currentEvent.id].choices.push({ index: choiceIndex, success: choiceSuccess, msg: outcome.message || "" });
         }
         writes.push(setProgress(groupKey, seenKey, JSON.stringify(seen)));
       } catch {}
@@ -623,8 +623,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             tokens={tokenBalance}
             fixedImage={eventImage}
             cardCollection={cardCollection}
-            onResult={async (outcome, choiceIndex) => {
-              return await applyOutcome(outcome, choiceIndex);
+            onResult={async (outcome, choiceIndex, success) => {
+              return await applyOutcome(outcome, choiceIndex, success);
             }}
             onClose={() => {
               setCurrentEvent(null);

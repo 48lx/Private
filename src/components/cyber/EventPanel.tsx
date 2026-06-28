@@ -33,7 +33,7 @@ const TYPE_COLORS: Record<EventType, string> = {
 interface Props {
   event: GameEvent;
   playerState: PlayerState;
-  onResult: (outcome: EventOutcome, choiceIndex: number) => Promise<boolean>; // returns true if attrs were applied
+  onResult: (outcome: EventOutcome, choiceIndex: number, success: boolean) => Promise<boolean>;
   onClose: () => void;
   attrs: { 力量: number; 智力: number; 敏捷: number; 魅力: number };
   tokens: number;
@@ -91,7 +91,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
       });
     }
     outcomeApplied.current = true;
-    const attrApplied = await onResult(r.outcome, index);
+    const attrApplied = await onResult(r.outcome, index, r.success);
     setResult({
       choiceIndex: index,
       success: r.success,

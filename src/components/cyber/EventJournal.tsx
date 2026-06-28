@@ -7,7 +7,7 @@ import { ALL_CARDS } from "@/lib/cards";
 
 interface SeenEntry {
   name: string; weight: number;
-  choices: { index: number; msg: string }[];
+  choices: { index: number; success: boolean; msg: string }[];
 }
 
 interface Props { groupKey: string; }
@@ -159,8 +159,8 @@ export default function EventJournal({ groupKey }: Props) {
                               </span>
                               {hits.map((h, hi) => (
                                 <div key={hi} className="mt-0.5">
-                                  <span style={{ color: "rgba(255,215,0,0.5)" }}>{h.msg}</span>
-                                  <div className="mt-0.5" style={{ color: "rgba(200,200,220,0.4)" }}>🎁 {describeOutcome(c.success)}</div>
+                                  <span style={{ color: h.success ? "rgba(0,255,136,0.5)" : "rgba(255,51,85,0.5)" }}>{h.success ? "✅" : "❌"} {h.msg}</span>
+                                  <div className="mt-0.5" style={{ color: "rgba(200,200,220,0.4)" }}>🎁 {describeOutcome(h.success ? c.success : (c.failure || c.success))}</div>
                                 </div>
                               ))}
                             </div>
@@ -178,7 +178,10 @@ export default function EventJournal({ groupKey }: Props) {
                                 <div className="flex-1">
                                   <span style={{ color: hits.length > 0 ? "#ffd700" : "rgba(200,200,208,0.35)" }}>{c.label}</span>
                                   {hits.map((h, hi) => (
-                                    <div key={hi} className="mt-0.5" style={{ color: "rgba(200,200,220,0.4)" }}>🎁 {describeOutcome(c.success)}</div>
+                                    <div key={hi} className="mt-0.5">
+                                      <span style={{ color: h.success ? "rgba(0,255,136,0.5)" : "rgba(255,51,85,0.5)" }}>{h.success ? "✅" : "❌"} {h.msg}</span>
+                                      <div className="mt-0.5" style={{ color: "rgba(200,200,220,0.4)" }}>🎁 {describeOutcome(h.success ? c.success : (c.failure || c.success))}</div>
+                                    </div>
                                   ))}
                                 </div>
                               </div>
