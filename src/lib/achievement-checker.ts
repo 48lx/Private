@@ -114,7 +114,7 @@ export async function checkCategoryCount(groupKey: string, count: number) {
 
 // 10. 启示录 — 集齐所有 GEM 卡
 export async function checkRevelation(groupKey: string, collection: { card_id: string; count: number }[]) {
-  const gemIds = ALL_CARDS.filter(c => c.type === "gem" && !c.id.includes("金鱼嘴")).map(c => c.id);
+  const gemIds = ALL_CARDS.filter(c => c.type === "gem" && !c.id.includes("金鱼嘴") && !c.id.includes("启示录")).map(c => c.id);
   const hasAll = gemIds.every(id => collection.some(c => c.card_id === id && c.count > 0));
   if (hasAll) return await tryUnlock(groupKey, "revelation");
 }

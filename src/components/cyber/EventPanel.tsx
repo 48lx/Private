@@ -176,7 +176,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
             const PLACEHOLDER_LABELS: Record<string, string> = {
               "__revelation__": "启示录专辑卡",
               "__magic__": "魔法卡牌(灭国魔女/启示录/善意虚影)",
-              "__lux__": "拉克丝卡牌(善意虚影/灭国魔女)",
+              "__lux__": "拉克丝卡牌(光辉女郎/善意虚影)",
             };
             let allNeeded: string[] = [];
             let placeholderLabel: string | null = null;
