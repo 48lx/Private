@@ -8,7 +8,7 @@ import { ALL_CARDS, REVELATION_CARDS } from "./cards";
 // 禁魔石共鸣反应 — 魔法相关卡牌
 export const MAGIC_CARDS = ["gold_拉克丝_灭国魔女", "max_邓紫棋_启示录", "gold_拉克丝_善意虚影"];
 // 拉克丝相关卡牌
-export const LUX_CARDS = ["gold_拉克丝_善意虚影", "gold_拉克丝_灭国魔女"];
+export const LUX_CARDS = ["gold_拉克丝_善意虚影"];
 
 // ─── 事件选取 ───
 

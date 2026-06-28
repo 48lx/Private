@@ -561,7 +561,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                             ) : type === "A" || type === "C" ? (
                               (clue!.endsWith(".webm") || clue!.endsWith(".mp4")) ? (
                                 <video src={clue!} className="w-full h-full object-cover cursor-pointer"
-                                  style={{ borderRadius: 2 }}
+                                  style={{ borderRadius: 2, mixBlendMode: "screen" }}
                                   muted loop autoPlay playsInline
                                   onClick={(e) => { e.stopPropagation(); setLightboxImage(clue!); }}
                                 />

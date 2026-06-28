@@ -32,7 +32,7 @@ export default function CardPanel() {
     const key = getGroupKey();
     if (key) { setGroupKeyLocal(key); loadData(key); setLoggedIn(true); }
     // 监听外部奖励刷新事件
-    const onReload = () => { if (key) loadData(key); };
+    const onReload = () => { const k = getGroupKey(); if (k) loadData(k); };
     window.addEventListener("card-reload", onReload);
     return () => window.removeEventListener("card-reload", onReload);
   }, []);
@@ -41,10 +41,21 @@ export default function CardPanel() {
     const t = await getTokens(key);
     const c = await getCollection(key);
     setTokens(t); setCollection(c);
-    // 成就检查
-    checkFreljordComplete(key, c);
-    checkRevelation(key, c);
-    checkBasketball(key, c);
+    // 成就检查（await + 弹 toast）
+    const results = await Promise.all([
+      checkFreljordComplete(key, c),
+      checkRevelation(key, c),
+      checkBasketball(key, c),
+    ]);
+    let anyUnlocked = false;
+    for (const r of results) {
+      if (r?.success) { showToast(`🏆 成就解锁！${r.achName}`, "#ffd700"); anyUnlocked = true; }
+    }
+    if (anyUnlocked) {
+      // 成就奖励可能包含卡牌/代币，刷新状态
+      const [t2, c2] = await Promise.all([getTokens(key), getCollection(key)]);
+      setTokens(t2); setCollection(c2);
+    }
   };
 
   const handleLogin = async () => {
