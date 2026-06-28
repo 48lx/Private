@@ -63,7 +63,18 @@ export default function EventJournal({ groupKey }: Props) {
   };
 
   const allEvents = [...demaciaEvents];
-  const visibleEvents = allEvents.filter(ev => seenEvents[ev.id]);
+  const regions = [...new Set(allEvents.map(e => e.region))];
+  const eventTypes = ["all", "fun", "clue", "normal", "side", "hero"] as const;
+
+  const [filterRegion, setFilterRegion] = useState<string>("demacia");
+  const [filterType, setFilterType] = useState<string>("all");
+
+  const visibleEvents = allEvents.filter(ev => {
+    if (!seenEvents[ev.id]) return false;
+    if (filterRegion && ev.region !== filterRegion) return false;
+    if (filterType !== "all" && ev.type !== filterType) return false;
+    return true;
+  });
 
   return (
     <>
@@ -78,18 +89,62 @@ export default function EventJournal({ groupKey }: Props) {
         <div className="fixed inset-0 z-[140] flex items-center justify-center"
           style={{ background: "rgba(4,2,18,0.94)", backdropFilter: "blur(6px)" }}
           onClick={() => setIsOpen(false)}>
-          <div className="flex flex-col" style={{ width: "min(800px, 94vw)", height: "min(85vh, 700px)" }}
+          <div className="flex" style={{ width: "min(900px, 94vw)", height: "min(85vh, 700px)" }}
             onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-3 px-2">
-              <h3 className="font-heading text-lg tracking-[0.2em]" style={{ color: "#ffd700", textShadow: "0 0 12px rgba(255,215,0,0.4)" }}>
-                📜 事件图鉴
-                <span className="font-mono text-xs ml-3" style={{ color: "rgba(200,200,208,0.25)" }}>{visibleEvents.length} 个已解锁</span>
-              </h3>
-              <button onClick={() => setIsOpen(false)} className="font-mono text-xl" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
+
+            {/* LEFT: Region sidebar */}
+            <div className="shrink-0 flex flex-col border-r" style={{ width: "120px", borderColor: "rgba(255,255,255,0.06)" }}>
+              <div className="p-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.25)" }}>地区</span>
+              </div>
+              <div className="flex-1 overflow-y-auto py-1" style={{ scrollbarWidth: "thin" }}>
+                {regions.map(r => {
+                  const name = r === "demacia" ? "德玛西亚" : r;
+                  const count = allEvents.filter(e => e.region === r && seenEvents[e.id]).length;
+                  return (
+                    <button key={r} onClick={() => setFilterRegion(r)}
+                      className="w-full text-left font-mono text-xs px-3 py-2 transition-colors"
+                      style={{
+                        color: filterRegion === r ? "#ffd700" : "rgba(200,200,208,0.35)",
+                        background: filterRegion === r ? "rgba(255,215,0,0.06)" : "transparent",
+                        borderLeft: filterRegion === r ? "2px solid #ffd700" : "2px solid transparent",
+                      }}>
+                      {name} <span style={{ color: "rgba(200,200,208,0.15)", fontSize: 9 }}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1" style={{ scrollbarWidth: "thin" }}>
+
+            {/* RIGHT: Main content */}
+            <div className="flex-1 flex flex-col">
+              {/* Header + close */}
+              <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                <div className="flex items-center gap-3">
+                  <h3 className="font-heading text-base tracking-[0.1em]" style={{ color: "#ffd700" }}>📜 事件图鉴</h3>
+                  <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.2)" }}>{visibleEvents.length} 个</span>
+                </div>
+                <button onClick={() => setIsOpen(false)} className="font-mono text-lg" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
+              </div>
+
+              {/* Type tabs */}
+              <div className="flex border-b px-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                {eventTypes.map(t => (
+                  <button key={t} onClick={() => setFilterType(t)}
+                    className="font-mono text-xs px-3 py-2 transition-colors"
+                    style={{
+                      color: filterType === t ? "#ffd700" : "rgba(200,200,208,0.25)",
+                      borderBottom: filterType === t ? "2px solid #ffd700" : "2px solid transparent",
+                    }}>
+                    {t === "all" ? "全部" : t === "fun" ? "趣味" : t === "clue" ? "线索" : t === "normal" ? "普通" : t === "side" ? "支线" : "英雄"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Event list */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ scrollbarWidth: "thin" }}>
               {visibleEvents.length === 0 ? (
-                <p className="font-mono text-sm text-center py-20" style={{ color: "rgba(200,200,220,0.12)" }}>暂无已解锁事件，去地图中探索吧</p>
+                <p className="font-mono text-sm text-center py-20" style={{ color: "rgba(200,200,220,0.12)" }}>暂无已解锁事件</p>
               ) : visibleEvents.map(ev => {
                 const seen = seenEvents[ev.id];
                 return (
@@ -103,7 +158,7 @@ export default function EventJournal({ groupKey }: Props) {
                         style={{ color: "rgba(255,51,85,0.4)", borderColor: "rgba(255,51,85,0.15)" }}>🔄</button>
                     </div>
                     <p className="font-mono text-xs mb-3" style={{ color: "rgba(200,200,208,0.35)" }}>{ev.desc}</p>
-                    <div className="space-y-1.5 ml-2">
+                    <div className="space-y-3 ml-2">
                       {ev.choices.map((c, i) => {
                         const isChosen = seen.lastChoice === i;
                         return (
@@ -147,6 +202,7 @@ export default function EventJournal({ groupKey }: Props) {
                   </div>
                 );
               })}
+              </div>
             </div>
           </div>
         </div>
