@@ -1,4 +1,4 @@
-# N.E.X.U.S. v0.4.5 — 项目总览
+# N.E.X.U.S. v0.4.6 — 项目总览
 
 ## 项目定位
 LOL + 赛博朋克2077 卡牌收集/事件探索Web游戏，Next.js 16 (Turbopack) + Supabase 后端。

@@ -87,6 +87,10 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
           const blues = ALL_CARDS.filter(card => card.rarity === "blue" && !card.id.startsWith("mimic-"));
           return blues[Math.floor(Math.random() * blues.length)]?.id || id;
         }
+        if (id === "__random_gold__") {
+          const golds = ALL_CARDS.filter(card => card.rarity === "gold" && !card.id.startsWith("mimic-"));
+          return golds[Math.floor(Math.random() * golds.length)]?.id || id;
+        }
         return id;
       });
     }

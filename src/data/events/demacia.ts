@@ -228,7 +228,7 @@ export const demaciaEvents: GameEvent[] = [
     id: "demacia-food-fest-2",
     region: "demacia",
     type: "side",
-    weight: 8,
+    weight: 6,
     name: "德玛西亚美食节 II",
     image: "/events/德玛西亚_01.png",
     require: { tags: ["被赶出来的人"] },
@@ -250,7 +250,7 @@ export const demaciaEvents: GameEvent[] = [
     id: "demacia-food-fest-3",
     region: "demacia",
     type: "side",
-    weight: 8,
+    weight: 6,
     name: "德玛西亚美食节 III",
     image: "/events/德玛西亚_01.png",
     require: { tags: ["大胃王绶带"], notTags: ["终极大胃王——德玛西亚"] },
@@ -273,7 +273,7 @@ export const demaciaEvents: GameEvent[] = [
     id: "demacia-food-fest-4",
     region: "demacia",
     type: "side",
-    weight: 8,
+    weight: 4,
     name: "德玛西亚美食节 IV",
     image: "/events/德玛西亚_01.png",
     require: { tags: ["终极大胃王——德玛西亚"] },
@@ -286,6 +286,69 @@ export const demaciaEvents: GameEvent[] = [
       {
         label: "寻找有无隐藏的强者挑战",
         success: { addItems: ["大胃王挑战邀请函"], vitality: -2, message: "你看到一个人影从人群中遛过，追了上去却只看到一张纸条。" },
+      },
+    ],
+  },
+
+  // ─── 不想当兵的男孩 ───
+  {
+    id: "demacia-boy-florist",
+    region: "demacia",
+    type: "fun",
+    weight: 9,
+    name: "不想当兵的男孩",
+    image: "/events/德玛西亚_02.png",
+    desc: "一个少年躲在草垛后面，愁眉苦脸。他明天就要入伍了，但他不想当兵，他只想当一个花匠。",
+    choices: [
+      {
+        label: "鼓励他当兵",
+        success: { tokens: 600, message: "你跟他讲了一堆荣誉、责任之类的大道理。他勉强点点头。获得600代币（来自他家人的感谢），但少年眼中失去了光。" },
+      },
+      {
+        label: "鼓励他当花匠",
+        check: { attrs: { 魅力: 13 } },
+        success: { addItems: ["白玫瑰"], message: "你说人生是自己的，追寻梦想也需要勇气。他眼睛亮了，跑去跟他爹大吵一架，他爹虽然不愿意接受，但少年偷偷塞给你一朵他种的白玫瑰。" },
+        failure: { message: "你说了一堆大道理，但他一句都没肯听进去，少年最终还是成为了「光荣」的德玛西亚战士，你只祈祷他不会在战斗中不明不白地「亮起来」。" },
+      },
+      {
+        label: "展示「光辉女郎·拉克丝」卡片",
+        check: { hasCard: "gold_拉克丝_善意虚影" },
+        success: { addCards: ["__random_gold__"], message: "你亮出拉克丝的卡片，还没来得及说话，少年便兴奋地说：「我见过她！她来我们村巡察时，还摸过我的花！」他突然觉得，也许当了兵就能再见到她。他高高兴兴地去入伍了，还送你一张他珍藏的卡片。但你的本意并非如此——你看着手里的卡片，突然一惊：呀！完蛋了，我本想拿的是灭国魔女·拉克丝的卡片。算了，孩子这么高兴，就随他去吧。" },
+      },
+    ],
+  },
+
+  // ─── 禁魔石共鸣反应 ───
+  {
+    id: "demacia-petricite-resonance",
+    region: "demacia",
+    type: "clue",
+    weight: 5,
+    name: "禁魔石共鸣反应",
+    image: "/events/德玛西亚_03.png",
+    desc: "你经过一处禁魔石矿脉裸露的地表，身上携带的卡片突然开始微微发光——尤其是那些与魔法有关的卡。空气中弥漫着一种沉闷的压迫感。",
+    choices: [
+      {
+        label: "拿出你最强的魔法卡片试探",
+        check: { hasCard: "__magic__", consumeCard: true },
+        success: {
+          addClues: [{ region: "demacia", type: "A", data: "/加里奥/kling_20260627_作品_生图中的心脏在原地缓_4134_0_透明.webm" }],
+          vitality: -4,
+          message: "你将卡片靠近矿脉。卡片的光越来越亮，矿脉突然发出一声低沉的轰鸣，一道冲击波把你掀翻在地。你爬起来后，发现卡片上多了一道裂纹，而矿脉深处隐约露出了一块石板的边缘。",
+        },
+      },
+      {
+        label: "收起所有魔法物品，静静观察",
+        check: { attrs: { 智力: 18 } },
+        success: {
+          addClues: [{ region: "demacia", type: "C", data: "/加里奥/守护者截图.png" }],
+          message: "你发现矿脉的共鸣频率和某个更大的源头相连。你顺着共鸣方向望去，发现远处山顶有一尊石像的轮廓在暮色中若隐若现。",
+        },
+        failure: { vitality: -2, message: "你什么都感应不到，只觉得耳鸣。" },
+      },
+      {
+        label: "赶紧离开",
+        success: { tokens: 100, message: "你不想惹麻烦，快步离开。走出去很远，你才松了口气。逃跑途中，你还在地上捡到了100块钱。" },
       },
     ],
   },

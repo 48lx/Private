@@ -89,20 +89,21 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     let attrApplied = false;
 
     // 道具重复检查（本地判断，不用网络）
-    if (outcome.addItems) {
-      for (let itemId of outcome.addItems) {
-        if (itemId === "__random_attr__") {
-          const attr = ["力量","智力","敏捷","魅力"][Math.floor(Math.random() * 4)] as keyof PlayerAttrs;
-          writes.push(adjustAttrs(groupKey, { [attr]: 1 }));
-          continue;
-        }
-        const existing = playerState?.items?.find(i => i.itemId === itemId);
-        if (existing && existing.qty > 0) {
-          tokenDelta += 500;
-          showToast(`已拥有「${itemId}」，自动分解为500代币`);
-        } else {
-          writes.push(addItem(groupKey, itemId));
-        }
+    const allAddItems = [...(outcome.addItems || []), ...(outcome.clueItems || [])];
+    const clueSet = new Set(outcome.clueItems || []);
+    for (let itemId of allAddItems) {
+      if (itemId === "__random_attr__") {
+        const attr = ["力量","智力","敏捷","魅力"][Math.floor(Math.random() * 4)] as keyof PlayerAttrs;
+        writes.push(adjustAttrs(groupKey, { [attr]: 1 }));
+        continue;
+      }
+      const existing = playerState?.items?.find(i => i.itemId === itemId);
+      if (existing && existing.qty > 0) {
+        const amount = clueSet.has(itemId) ? 500 : 300;
+        tokenDelta += amount;
+        showToast(`已拥有「${itemId}」，自动分解为${amount}代币`);
+      } else {
+        writes.push(addItem(groupKey, itemId));
       }
     }
 
@@ -142,6 +143,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
         if (id === "__random_blue__") {
           const blues = ALL_CARDS.filter(c => c.rarity === "blue" && !c.id.startsWith("mimic-"));
           return blues[Math.floor(Math.random() * blues.length)]?.id || id;
+        }
+        if (id === "__random_gold__") {
+          const golds = ALL_CARDS.filter(c => c.rarity === "gold" && !c.id.startsWith("mimic-"));
+          return golds[Math.floor(Math.random() * golds.length)]?.id || id;
         }
         return id;
       });
