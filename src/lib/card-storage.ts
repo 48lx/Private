@@ -126,6 +126,8 @@ export async function checkDailyCheckin(groupKey: string): Promise<string | null
   const already = await getProgress(groupKey, key);
   if (already === "1") return null;
   await setProgress(groupKey, key, "1");
+  // +2000 代币
+  await addTokens(groupKey, 2000);
   // 随机给一张特殊卡
   const specialPool = ["mimic-white","mimic-white","mimic-blue","mimic-blue","mimic-gold","twisted-gamble","lonely-pull"];
   const cardId = specialPool[Math.floor(Math.random() * specialPool.length)];

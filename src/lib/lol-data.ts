@@ -637,7 +637,7 @@ export const champions: Champion[] = [
     lanes: ["上单"],
     region: "弗雷尔卓德",
     releaseYear: 2014,
-    attackType: "远程",
+    attackType: "双形态",
     resourceType: "怒气",
   },
   {

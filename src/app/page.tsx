@@ -39,8 +39,11 @@ export default function Home() {
       if (!gk) { setOrbUnlocked(false); return; }
       setGroupKey(gk);
       const today = new Date().toISOString().split("T")[0];
-      const v = await getProgress(gk, `orb-${today}`);
-      setOrbUnlocked(v === "1");
+      const [std, uzi] = await Promise.all([
+        getProgress(gk, `orb-std-${today}`),
+        getProgress(gk, `orb-uzi-${today}`),
+      ]);
+      setOrbUnlocked(std === "1" && uzi === "1");
     } catch {}
   };
 
@@ -49,8 +52,9 @@ export default function Home() {
     const onCheck = async (e: Event) => {
       const gk = getGroupKey();
       if (!gk) return;
+      const mode = (e as CustomEvent).detail?.mode || "standard";
       const today = new Date().toISOString().split("T")[0];
-      await setProgress(gk, `orb-${today}`, "1");
+      await setProgress(gk, `orb-${mode}-${today}`, "1");
       checkOrbUnlock();
     };
     window.addEventListener("orb-check", onCheck);
