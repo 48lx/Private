@@ -166,6 +166,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
               seen[currentEvent.id].choices.push({ index: seen[currentEvent.id].lastChoice, msg: seen[currentEvent.id].lastMsg || "" });
             }
           }
+          // 同选项同结果只保留最新一条（成功/失败各最多一条）
+          seen[currentEvent.id].choices = seen[currentEvent.id].choices.filter(
+            (c: any) => !(c.index === choiceIndex && c.success === choiceSuccess)
+          );
           seen[currentEvent.id].choices.push({ index: choiceIndex, success: choiceSuccess, msg: outcome.message || "" });
         }
         writes.push(setProgress(groupKey, seenKey, JSON.stringify(seen)));
