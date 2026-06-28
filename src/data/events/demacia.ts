@@ -199,6 +199,7 @@ export const demaciaEvents: GameEvent[] = [
     weight: 8,
     name: "德玛西亚美食节",
     image: "/events/德玛西亚_01.png",
+    require: { notTags: ["被赶出来的人", "大胃王绶带"] },
     desc: "德玛西亚正在举办一年一度的美食节。摊位上摆满了各种「德玛西亚特色美食」，但看起来都是不同形态的面包。硬面包汤、面包沙拉、面包蛋糕……",
     choices: [
       {
@@ -213,7 +214,7 @@ export const demaciaEvents: GameEvent[] = [
       {
         label: "参加大胃王比赛",
         check: { attrs: { 力量: 17 } },
-        success: { tokens: 500, addItems: ["大胃王绶带"], message: "你打败了卫冕冠军——一个巨魔。" },
+        success: { tokens: 500, addItems: ["大胃王绶带"], addTags: ["大胃王绶带"], message: "你打败了卫冕冠军——一个巨魔。" },
         failure: { attrDelta: { 力量: -1 }, tokens: 100, message: "你吃到第六个面包就倒了。巨魔拍了拍你的背，差点把你拍骨折。" },
       },
       {
@@ -252,7 +253,7 @@ export const demaciaEvents: GameEvent[] = [
     weight: 8,
     name: "德玛西亚美食节 III",
     image: "/events/德玛西亚_01.png",
-    require: { tags: ["大胃王绶带"] },
+    require: { tags: ["大胃王绶带"], notTags: ["终极大胃王——德玛西亚"] },
     desc: "现场的参与者看着你的绶带议论纷纷，这时一位壮汉走了上来，说他叫良子，是德玛西亚美食节的三连霸。",
     choices: [
       {
