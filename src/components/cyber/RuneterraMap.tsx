@@ -9,7 +9,8 @@ import { ALL_CARDS } from "@/lib/cards";
 import { demaciaEvents } from "@/data/events/demacia";
 import InventoryPanel from "./InventoryPanel";
 import EventPanel from "./EventPanel";
-import EventJournal from "./EventJournal";
+import dynamic from "next/dynamic";
+const EventJournal = dynamic(() => import("./EventJournal"), { ssr: false });
 
 interface Region {
   id: string; name: string;
@@ -376,7 +377,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
               📍 {REGIONS.find(r => r.id === currentRegion)?.name || ""}
             </span>
             <InventoryPanel />
-            <EventJournal groupKey={groupKey} />
+            {groupKey && <EventJournal groupKey={groupKey} />}
             <button onClick={onClose} className="font-mono text-xl hover:scale-110 transition-transform"
               style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
           </div>
@@ -386,7 +387,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
         <div className="flex-1 w-full relative overflow-hidden"
           style={{ border: "1px solid rgba(180,160,200,0.15)", borderRadius: "6px", background: "rgba(10,15,25,0.8)" }}>
           {!imgFailed && (
-            <img src="/runeterra-original.png" alt="符文大陆"
+            <img src="/符文大陆原版地图.png" alt="符文大陆"
               className="absolute inset-0 w-full h-full object-cover opacity-75"
               loading="eager"
               onError={() => setImgFailed(true)} />
@@ -394,7 +395,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(3,2,14,0.6) 100%)", pointerEvents: "none" }} />
           {imgFailed && (
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <p className="font-mono text-sm" style={{ color: "rgba(200,200,220,0.12)" }}>将符文大陆地图放入 public/runeterra-original.png</p>
+              <p className="font-mono text-sm" style={{ color: "rgba(200,200,220,0.12)" }}>将符文大陆地图放入 public/符文大陆原版地图.png</p>
             </div>
           )}
 
