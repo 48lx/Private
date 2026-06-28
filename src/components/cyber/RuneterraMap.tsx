@@ -150,15 +150,24 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     // Phase 2: 并行执行所有写操作
     if (writes.length > 0) await Promise.all(writes);
 
-    // 记录事件结果
+    // 记录事件结果（兼容旧格式）
     if (currentEvent) {
-      const seenKey = `seen-events`;
-      const seenRaw = await getProgress(groupKey, seenKey);
-      const seen: Record<string, any> = seenRaw ? JSON.parse(seenRaw) : {};
-      if (seen[currentEvent.id]) {
-        seen[currentEvent.id].choices.push({ index: choiceIndex, msg: outcome.message || "" });
-      }
-      writes.push(setProgress(groupKey, seenKey, JSON.stringify(seen)));
+      try {
+        const seenKey = `seen-events`;
+        const seenRaw = await getProgress(groupKey, seenKey);
+        const seen: Record<string, any> = seenRaw ? JSON.parse(seenRaw) : {};
+        if (seen[currentEvent.id]) {
+          // 兼容旧格式：没有choices数组则转换
+          if (!seen[currentEvent.id].choices) {
+            seen[currentEvent.id].choices = [];
+            if (seen[currentEvent.id].lastChoice !== undefined) {
+              seen[currentEvent.id].choices.push({ index: seen[currentEvent.id].lastChoice, msg: seen[currentEvent.id].lastMsg || "" });
+            }
+          }
+          seen[currentEvent.id].choices.push({ index: choiceIndex, msg: outcome.message || "" });
+        }
+        writes.push(setProgress(groupKey, seenKey, JSON.stringify(seen)));
+      } catch {}
     }
 
     // Phase 3: 并行读取所有最新状态
