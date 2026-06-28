@@ -106,8 +106,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
 
     // 活力
     if (outcome.vitality) {
-      const v = vitality + outcome.vitality;
-      writes.push(setProgress(groupKey, "map-vitality", JSON.stringify({ v: Math.max(0, v), max: maxVitality, date: today })));
+      // -99 表示消耗全部活力
+      const v = outcome.vitality <= -99 ? 0 : Math.max(0, vitality + outcome.vitality);
+      writes.push(setProgress(groupKey, "map-vitality", JSON.stringify({ v, max: maxVitality, date: today })));
+      setVitality(v);
     }
 
     // 属性（需先检查进度，独立读写）
@@ -171,7 +173,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     setAttrs(a);
     setTokenBalance(t);
     setCardCollection(coll);
-    if (vRaw) { const vd = JSON.parse(vRaw); setVitality(vd.v); setMaxVitality(vd.max || 8); }
+    if (vRaw) { const vd = JSON.parse(vRaw); setVitality(vd.v); setMaxVitality((vd.max || 8) + (items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0)); }
     setPlayerState({ attrs: a, tags, items });
     return attrApplied;
   };
@@ -205,10 +207,13 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
           vData = { v: Math.max(maxV, vData.v), max: maxV, date: today };
         }
       } else {
-        vData = { v: 8, max: 8, date: today };
+        const extraMax2 = items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0;
+        vData = { v: 8 + extraMax2, max: 8 + extraMax2, date: today };
       }
       setVitality(vData.v);
-      setMaxVitality(vData.max || 8);
+      // 大胃王绶带：+2 上限
+      const extraMax = items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0;
+      setMaxVitality((vData.max || 8) + extraMax);
       // 位置
       const region = await getProgress(groupKey, "map-region");
       if (region && REGIONS.some(r => r.id === region)) setCurrentRegion(region);

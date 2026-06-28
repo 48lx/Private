@@ -190,4 +190,129 @@ export const demaciaEvents: GameEvent[] = [
       },
     ],
   },
+
+  // ─── 德玛西亚美食节 ───
+  {
+    id: "demacia-food-fest",
+    region: "demacia",
+    type: "side",
+    weight: 8,
+    name: "德玛西亚美食节",
+    image: "/events/德玛西亚_01.png",
+    desc: "德玛西亚正在举办一年一度的美食节。摊位上摆满了各种「德玛西亚特色美食」，但看起来都是不同形态的面包。硬面包汤、面包沙拉、面包蛋糕……",
+    // 默认：阶段一
+    choices: [
+      {
+        label: "免费试吃（消耗「利刃充饥」免单）",
+        check: { hasCard: "blue_刀妹_利刃充饥", consumeCard: true },
+        success: {
+          attrDelta: { 力量: 1, 智力: 1, 敏捷: 1, 魅力: 1 },
+          message: "你吃了十二种面包制品。利刃充饥切面包特别顺手，摊主免了你的单。",
+        },
+      },
+      {
+        label: "免费试吃",
+        success: {
+          vitality: -99,
+          attrDelta: { 力量: 1, 智力: 1, 敏捷: 1, 魅力: 1 },
+          message: "你吃了十二种面包制品。味道还行，但咬得腮帮子疼。",
+        },
+      },
+      {
+        label: "参加大胃王比赛",
+        check: { attrs: { 力量: 13 } },
+        success: {
+          tokens: 500,
+          addItems: ["大胃王绶带"],
+          message: "你打败了卫冕冠军——一个巨魔。",
+        },
+        failure: {
+          attrDelta: { 力量: -1 },
+          tokens: 100,
+          message: "你吃到第六个面包就倒了。巨魔拍了拍你的背，差点把你拍骨折。",
+        },
+      },
+      {
+        label: "吐槽「这不都是面包吗」",
+        success: {
+          attrDelta: { 魅力: -1 },
+          addTags: ["被赶出来的人"],
+          message: "摊主们沉默了一瞬，然后异口同声：「这是传统！」你被赶出了美食节。",
+        },
+      },
+    ],
+    // 分支按顺序匹配，第一个满足的生效
+    branches: [
+      // 阶段三：通关HE
+      {
+        require: { tags: ["终极大胃王——德玛西亚"] },
+        choices: [
+          {
+            label: "接受摊主们的好意",
+            success: {
+              vitality: 8,
+              tokens: 500,
+              message: "你接受了摊主们的好意，预祝大赛越办越好，并狂炫面包。",
+            },
+          },
+          {
+            label: "寻找有无隐藏的强者挑战",
+            success: {
+              addItems: ["大胃王挑战邀请函"],
+              vitality: -2,
+              message: "你看到一个人影从人群中遛过，追了上去却只看到一张纸条。",
+            },
+          },
+        ],
+      },
+      // 阶段二a：BE结局
+      {
+        require: { tags: ["被赶出来的人"] },
+        choices: [
+          {
+            label: "诶嘿，真香！",
+            check: { costTokens: 2000 },
+            success: {
+              removeTags: ["被赶出来的人"],
+              message: "你付了2000代币的「忏悔费」，摊主们原谅了你。",
+            },
+          },
+          {
+            label: "嘲讽「你们都是面包人吗」",
+            success: {
+              attrDelta: { 魅力: -2 },
+              vitality: -1,
+              message: "摊主们不想破坏欢乐的节日氛围，并没有人愿意搭理你。",
+            },
+          },
+        ],
+      },
+      // 阶段二b：挑战强者
+      {
+        require: { tags: ["大胃王绶带"] },
+        choices: [
+          {
+            label: "你笑笑表示今天没有备赛，只是来试吃的",
+            success: {
+              attrDelta: { 力量: 1, 智力: 1, 敏捷: 1, 魅力: 1 },
+              message: "你吃了十二种面包制品。身为大胃王的你，腮帮子更能经受考验了。",
+            },
+          },
+          {
+            label: "你就是良子？我就是来挑战你的",
+            check: { attrs: { 力量: 21 } },
+            success: {
+              tokens: 1000,
+              addTags: ["终极大胃王——德玛西亚"],
+              message: "你打败了德玛西亚大胃王良子！",
+            },
+            failure: {
+              vitality: -4,
+              message: "你吃到第10个面包，却发现良子早已一扫而空，已经在向新来的高手发起挑战邀请。",
+            },
+          },
+        ],
+      },
+    ],
+  },
 ];

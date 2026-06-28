@@ -164,4 +164,13 @@ export const ACHIEVEMENTS: Achievement[] = [
     hidden: true,
     status: "live",
   },
+  {
+    key: "new-continent",
+    name: "新大陆",
+    desc: "首次解锁符文大陆悬浮球",
+    trigger: "首次完成双猜英挑战，解锁悬浮球",
+    reward: { type: "card", cardId: "__fruit_bundle__" },
+    hidden: false,
+    status: "live",
+  },
 ];

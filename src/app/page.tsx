@@ -13,6 +13,7 @@ import HeroGuessEntrance from "@/components/hero-guess/HeroGuessEntrance";
 import CardPanel from "@/components/cards/CardPanel";
 import AchievementPanel from "@/components/achievements/AchievementPanel";
 import { getGroupKey, getProgress, setProgress } from "@/lib/card-storage";
+import { addItem } from "@/lib/player-state";
 
 const PARTICLES = Array.from({ length: 15 }, (_, i) => ({
   id: i,
@@ -65,7 +66,22 @@ export default function Home() {
       const mode = (e as CustomEvent).detail?.mode || "standard";
       const today = new Date().toISOString().split("T")[0];
       await setProgress(gk, `orb-${mode}-${today}`, "1");
-      checkOrbUnlock();
+      // 新大陆成就：首次解锁悬浮球，给五颗随机四维果实
+      const wasUnlocked = orbUnlocked;
+      await checkOrbUnlock();
+      if (!wasUnlocked && orbUnlocked) {
+        const fruits = ["力量+1","智力+1","敏捷+1","魅力+1"];
+        for (let i = 0; i < 5; i++) {
+          await addItem(gk, fruits[Math.floor(Math.random() * fruits.length)]);
+        }
+        // 成就
+        const { tryUnlock: unlockAch } = await import("@/lib/achievement-checker");
+        const r = await unlockAch(gk, "new-continent");
+        if (r?.success) {
+          // 刷新背包
+          try { window.dispatchEvent(new Event("card-group-changed")); } catch {}
+        }
+      }
     };
     window.addEventListener("orb-check", onCheck);
     // 换号时重新检测（同标签页）

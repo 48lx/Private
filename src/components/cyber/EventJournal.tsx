@@ -29,22 +29,14 @@ export default function EventJournal({ groupKey }: Props) {
   const resetEvent = async (eventId: string) => {
     if (!groupKey) return;
     const today = new Date().toISOString().split("T")[0];
-    // 从今日日志移除
+    // 仅从今日日志移除，允许重新遇到
     const raw = await getProgress(groupKey, `daily-events-${today}`);
     if (raw) {
       const log = JSON.parse(raw);
       log.triggeredEvents = log.triggeredEvents.filter((id: string) => id !== eventId);
       await setProgress(groupKey, `daily-events-${today}`, JSON.stringify(log));
     }
-    // 清除该事件所有属性标记
-    for (let i = 0; i < 10; i++) {
-      await setProgress(groupKey, `ev-attr-${eventId}-${i}`, "");
-    }
-    // 清除已见
-    const updated = { ...seenEvents };
-    delete updated[eventId];
-    await setProgress(groupKey, "seen-events", JSON.stringify(updated));
-    setSeenEvents(updated);
+    // 保留属性记录和图鉴记录
   };
 
   const describeOutcome = (o: any): string => {

@@ -93,9 +93,10 @@ export interface GameEvent {
   heroId?: string;          // 英雄ID
   heroStage?: 1 | 2 | 3;   // 阶段
 
-  // 特殊：拥有"被赶出来的人"标签时换一套选项
+  // 特殊分支：按标签/道具走不同选项
   altChoices?: EventChoice[];
   altRequire?: EventRequire;
+  branches?: { require: EventRequire; choices: EventChoice[] }[];
 }
 
 // ─── 事件面板 UI 模型 ───
