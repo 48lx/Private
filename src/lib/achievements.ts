@@ -126,7 +126,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     trigger: "集齐所有gem类型卡片（启示录专辑曲目）",
     reward: { type: "card", cardId: "max_邓紫棋_启示录", tokens: 10000 },
     hidden: false,
-    status: "testing",
+    status: "live",
   },
   {
     key: "not-first-leave",

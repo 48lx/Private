@@ -5,6 +5,7 @@ import { addCard, addTokens } from "./card-storage";
 import { ACHIEVEMENTS } from "./achievements";
 import { ALL_CARDS, CardDef } from "./cards";
 import { champions } from "./lol-data";
+import { addItem } from "./player-state";
 
 // ─── 已解锁缓存（瞬时读）───
 const unlockedCache = new Set<string>();
@@ -26,7 +27,15 @@ export async function tryUnlock(groupKey: string, achKey: string): Promise<{ suc
   if (!ach) return null;
 
   if (ach.reward.type === "card" && ach.reward.cardId) {
-    await addCard(groupKey, ach.reward.cardId, 1);
+    if (ach.reward.cardId === "__fruit_bundle__") {
+      // 5颗随机四维果实
+      const fruits = ["力量+1","智力+1","敏捷+1","魅力+1"];
+      for (let i = 0; i < 5; i++) {
+        await addItem(groupKey, fruits[Math.floor(Math.random() * fruits.length)]);
+      }
+    } else {
+      await addCard(groupKey, ach.reward.cardId, 1);
+    }
   } else if (ach.reward.type === "tokens") {
     await addTokens(groupKey, ach.reward.amount || 0);
   }
