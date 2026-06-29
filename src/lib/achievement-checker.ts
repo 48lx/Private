@@ -26,16 +26,16 @@ export async function tryUnlock(groupKey: string, achKey: string): Promise<{ suc
   const ach = ACHIEVEMENTS.find(a => a.key === achKey);
   if (!ach) return null;
 
-  if (ach.reward.type === "card" && ach.reward.cardId) {
-    if (ach.reward.cardId === "__fruit_bundle__") {
-      // 5颗随机四维果实
-      const fruits = ["力量+1","智力+1","敏捷+1","魅力+1"];
-      for (let i = 0; i < 5; i++) {
-        await addItem(groupKey, fruits[Math.floor(Math.random() * fruits.length)]);
-      }
-    } else {
-      await addCard(groupKey, ach.reward.cardId, 1);
+  // 新大陆额外奖励：5颗随机四维果实
+  if (achKey === "new-continent") {
+    const fruits = ["力量+1","智力+1","敏捷+1","魅力+1"];
+    for (let i = 0; i < 5; i++) {
+      await addItem(groupKey, fruits[Math.floor(Math.random() * fruits.length)]);
     }
+  }
+
+  if (ach.reward.type === "card" && ach.reward.cardId) {
+    await addCard(groupKey, ach.reward.cardId, 1);
   } else if (ach.reward.type === "tokens") {
     await addTokens(groupKey, ach.reward.amount || 0);
   }

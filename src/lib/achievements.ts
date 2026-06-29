@@ -169,7 +169,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     name: "新大陆",
     desc: "首次解锁符文大陆悬浮球",
     trigger: "首次完成双猜英挑战，解锁悬浮球",
-    reward: { type: "card", cardId: "__fruit_bundle__", tokens: 10000 },
+    reward: { type: "card", cardId: "lonely-pull", tokens: 10000 },
     hidden: false,
     status: "live",
   },

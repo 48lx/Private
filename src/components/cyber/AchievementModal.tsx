@@ -38,8 +38,7 @@ export default function AchievementModal() {
 
   if (!visible || !current) return null;
 
-  const isFruitBundle = current.cardId === "__fruit_bundle__";
-  const cardDef = !isFruitBundle && current.cardId ? ALL_CARDS.find(c => c.id === current.cardId) : null;
+  const cardDef = current.cardId ? ALL_CARDS.find(c => c.id === current.cardId) : null;
   const cardImage = cardDef?.imageFile
     ? `/cards/${cardDef.imageFile}`
     : cardDef?.imageUrl || null;
@@ -71,19 +70,8 @@ export default function AchievementModal() {
           {current.name}
         </p>
 
-        {/* Card / Special reward */}
-        {isFruitBundle ? (
-          <div className="flex flex-col items-center mb-4 p-3 border rounded w-full"
-            style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}>
-            <span className="font-mono text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
-              获得道具
-            </span>
-            <span className="text-3xl mb-1">🍎</span>
-            <span className="font-mono text-sm" style={{ color: "#ffd700" }}>
-              随机属性果实 ×5
-            </span>
-          </div>
-        ) : cardDef ? (
+        {/* Card reward */}
+        {cardDef && (
           <div className="flex flex-col items-center mb-4 p-3 border rounded w-full"
             style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}>
             <span className="font-mono text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
@@ -100,7 +88,21 @@ export default function AchievementModal() {
               {cardDef.name}
             </span>
           </div>
-        ) : null}
+        )}
+
+        {/* 新大陆额外奖励 */}
+        {current.name === "新大陆" && (
+          <div className="flex flex-col items-center mb-4 p-3 border rounded w-full"
+            style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)" }}>
+            <span className="font-mono text-xs mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+              额外道具
+            </span>
+            <span className="text-3xl mb-1">🍎</span>
+            <span className="font-mono text-sm" style={{ color: "#ffd700" }}>
+              随机属性果实 ×5
+            </span>
+          </div>
+        )}
 
         {/* Token reward */}
         <div className="flex items-center gap-2 mb-6 font-mono text-lg"
