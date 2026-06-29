@@ -83,7 +83,9 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     const r = executeChoice(c, index, playerState, forceFail);
     // 动态代币：-1 = 魅力×50
     if (r.outcome.tokens === -1) {
-      r.outcome.tokens = attrs.魅力 * 50;
+      const computed = attrs.魅力 * 50;
+      r.outcome.tokens = computed;
+      r.outcome.message = (r.outcome.message || "") + `（魅力${attrs.魅力}×50=+${computed}代币）`;
     }
     // 解析占位符卡片
     if (r.outcome.addCards) {
@@ -169,6 +171,12 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
             <p className="font-mono text-sm leading-relaxed" style={{ color: "rgba(200,200,208,0.7)" }}>
               {event.desc}
             </p>
+            {forceFail && (
+              <div className="mt-2 p-2 border rounded text-center font-mono text-xs"
+                style={{ borderColor: "rgba(255,180,100,0.25)", background: "rgba(255,150,50,0.06)", color: "#ffb464" }}>
+                🍷 纸醉金迷 · 本次事件不消耗活力，但属性判定必定失败
+              </div>
+            )}
           </div>
 
           {/* Card slot — 只显示事件需要的卡 */}

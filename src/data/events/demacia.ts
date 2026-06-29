@@ -380,4 +380,26 @@ export const demaciaEvents: GameEvent[] = [
       },
     ],
   },
+  // ─── 被替换的军旗 ───
+  {
+    id: "demacia-flag-prank",
+    region: "demacia",
+    type: "fun",
+    weight: 9,
+    name: "被替换的军旗",
+    image: "/events/德玛西亚_03.png",
+    desc: "你路过军营，发现旗杆上本该悬挂的德玛西亚军旗，被人换成了一条画着大笑表情的粉色裤衩。一群士兵正围着旗杆抓耳挠腮，看到你，他们眼神一亮。",
+    choices: [
+      {
+        label: "帮忙把裤衩弄下来（敏≥12）",
+        check: { attrs: { 敏捷: 12 } },
+        success: { tokens: 800, attrDelta: { 敏捷: 1 }, message: "你像猴子一样爬上旗杆，在士兵们的欢呼声中取下了裤衩。队长为了感谢你保全了军营的颜面，给了你一笔封口费。" },
+        failure: { vitality: -2, attrDelta: { 魅力: -1 }, message: "你爬到一半滑了下来，还扯坏了那条裤衩。结果裤衩的主人——一个愤怒的约德尔人冲了出来，说这是他的艺术创作。场面一度非常混乱。" },
+      },
+      {
+        label: "指出这是来自敌人典型的挑衅，建议全营戒备",
+        success: { tokens: 500, addTags: ["告密者"], message: "队长觉得你非常有战略眼光，命令全军搜查。结果没找到敌人，反而搜出了好几个士兵私藏的违禁品，队长脸都黑了。你得到了队长的奖赏，却在德玛西亚越发的不受待见。" },
+      },
+    ],
+  },
 ];
