@@ -123,19 +123,18 @@ export default function Home() {
             {/* 跨天测试按钮 */}
             <div className="fixed z-50" style={{ bottom: "80px", left: "50%", marginLeft: "-20px" }}>
               <button onClick={async () => {
+                if (!confirm("跳至下一天？仅重置悬浮球今日猜英进度（不影响事件/活力）")) return;
                 const gk = getGroupKey();
                 const today = new Date().toISOString().split("T")[0];
-                // 清除 Supabase orb 进度
                 if (gk) {
                   await setProgress(gk, `orb-std-${today}`, "0");
                   await setProgress(gk, `orb-uzi-${today}`, "0");
                 }
-                // 清除 localStorage
                 try { localStorage.removeItem(`hero-solved-standard-${gk}`); } catch {}
                 try { localStorage.removeItem(`hero-solved-uzi-${gk}`); } catch {}
                 try { localStorage.removeItem("hero-solved-standard"); } catch {}
                 try { localStorage.removeItem("hero-solved-uzi"); } catch {}
-                setOrbUnlocked(false);
+                await checkOrbUnlock();
               }}
                 className="font-mono text-[10px] px-2 py-1 border opacity-20 hover:opacity-70 transition-opacity"
                 style={{ color: "rgba(255,255,255,0.3)", borderColor: "rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.3)" }}
