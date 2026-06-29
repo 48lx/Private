@@ -120,28 +120,29 @@ export default function Home() {
               unlocked={orbUnlocked}
               onClick={() => { if (orbUnlocked) setShowMap(true); }}
             />
-            {/* 跨天测试按钮 */}
+            {/* 跨天测试按钮 — 重置事件+活力，不碰悬浮球 */}
             <div className="fixed z-50" style={{ bottom: "80px", left: "50%", marginLeft: "-20px" }}>
               <button onClick={async () => {
-                if (!confirm("跳至下一天？仅重置悬浮球今日猜英进度（不影响事件/活力）")) return;
+                if (!confirm("模拟跨天？\n• 重置今日事件（可重新探索）\n• 活力回满\n• 不影响悬浮球/猜英")) return;
                 const gk = getGroupKey();
                 const today = new Date().toISOString().split("T")[0];
                 if (gk) {
-                  await setProgress(gk, `orb-std-${today}`, "0");
-                  await setProgress(gk, `orb-uzi-${today}`, "0");
+                  // 1. 清除今日事件触发记录
+                  await setProgress(gk, `daily-events-${today}`, "");
+                  // 2. 活力回满
+                  const vRaw = await getProgress(gk, "map-vitality");
+                  if (vRaw) {
+                    const vd = JSON.parse(vRaw);
+                    await setProgress(gk, "map-vitality", JSON.stringify({ v: vd.max || 8, max: vd.max || 8, date: today }));
+                  }
+                  alert("已跨天：事件已重置，活力已回满。关闭地图重新进入即可。");
+                } else {
+                  alert("请先登录卡牌暗号");
                 }
-                // 清除所有猜英相关 localStorage
-                for (const mode of ["std","uzi"]) {
-                  try { localStorage.removeItem(`hero-solved-${mode}-${gk}`); } catch {}
-                  try { localStorage.removeItem(`hero-solved-${mode}`); } catch {}
-                  try { localStorage.removeItem(`${gk || "anon"}-guess-${mode}-${today}`); } catch {}
-                  try { localStorage.removeItem(`anon-guess-${mode}-${today}`); } catch {}
-                }
-                await checkOrbUnlock();
               }}
                 className="font-mono text-[10px] px-2 py-1 border opacity-20 hover:opacity-70 transition-opacity"
                 style={{ color: "rgba(255,255,255,0.3)", borderColor: "rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.3)" }}
-                title="跳至下一天（仅悬浮球）">⏩ 跨天</button>
+                title="模拟跨天（重置事件+活力）">⏩ 跨天</button>
             </div>
           </>
         )}
