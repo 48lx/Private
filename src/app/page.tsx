@@ -44,13 +44,13 @@ export default function Home() {
         getProgress(gk, `orb-std-${today}`),
         getProgress(gk, `orb-uzi-${today}`),
       ]);
-      const stdOk = std === "1" || localStorage.getItem("hero-solved-standard") === today;
-      const uziOk = uzi === "1" || localStorage.getItem("hero-solved-uzi") === today;
+      const stdOk = std === "1" || localStorage.getItem(`hero-solved-standard-${gk}`) === today;
+      const uziOk = uzi === "1" || localStorage.getItem(`hero-solved-uzi-${gk}`) === today;
       // 同步到 Supabase
-      if (!std && localStorage.getItem("hero-solved-standard") === today) {
+      if (!std && localStorage.getItem(`hero-solved-standard-${gk}`) === today) {
         await setProgress(gk, `orb-std-${today}`, "1");
       }
-      if (!uzi && localStorage.getItem("hero-solved-uzi") === today) {
+      if (!uzi && localStorage.getItem(`hero-solved-uzi-${gk}`) === today) {
         await setProgress(gk, `orb-uzi-${today}`, "1");
       }
       const result = stdOk && uziOk;

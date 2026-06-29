@@ -182,9 +182,9 @@ export default function HeroGuessPanel({ isOpen, onClose, initialMode }: Props) 
       const fresh = pickRandom(ALL_DIMS, stainCount);
       setStains(fresh);
       setStainSnapshots(prev => [...prev, fresh]);
-      if (isCorrect) giveReward("uzi"); if (isCorrect || newHistory.length >= UZI_MAX) setSolved(true); try { localStorage.setItem("hero-solved-uzi", new Date().toISOString().split("T")[0]); } catch {} if (isCorrect) { try { const gk=getGroupKey(); window.dispatchEvent(new CustomEvent("orb-check",{detail:{groupKey:gk, mode:"uzi"}})); } catch {} }
+      const gkUzi = getGroupKey(); if (isCorrect) giveReward("uzi"); if (isCorrect || newHistory.length >= UZI_MAX) setSolved(true); try { if (gkUzi) localStorage.setItem(`hero-solved-uzi-${gkUzi}`, new Date().toISOString().split("T")[0]); } catch {} if (isCorrect) { try { window.dispatchEvent(new CustomEvent("orb-check",{detail:{groupKey:gkUzi, mode:"uzi"}})); } catch {} }
     } else {
-      const gk=getGroupKey();if(gk&&!isCorrect)checkWrongGuesses(gk);if(isCorrect) { giveReward("standard"); setSolved(true); try { localStorage.setItem("hero-solved-standard", new Date().toISOString().split("T")[0]); } catch {} try { window.dispatchEvent(new CustomEvent("orb-check",{detail:{groupKey:gk, mode:"standard"}})); } catch {} }
+      const gk=getGroupKey();if(gk&&!isCorrect)checkWrongGuesses(gk);if(isCorrect) { giveReward("standard"); setSolved(true); try { localStorage.setItem(`hero-solved-standard-${gk}`, new Date().toISOString().split("T")[0]); } catch {} try { window.dispatchEvent(new CustomEvent("orb-check",{detail:{groupKey:gk, mode:"standard"}})); } catch {} }
     }
   };
 

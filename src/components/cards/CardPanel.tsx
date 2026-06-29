@@ -39,18 +39,21 @@ export default function CardPanel() {
 
   const loadData = async (key: string) => {
     const t = await getTokens(key);
-    const c = await getCollection(key);
+    const raw = await getCollection(key);
+    // 过滤 __ 开头的幽灵卡（如 __fruit_bundle__）
+    const c = raw.filter(card => !card.card_id.startsWith("__"));
     setTokens(t); setCollection(c);
     // 成就检查（弹窗由 AchievementModal 全局接管）
     const results = await Promise.all([
       checkFreljordComplete(key, c),
       checkRevelation(key, c),
       checkBasketball(key, c),
+      checkFirstLogin(key),
     ]);
     if (results.some(r => r?.success)) {
       // 成就奖励包含卡牌/代币，刷新状态
       const [t2, c2] = await Promise.all([getTokens(key), getCollection(key)]);
-      setTokens(t2); setCollection(c2);
+      setTokens(t2); setCollection(c2.filter(card => !card.card_id.startsWith("__")));
     }
   };
 
