@@ -130,10 +130,13 @@ export default function Home() {
                   await setProgress(gk, `orb-std-${today}`, "0");
                   await setProgress(gk, `orb-uzi-${today}`, "0");
                 }
-                try { localStorage.removeItem(`hero-solved-standard-${gk}`); } catch {}
-                try { localStorage.removeItem(`hero-solved-uzi-${gk}`); } catch {}
-                try { localStorage.removeItem("hero-solved-standard"); } catch {}
-                try { localStorage.removeItem("hero-solved-uzi"); } catch {}
+                // 清除所有猜英相关 localStorage
+                for (const mode of ["std","uzi"]) {
+                  try { localStorage.removeItem(`hero-solved-${mode}-${gk}`); } catch {}
+                  try { localStorage.removeItem(`hero-solved-${mode}`); } catch {}
+                  try { localStorage.removeItem(`${gk || "anon"}-guess-${mode}-${today}`); } catch {}
+                  try { localStorage.removeItem(`anon-guess-${mode}-${today}`); } catch {}
+                }
                 await checkOrbUnlock();
               }}
                 className="font-mono text-[10px] px-2 py-1 border opacity-20 hover:opacity-70 transition-opacity"
