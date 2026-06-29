@@ -116,7 +116,6 @@ export const demaciaEvents: GameEvent[] = [
         label: "展示「菲奥娜」英雄卡片",
         check: { hasCard: "champ-fiora" },
         success: { tokens: 300, message: "你亮出劳伦特家族的卡片，少爷立刻立正：「原来是家族的朋友！失敬！」他送上一份赔礼。" },
-        consumeCard: true,
       },
     ],
   },
@@ -181,7 +180,7 @@ export const demaciaEvents: GameEvent[] = [
       },
       {
         label: "点歌",
-        check: { hasCard: "__revelation__", costTokens: 200, consumeCard: true },
+        check: { hasCard: "__revelation__", costTokens: 200 },
         success: {
           vitality: 8,
           attrDelta: { 魅力: 1 },
@@ -204,7 +203,7 @@ export const demaciaEvents: GameEvent[] = [
     choices: [
       {
         label: "免费试吃（出示「利刃充饥」免活力消耗）",
-        check: { hasCard: "blue_刀妹_利刃充饥", consumeCard: true },
+        check: { hasCard: "blue_刀妹_利刃充饥" },
         success: { addItems: ["__random_attr__"], message: "你吃了十二种面包制品。味道还行，但咬得腮帮子疼。" },
       },
       {
