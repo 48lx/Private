@@ -237,7 +237,7 @@ export const demaciaEvents: GameEvent[] = [
       {
         label: "诶嘿，真香！",
         check: { costTokens: 2000 },
-        success: { removeTags: ["被赶出来的人"], message: "你付了2000代币的「忏悔费」，摊主们原谅了你。" },
+        success: { removeTags: ["被赶出来的人"], message: "你付了2000金币的「忏悔费」，摊主们原谅了你。" },
       },
       {
         label: "嘲讽「你们都是面包人吗」",
@@ -302,7 +302,7 @@ export const demaciaEvents: GameEvent[] = [
     choices: [
       {
         label: "鼓励他当兵",
-        success: { tokens: 600, message: "你跟他讲了一堆荣誉、责任之类的大道理。他勉强点点头。获得600代币（来自他家人的感谢），但少年眼中失去了光。" },
+        success: { tokens: 600, message: "你跟他讲了一堆荣誉、责任之类的大道理。他勉强点点头。获得600金币（来自他家人的感谢），但少年眼中失去了光。" },
       },
       {
         label: "鼓励他当花匠",

@@ -92,7 +92,7 @@ export default function AchievementPanel() {
                   <div className="mt-1.5 pt-1.5 border-t" style={{ borderColor: "rgba(255,215,0,0.08)" }}>
                     <p className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.3)" }}>{ach.trigger}</p>
                     <p className="font-mono text-sm mt-1" style={{ color: "#ffd700" }}>
-                      🎁 {ach.reward.type === "card" ? (() => { const ci = cardInfo(ach.reward.cardId!); return `${ci.name} · ${ci.rarity}`; })() : `${ach.reward.amount}代币`}
+                      🎁 {ach.reward.type === "card" ? (() => { const ci = cardInfo(ach.reward.cardId!); return `${ci.name} · ${ci.rarity}`; })() : `${ach.reward.amount}金币`}
                     </p>
                   </div>
                 )}
@@ -100,7 +100,7 @@ export default function AchievementPanel() {
                   <div className="mt-1.5 pt-1.5 border-t" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
                     <p className="font-mono text-sm" style={{ color: "rgba(200,200,208,0.2)" }}>{ach.trigger}</p>
                     <p className="font-mono text-sm mt-1" style={{ color: "rgba(255,215,0,0.3)" }}>
-                      🎁 {ach.reward.type === "card" ? (() => { const ci = cardInfo(ach.reward.cardId!); return `${ci.name} · ${ci.rarity}`; })() : `${ach.reward.amount}代币`}
+                      🎁 {ach.reward.type === "card" ? (() => { const ci = cardInfo(ach.reward.cardId!); return `${ci.name} · ${ci.rarity}`; })() : `${ach.reward.amount}金币`}
                     </p>
                   </div>
                 )}

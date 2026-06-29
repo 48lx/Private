@@ -50,7 +50,7 @@ export default function EventJournal({ groupKey }: Props) {
 
   const describeOutcome = (o: any): string => {
     const parts: string[] = [];
-    if (o.tokens) parts.push(`代币${o.tokens > 0 ? "+" : ""}${o.tokens}`);
+    if (o.tokens) parts.push(`金币${o.tokens > 0 ? "+" : ""}${o.tokens}`);
     if (o.vitality) parts.push(`活力${o.vitality > 0 ? "+" : ""}${o.vitality}`);
     if (o.attrDelta) for (const [k, v] of Object.entries(o.attrDelta)) parts.push(`${k}${Number(v) > 0 ? "+" : ""}${v}（仅一次）`);
     if (o.addTags?.length) parts.push(`标签:${o.addTags.join(",")}`);

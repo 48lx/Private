@@ -49,7 +49,7 @@ export default function HeroGuessPanel({ isOpen, onClose, initialMode }: Props) 
   const [uziGuessed, setUziGuessed] = useState<Set<string>>(new Set());
   const [tokenBalance, setTokenBalance] = useState(0);
 
-  // 获取代币
+  // 获取金币
   useEffect(() => {
     const gk = getGroupKey();
     if (gk) getTokens(gk).then(setTokenBalance);
@@ -105,7 +105,7 @@ export default function HeroGuessPanel({ isOpen, onClose, initialMode }: Props) 
       const gk = getGroupKey();
       if (gk) {
         const ok = await spendTokens(gk, 100);
-        if (!ok) { alert("代币不足！需要100币重新猜测"); return; }
+        if (!ok) { alert("金币不足！需要100币重新猜测"); return; }
         setTokenBalance(b => b - 100);
       }
       setRetryCount(c => c + 1);
@@ -358,7 +358,7 @@ export default function HeroGuessPanel({ isOpen, onClose, initialMode }: Props) 
                                 style={{ borderColor: "rgba(80,60,40,0.25)", background: "rgba(60,40,20,0.2)" }}>
                                 <span style={{ fontSize: "18px", filter: "blur(2px)", opacity: 0.4 }}>🫧</span>
                                 {!blocked && !solved && (
-                                  <button onClick={async (e) => { e.stopPropagation(); const gk = getGroupKey(); if (!gk) return; const ok = await spendTokens(gk, 50); if (!ok) { alert("代币不足"); return; } setTokenBalance(b => b - 50); setStainSnapshots(prev => prev.map((s, si) => si === i ? s.filter(d => d !== r.dimension) : s)); }}
+                                  <button onClick={async (e) => { e.stopPropagation(); const gk = getGroupKey(); if (!gk) return; const ok = await spendTokens(gk, 50); if (!ok) { alert("金币不足"); return; } setTokenBalance(b => b - 50); setStainSnapshots(prev => prev.map((s, si) => si === i ? s.filter(d => d !== r.dimension) : s)); }}
                                     className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 font-mono text-[8px] px-0.5 border cursor-pointer"
                                     style={{ color: "#ffd700", background: "rgba(0,0,0,0.8)", borderColor: "rgba(255,215,0,0.3)" }}>✕50</button>
                                 )}

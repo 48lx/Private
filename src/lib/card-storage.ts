@@ -103,6 +103,12 @@ export async function removeCard(groupKey: string, cardId: string, amount: numbe
   }
 }
 
+export async function removeCardsBulk(groupKey: string, cardIds: string[]) {
+  for (const id of cardIds) {
+    await removeCard(groupKey, id, 1);
+  }
+}
+
 // ─── 进度存储 ───
 export async function getProgress(groupKey: string, key: string): Promise<string> {
   const { data } = await supabase.from("user_progress").select("value").eq("group_key", groupKey).eq("key", key).maybeSingle();

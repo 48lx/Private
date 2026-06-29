@@ -51,7 +51,7 @@ export default function CardPanel() {
       checkFirstLogin(key),
     ]);
     if (results.some(r => r?.success)) {
-      // 成就奖励包含卡牌/代币，刷新状态
+      // 成就奖励包含卡牌/金币，刷新状态
       const [t2, c2] = await Promise.all([getTokens(key), getCollection(key)]);
       setTokens(t2); setCollection(c2.filter(card => !card.card_id.startsWith("__")));
     }
@@ -79,7 +79,7 @@ export default function CardPanel() {
     if (!loggedIn || drawing) return;
     const price = drawPrice(count);
     const ok = await spendTokens(groupKey, price);
-    if (!ok) { alert("代币不足！"); return; }
+    if (!ok) { alert("金币不足！"); return; }
     setDrawing(true);
     const cards = drawMulti(count);
     // 批量写入——一次网络请求搞定
@@ -170,7 +170,7 @@ export default function CardPanel() {
       setAutumnEquipped(true);
       showToast("🍂 秋 已装备！下次合成失败将保留全部卡牌", "#ffd700");
     }
-    // 意外之财：获得500代币
+    // 意外之财：获得500金币
     else if (cardId === "windfall") {
       await decomposeCard(groupKey, cardId, 1, 0);
       await addTokens(groupKey, 500);
@@ -579,7 +579,7 @@ export default function CardPanel() {
                   { name: "妮蔻之助·金", desc: "自选任意一张金卡，输入英雄/皮肤名即可兑换。⚠️ 不可通过保底获取，仅限崔斯特赌约/每日签到。", color: "#ffd700" },
                   { name: "崔斯特的赌约", desc: "🎰头彩(1%)=触发一次百连抽 / 红牌(29%)=扣200币 / 蓝牌(60%)=随机蓝卡 / 金牌(10%)=妮蔻之助·金。", color: "#ffd700" },
                   { name: "孤立无援", desc: "从图鉴中你尚未拥有的所有卡里，按稀有度权重随机抽一张（已全图鉴则无效）。", color: "#ffd700" },
-                  { name: "意外之财", desc: "直接获得500代币，简单粗暴。", color: "#4da8da" },
+                  { name: "意外之财", desc: "直接获得500金币，简单粗暴。", color: "#4da8da" },
                   { name: "合成守护符", desc: "在合成界面装备后，若合成失败则不扣除任何卡牌（仅消耗守护符本身）。一次性消耗品。", color: "#ffd700" },
                   { name: "秋", desc: "使用后活力值回满至上限。", color: "#ffd700" },
                   { name: "老维的欠条", desc: "消耗1张「老维」卡，进行一次十连抽。需要先拥有至少一张老维。", color: "#4da8da" },

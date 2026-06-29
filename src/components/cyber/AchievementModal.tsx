@@ -108,7 +108,7 @@ export default function AchievementModal() {
         <div className="flex items-center gap-2 mb-6 font-mono text-lg"
           style={{ color: "#ffd700" }}>
           <span>🪙</span>
-          <span>{current.tokens.toLocaleString()} 代币</span>
+          <span>{current.tokens.toLocaleString()} 金币</span>
         </div>
 
         {/* Confirm button */}

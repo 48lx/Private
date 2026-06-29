@@ -103,13 +103,13 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       if (existing && existing.qty > 0) {
         const amount = clueSet.has(itemId) ? 500 : 300;
         tokenDelta += amount;
-        showToast(`已拥有「${itemId}」，自动分解为${amount}代币`);
+        showToast(`已拥有「${itemId}」，自动分解为${amount}金币`);
       } else {
         writes.push(addItem(groupKey, itemId));
       }
     }
 
-    // 代币（合并后一次写入）
+    // 金币（合并后一次写入）
     if (tokenDelta > 0) writes.push(addTokens(groupKey, tokenDelta));
     else if (tokenDelta < 0) writes.push(spendTokens(groupKey, -tokenDelta));
 
@@ -131,16 +131,23 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       }
     }
 
-    // 线索
+    // 线索（重复→500金币）
     if (outcome.addClues) for (const cl of outcome.addClues) {
-      writes.push(setProgress(groupKey, `clue-${cl.region}-${cl.type}`, cl.data));
+      const clueKey = `clue-${cl.region}-${cl.type}`;
+      const existing = await getProgress(groupKey, clueKey);
+      if (existing) {
+        tokenDelta += 500;
+        showToast(`已拥有线索「${cl.type}」，自动分解为500金币`);
+      } else {
+        writes.push(setProgress(groupKey, clueKey, cl.data));
+      }
     }
-    // 标签（重复获取→300代币）
+    // 标签（重复获取→300金币）
     if (outcome.addTags) {
       for (const t of outcome.addTags) {
         if (playerState?.tags?.includes(t)) {
           tokenDelta += 300;
-          showToast(`已拥有标签「${t}」，自动分解为300代币`);
+          showToast(`已拥有标签「${t}」，自动分解为300金币`);
         } else {
           writes.push(addTag(groupKey, t));
         }
@@ -148,6 +155,11 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     }
     if (outcome.removeTags) for (const t of outcome.removeTags) writes.push(removeTag(groupKey, t));
 
+    // 失去卡牌
+    if (outcome.removeCards?.length) {
+      const { removeCardsBulk } = await import("@/lib/card-storage");
+      writes.push(removeCardsBulk(groupKey, outcome.removeCards));
+    }
     // 卡牌
     if (outcome.addCards?.length) {
       const resolved = outcome.addCards.map(id => {

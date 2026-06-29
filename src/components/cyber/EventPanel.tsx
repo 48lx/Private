@@ -53,7 +53,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
 
   const buildRewardText = (o: EventOutcome): string => {
     const parts: string[] = [];
-    if (o.tokens) parts.push(`代币 ${o.tokens > 0 ? "+" : ""}${o.tokens}`);
+    if (o.tokens) parts.push(`金币 ${o.tokens > 0 ? "+" : ""}${o.tokens}`);
     if (o.vitality) parts.push(`活力 ${o.vitality > 0 ? "+" : ""}${o.vitality}`);
     if (o.attrDelta) {
       for (const [k, v] of Object.entries(o.attrDelta)) {
@@ -81,11 +81,11 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     const c = choices[index]?.choice;
     if (!c) return;
     const r = executeChoice(c, index, playerState, forceFail);
-    // 动态代币：-1 = 魅力×50
+    // 动态金币：-1 = 魅力×50
     if (r.outcome.tokens === -1) {
       const computed = attrs.魅力 * 50;
       r.outcome.tokens = computed;
-      r.outcome.message = (r.outcome.message || "") + `（魅力${attrs.魅力}×50=+${computed}代币）`;
+      r.outcome.message = (r.outcome.message || "") + `（魅力${attrs.魅力}×50=+${computed}金币）`;
     }
     // 解析占位符卡片
     if (r.outcome.addCards) {
@@ -100,6 +100,10 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
         }
         return id;
       });
+    }
+    // 消耗卡槽中的卡
+    if (c.check?.consumeCard && cardSlot) {
+      r.outcome.removeCards = [...(r.outcome.removeCards || []), cardSlot];
     }
     outcomeApplied.current = true;
     const attrApplied = await onResult(r.outcome, index, r.success);
@@ -240,7 +244,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
           {/* Choices / Result */}
           <div className="flex-1 flex flex-col justify-end" style={{ gap: "0.75rem", paddingBottom: "1.25rem" }}>
             {result ? (() => {
-              // 使用实际执行后的 outcome（含动态代币等处理），仅属性显示受 attrApplied 控制
+              // 使用实际执行后的 outcome（含动态金币等处理），仅属性显示受 attrApplied 控制
               const displayOutcome = result.attrApplied ? result.outcome : { ...result.outcome, attrDelta: undefined };
               const rewardText = buildRewardText(displayOutcome);
               return (
@@ -276,6 +280,9 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
                     cursor: c.disabled ? "not-allowed" : "pointer",
                   }}>
                   {c.choice.label}
+                  {c.choice.check?.consumeCard && (
+                    <span className="block text-xs mt-1" style={{ color: "rgba(255,140,80,0.6)" }}>⚠️ 选择后将消耗卡槽中的卡牌</span>
+                  )}
                   {c.disabled && c.reason && (
                     <span className="block text-xs mt-1" style={{ color: "rgba(255,51,85,0.4)" }}>需要 {c.reason}</span>
                   )}
