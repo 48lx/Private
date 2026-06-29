@@ -52,7 +52,7 @@ export default function EventJournal({ groupKey }: Props) {
     const parts: string[] = [];
     if (o.tokens) parts.push(`代币${o.tokens > 0 ? "+" : ""}${o.tokens}`);
     if (o.vitality) parts.push(`活力${o.vitality > 0 ? "+" : ""}${o.vitality}`);
-    if (o.attrDelta) for (const [k, v] of Object.entries(o.attrDelta)) parts.push(`${k}${Number(v) > 0 ? "+" : ""}${v}`);
+    if (o.attrDelta) for (const [k, v] of Object.entries(o.attrDelta)) parts.push(`${k}${Number(v) > 0 ? "+" : ""}${v}（仅一次）`);
     if (o.addTags?.length) parts.push(`标签:${o.addTags.join(",")}`);
     if (o.removeTags?.length) parts.push(`移除:${o.removeTags.join(",")}`);
     if (o.addItems?.length) {
@@ -160,7 +160,7 @@ export default function EventJournal({ groupKey }: Props) {
                             <span style={{ color: isChosen ? "#ffd700" : "rgba(200,200,208,0.2)" }}>{isChosen ? "▶" : "·"}</span>
                             <div className="flex-1">
                               <span style={{ color: isChosen ? "#ffd700" : "rgba(200,200,208,0.35)" }}>
-                                {c.label}{c.check?.attrs ? ` [${Object.entries(c.check.attrs).map(([k,v]) => `${k}≥${v}`).join(",")}]` : ""}
+                                {c.label}{c.check?.attrs ? ` [${Object.entries(c.check.attrs).map(([k,v]) => `${k}≥${v}`).join(",")}]` : ""}{c.success.attrDelta || c.failure?.attrDelta ? <span style={{color:"rgba(255,200,100,0.45)",fontSize:10,marginLeft:4}}>仅一次</span> : null}
                               </span>
                               {hits.map((h, hi) => (
                                 <div key={hi} className="mt-0.5">
@@ -181,7 +181,7 @@ export default function EventJournal({ groupKey }: Props) {
                               <div key={i} className="flex items-start gap-2 font-mono text-xs mt-1">
                                 <span style={{ color: hits.length > 0 ? "#ffd700" : "rgba(200,200,208,0.2)" }}>{hits.length > 0 ? "▶" : "·"}</span>
                                 <div className="flex-1">
-                                  <span style={{ color: hits.length > 0 ? "#ffd700" : "rgba(200,200,208,0.35)" }}>{c.label}</span>
+                                  <span style={{ color: hits.length > 0 ? "#ffd700" : "rgba(200,200,208,0.35)" }}>{c.label}{c.success.attrDelta || c.failure?.attrDelta ? <span style={{color:"rgba(255,200,100,0.45)",fontSize:10,marginLeft:4}}>仅一次</span> : null}</span>
                                   {hits.map((h, hi) => (
                                     <div key={hi} className="mt-0.5">
                                       <span style={{ color: h.success ? "rgba(0,255,136,0.5)" : "rgba(255,51,85,0.5)" }}>{h.success ? "✅" : "❌"} {h.msg}</span>
