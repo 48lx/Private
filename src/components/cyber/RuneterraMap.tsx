@@ -76,6 +76,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [overviewImage, setOverviewImage] = useState("");
   const [overviewClues, setOverviewClues] = useState<(string | null)[]>(Array(5).fill(null));
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [paperDrunkActive, setPaperDrunkActive] = useState(false);
   const [cardCollection, setCardCollection] = useState<{ card_id: string; count: number }[]>([]);
 
   const ALL_EVENTS = [...demaciaEvents];
@@ -134,8 +135,17 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     if (outcome.addClues) for (const cl of outcome.addClues) {
       writes.push(setProgress(groupKey, `clue-${cl.region}-${cl.type}`, cl.data));
     }
-    // 标签
-    if (outcome.addTags) for (const t of outcome.addTags) writes.push(addTag(groupKey, t));
+    // 标签（重复获取→300代币）
+    if (outcome.addTags) {
+      for (const t of outcome.addTags) {
+        if (playerState?.tags?.includes(t)) {
+          tokenDelta += 300;
+          showToast(`已拥有标签「${t}」，自动分解为300代币`);
+        } else {
+          writes.push(addTag(groupKey, t));
+        }
+      }
+    }
     if (outcome.removeTags) for (const t of outcome.removeTags) writes.push(removeTag(groupKey, t));
 
     // 卡牌
@@ -602,7 +612,21 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                   <div className="w-full" style={{ maxWidth: "520px", paddingBottom: "6px" }}>
                     <button onClick={async () => {
                         if (vitality < EXPLORE_COST) { showToast(`活力不足`); return; }
-                        await saveVitality(vitality - EXPLORE_COST);
+                        // 纸醉金迷：每日首次探索免活力，检定必败
+                        let firstExplore = false;
+                        if (playerState?.tags?.includes("纸醉金迷")) {
+                          const today2 = new Date().toISOString().split("T")[0];
+                          const raw = await getProgress(groupKey, `daily-events-${today2}`);
+                          const dailyLog: DailyLog = raw ? JSON.parse(raw) : { date: today2, triggeredEvents: [], vitalityUsed: 0 };
+                          if (dailyLog.triggeredEvents.length === 0) {
+                            firstExplore = true;
+                            showToast("🍷 纸醉金迷：首次探索免活力，但检定必败");
+                          }
+                        }
+                        if (!firstExplore) {
+                          await saveVitality(vitality - EXPLORE_COST);
+                        }
+                        setPaperDrunkActive(firstExplore);
                         if (overviewRegion === "demacia" && playerState) {
                           const today2 = new Date().toISOString().split("T")[0];
                           const raw = await getProgress(groupKey, `daily-events-${today2}`);
@@ -644,6 +668,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             tokens={tokenBalance}
             fixedImage={eventImage}
             cardCollection={cardCollection}
+            forceFail={paperDrunkActive}
             onResult={async (outcome, choiceIndex, success) => {
               return await applyOutcome(outcome, choiceIndex, success);
             }}

@@ -69,7 +69,13 @@ export function executeChoice(
   choice: EventChoice,
   choiceIndex: number,
   playerState: PlayerState,
+  forceFail?: boolean,
 ): ChoiceResult {
+  // 纸醉金迷：每日首次探索检定必定失败
+  if (forceFail && choice.check) {
+    const outcome = choice.failure || choice.success;
+    return { choiceIndex, success: false, outcome };
+  }
   // 判定
   let success = true;
   if (choice.check) {

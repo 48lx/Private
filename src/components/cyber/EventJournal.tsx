@@ -31,6 +31,11 @@ export default function EventJournal({ groupKey }: Props) {
   };
 
   useEffect(() => { if (isOpen) load(); }, [isOpen, groupKey]);
+  useEffect(() => {
+    const handler = () => setIsOpen(true);
+    window.addEventListener("open-event-journal", handler);
+    return () => window.removeEventListener("open-event-journal", handler);
+  }, []);
 
   const resetEvent = async (eventId: string) => {
     if (!groupKey) return;
@@ -63,7 +68,7 @@ export default function EventJournal({ groupKey }: Props) {
 
   const allEvents = [...demaciaEvents];
   const regions = [...new Set(allEvents.map(e => e.region))];
-  const eventTypes = ["all", "fun", "clue", "normal", "side", "hero"] as const;
+  const eventTypes = ["all", "fun", "clue", "side", "hero"] as const;
 
   const [filterRegion, setFilterRegion] = useState<string>("demacia");
   const [filterType, setFilterType] = useState<string>("all");
@@ -126,7 +131,7 @@ export default function EventJournal({ groupKey }: Props) {
                     style={{
                       color: filterType === t ? "#ffd700" : "rgba(200,200,208,0.25)",
                       borderBottom: filterType === t ? "2px solid #ffd700" : "2px solid transparent",
-                    }}>{t === "all" ? "全部" : t === "fun" ? "趣味" : t === "clue" ? "线索" : t === "normal" ? "普通" : t === "side" ? "支线" : "英雄"}</button>
+                    }}>{t === "all" ? "全部" : t === "fun" ? "趣味" : t === "clue" ? "线索" : t === "side" ? "支线" : "英雄"}</button>
                 ))}
               </div>
 

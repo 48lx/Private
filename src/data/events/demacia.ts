@@ -352,4 +352,32 @@ export const demaciaEvents: GameEvent[] = [
       },
     ],
   },
+  // ─── 小酒馆的诗歌之夜 ───
+  {
+    id: "demacia-tavern-poetry",
+    region: "demacia",
+    type: "fun",
+    weight: 11,
+    name: "小酒馆的诗歌之夜",
+    image: "/events/德玛西亚_02.png",
+    desc: "小酒馆今晚举办诗歌比赛，主题是「赞美德玛西亚」。酒馆里挤满了人，一个吟游诗人站在桌子上，弹着鲁特琴。他唱了一首关于盖伦和卡特琳娜的禁忌爱情诗，全场起哄。",
+    choices: [
+      {
+        label: "上台表演（魅力≥9）",
+        check: { attrs: { 魅力: 9 } },
+        success: { attrDelta: { 魅力: 1 }, tokens: -1, message: "你即兴创作了一首关于德玛西亚面包的无厘头打油诗，全场爆笑。吟游诗人表示要拜你为师。" },
+        failure: { attrDelta: { 魅力: -1 }, message: "你忘词了，在台上站了一分钟，支支吾吾说不出一句完整的台词，最终在一片嘘声中羞愧下台。" },
+      },
+      {
+        label: "来一场昆特牌吗",
+        check: { costTokens: 50 },
+        success: { tokens: -50, addCards: ["twisted-gamble"], message: "你径直走向酒馆吧台，跳过一切对话，迅速向老板发起了昆特牌邀请。" },
+      },
+      {
+        label: "在角落喝酒，美美的欣赏诗歌",
+        check: { costTokens: 2000 },
+        success: { tokens: -2000, addTags: ["纸醉金迷"], message: "你什么都没做，只喝了一杯淡啤酒。但角落里有个陌生人对你说：「你不喜欢热闹？」就这样，你与这位新朋友开启了一场畅谈，共同度过了愉快的夜晚。隔天起来，你还是无法忘怀昨天的经历，却只看见一张纸条「多谢款待」。" },
+      },
+    ],
+  },
 ];

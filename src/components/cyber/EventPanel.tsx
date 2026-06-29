@@ -39,10 +39,11 @@ interface Props {
   tokens: number;
   fixedImage: string;
   cardCollection: { card_id: string; count: number }[];
+  forceFail?: boolean;
 }
 
-export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage, cardCollection }: Props) {
-  const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string; attrApplied: boolean } | null>(null);
+export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage, cardCollection, forceFail }: Props) {
+  const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string; attrApplied: boolean; outcome: EventOutcome } | null>(null);
   const [cardSlot, setCardSlot] = useState<string | null>(null);
   const outcomeApplied = useRef(false);
 
@@ -79,7 +80,11 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     if (outcomeApplied.current) return;
     const c = choices[index]?.choice;
     if (!c) return;
-    const r = executeChoice(c, index, playerState);
+    const r = executeChoice(c, index, playerState, forceFail);
+    // 动态代币：-1 = 魅力×50
+    if (r.outcome.tokens === -1) {
+      r.outcome.tokens = attrs.魅力 * 50;
+    }
     // 解析占位符卡片
     if (r.outcome.addCards) {
       r.outcome.addCards = r.outcome.addCards.map(id => {
@@ -101,6 +106,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
       success: r.success,
       message: r.outcome.message || (r.success ? "成功！" : "失败…"),
       attrApplied,
+      outcome: r.outcome,
     });
   };
 
@@ -151,6 +157,11 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
                 style={{ color: TYPE_COLORS[event.type], borderColor: TYPE_COLORS[event.type] + "44", background: TYPE_COLORS[event.type] + "11" }}>
                 {TYPE_LABELS[event.type]}
               </span>
+              <button onClick={() => { try { window.dispatchEvent(new Event("open-event-journal")); } catch {} }}
+                className="font-mono text-xs px-2 py-0.5 border rounded opacity-60 hover:opacity-100 transition-opacity"
+                style={{ color: "rgba(200,200,208,0.5)", borderColor: "rgba(200,200,208,0.12)" }}>
+                📋 图鉴
+              </button>
             </div>
             <h3 className="font-heading text-xl mb-2 tracking-[0.05em]" style={{ color: "#ffd700" }}>
               {event.name}
@@ -221,11 +232,8 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
           {/* Choices / Result */}
           <div className="flex-1 flex flex-col justify-end" style={{ gap: "0.75rem", paddingBottom: "1.25rem" }}>
             {result ? (() => {
-              const raw = choices[result.choiceIndex]?.choice
-                ? (result.success ? choices[result.choiceIndex].choice.success : (choices[result.choiceIndex].choice.failure || choices[result.choiceIndex].choice.success))
-                : {};
-              // 若属性未实际应用，从显示中移除
-              const displayOutcome = result.attrApplied ? raw : { ...raw, attrDelta: undefined };
+              // 使用实际执行后的 outcome（含动态代币等处理），仅属性显示受 attrApplied 控制
+              const displayOutcome = result.attrApplied ? result.outcome : { ...result.outcome, attrDelta: undefined };
               const rewardText = buildRewardText(displayOutcome);
               return (
               <div className="p-4 border rounded" style={{
