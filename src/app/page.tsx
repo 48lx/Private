@@ -129,13 +129,16 @@ export default function Home() {
                 if (gk) {
                   // 1. 清除今日事件触发记录
                   await setProgress(gk, `daily-events-${today}`, "");
-                  // 2. 活力回满（修正暴增的max，恢复正确上限=8+大胃王绶带2）
+                  // 2. 活力补满（不低于当前值，修正暴增max）
                   const { getItems } = await import("@/lib/player-state");
                   const items = await getItems(gk);
                   const hasSash = items.some((i: any) => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0;
                   const correctMax = 8 + hasSash;
-                  await setProgress(gk, "map-vitality", JSON.stringify({ v: correctMax, max: correctMax, date: today }));
-                  alert(`已跨天：事件已重置，活力 ${correctMax}/${correctMax}。关闭地图重新进入即可。`);
+                  const vRaw = await getProgress(gk, "map-vitality");
+                  const oldV = vRaw ? JSON.parse(vRaw).v : correctMax;
+                  const newV = Math.max(oldV, correctMax);
+                  await setProgress(gk, "map-vitality", JSON.stringify({ v: newV, max: correctMax, date: today }));
+                  alert(`已跨天：事件已重置，活力 ${newV}/${correctMax}。关闭地图重新进入即可。`);
                 } else {
                   alert("请先登录卡牌暗号");
                 }
