@@ -206,7 +206,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     setAttrs(a);
     setTokenBalance(t);
     setCardCollection(coll);
-    if (vRaw) { const vd = JSON.parse(vRaw); setVitality(vd.v); setMaxVitality((vd.max || 8) + (items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0)); }
+    if (vRaw) { const vd = JSON.parse(vRaw); setVitality(vd.v); const hasSash2 = items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0; setMaxVitality(Math.max(vd.max || 8, 8 + hasSash2)); }
     setPlayerState({ attrs: a, tags, items });
     return attrApplied;
   };
@@ -244,9 +244,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
         vData = { v: 8 + extraMax2, max: 8 + extraMax2, date: today };
       }
       setVitality(vData.v);
-      // 大胃王绶带：+2 上限
-      const extraMax = items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0;
-      setMaxVitality((vData.max || 8) + extraMax);
+      // max 自修复：≥8，有大胃王绶带则≥10，不重复叠加
+      { const hasSash = items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0; const correctMax = Math.max(vData.max || 8, 8 + hasSash); setMaxVitality(correctMax); if (correctMax !== (vData.max || 8)) { vData.max = correctMax; await setProgress(groupKey, "map-vitality", JSON.stringify(vData)); } }
       // 位置
       const region = await getProgress(groupKey, "map-region");
       if (region && REGIONS.some(r => r.id === region)) setCurrentRegion(region);
