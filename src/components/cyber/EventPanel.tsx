@@ -56,7 +56,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
   const buildRewardText = (o: EventOutcome): string => {
     const parts: string[] = [];
     if (o.tokens) parts.push(`金币 ${o.tokens > 0 ? "+" : ""}${o.tokens}`);
-    if (o.vitality) parts.push(`活力 ${o.vitality > 0 ? "+" : ""}${o.vitality}`);
+    if (o.vitality) parts.push(o.vitality >= 999 ? "活力回满" : `活力 ${o.vitality > 0 ? "+" : ""}${o.vitality}`);
     if (o.attrDelta) {
       for (const [k, v] of Object.entries(o.attrDelta)) {
         if (v) parts.push(`${k} ${v > 0 ? "+" : ""}${v}`);

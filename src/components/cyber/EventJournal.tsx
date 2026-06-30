@@ -49,9 +49,10 @@ export default function EventJournal({ groupKey }: Props) {
       }
       setSeenEvents(parsed);
     }
-    // 物品
+    // 物品（排除属性果实）
     const state = await getPlayerState(groupKey);
-    setOwnedItemIds(new Set(state.items.filter(i => i.qty > 0).map(i => i.itemId)));
+    const fruitSet = new Set(["力量+1","智力+1","敏捷+1","魅力+1","力量-1","智力-1","敏捷-1","魅力-1"]);
+    setOwnedItemIds(new Set(state.items.filter(i => i.qty > 0 && !fruitSet.has(i.itemId)).map(i => i.itemId)));
   };
 
   useEffect(() => { if (isOpen) load(); }, [isOpen, groupKey]);
@@ -75,7 +76,7 @@ export default function EventJournal({ groupKey }: Props) {
   const describeOutcome = (o: any): string => {
     const parts: string[] = [];
     if (o.tokens) parts.push(`金币${o.tokens > 0 ? "+" : ""}${o.tokens}`);
-    if (o.vitality) parts.push(`活力${o.vitality > 0 ? "+" : ""}${o.vitality}`);
+    if (o.vitality) parts.push(o.vitality >= 999 ? "活力回满" : `活力${o.vitality > 0 ? "+" : ""}${o.vitality}`);
     if (o.attrDelta) {
       const hasPos = Object.values(o.attrDelta).some((v: any) => Number(v) > 0);
       for (const [k, v] of Object.entries(o.attrDelta)) parts.push(`${k}${Number(v) > 0 ? "+" : ""}${v}${hasPos ? "（仅一次）" : ""}`);
