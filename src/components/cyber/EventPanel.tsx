@@ -5,7 +5,7 @@ import { GameEvent, EventType, EventOutcome } from "@/lib/event-types";
 import { PlayerState } from "@/lib/player-state";
 import { executeChoice, getAvailableChoices, MAGIC_CARDS, LUX_CARDS, DRAGON_CARDS } from "@/lib/event-engine";
 import { ALL_CARDS, REVELATION_CARDS } from "@/lib/cards";
-
+import { demaciaEvents } from "@/data/events/demacia";
 const REGION_IMAGES: Record<string, string[]> = {
   demacia: [
     "/events/德玛西亚_01.png",
@@ -42,9 +42,10 @@ interface Props {
   forceFail?: boolean;
   vitality?: number;
   maxVitality?: number;
+  onRedirect?: (eventId: string) => void;
 }
 
-export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage, cardCollection, forceFail, vitality, maxVitality }: Props) {
+export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage, cardCollection, forceFail, vitality, maxVitality, onRedirect }: Props) {
   const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string; attrApplied: boolean; outcome: EventOutcome } | null>(null);
   const [cardSlot, setCardSlot] = useState<string | null>(null);
   const outcomeApplied = useRef(false);
@@ -89,6 +90,11 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
       r.outcome.tokens = computed;
       r.outcome.message = (r.outcome.message || "") + `（魅力${attrs.魅力}×50=+${computed}金币）`;
     }
+    if (r.outcome.tokens === -2) {
+      const rando = Math.floor(Math.random() * 1001);
+      r.outcome.tokens = rando;
+      r.outcome.message = (r.outcome.message || "") + `（获得了${rando}金币）`;
+    }
     // 解析占位符卡片
     if (r.outcome.addCards) {
       r.outcome.addCards = r.outcome.addCards.map(id => {
@@ -113,6 +119,19 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     }
     outcomeApplied.current = true;
     const attrApplied = await onResult(r.outcome, index, r.success);
+    // 跳转到其他事件
+    if (r.outcome.redirectTo && onRedirect) {
+      if (r.outcome.redirectTo === "__random_bandle__") {
+        const bandleEvents = demaciaEvents.filter(e => e.id.startsWith("bandle-"));
+        if (bandleEvents.length > 0) {
+          const picked = bandleEvents[Math.floor(Math.random() * bandleEvents.length)];
+          onRedirect(picked.id);
+          return;
+        }
+      }
+      onRedirect(r.outcome.redirectTo);
+      return;
+    }
     setResult({
       choiceIndex: index,
       success: r.success,

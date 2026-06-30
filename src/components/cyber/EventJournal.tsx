@@ -19,6 +19,9 @@ const ALL_ITEMS = [
   { id: "鸡蛋", name: "鸡蛋", icon: "🥚", region: "德玛西亚", event: "训龙骑士的「龙」", effect: "主动使用：活力+4" },
   { id: "诺克萨斯的旧盾", name: "诺克萨斯的旧盾", icon: "⚔️", region: "德玛西亚", event: "不愿安息的盾牌", effect: "解锁波比英雄事件" },
   { id: "战地日记残页", name: "战地日记残页", icon: "📜", region: "德玛西亚", event: "不愿安息的盾牌", effect: "德玛西亚趣味事件权重-1" },
+  { id: "约德尔变形糖", name: "约德尔变形糖", icon: "🍬", region: "班德尔城", event: "提莫队长的蘑菇快递II", effect: "下一次跨区移动免活力且触发班德尔城事件" },
+  { id: "蘑菇披萨", name: "蘑菇披萨", icon: "🍕", region: "班德尔城", event: "迷路的班德尔城外卖员", effect: "主动使用：活力+5" },
+  { id: "消音垫", name: "消音垫", icon: "🔇", region: "班德尔城", event: "班德尔城噪音投诉处理员", effect: "下一次探索免活力重roll事件" },
 ];
 
 interface SeenEntry {

@@ -646,6 +646,15 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                   <div className="w-full" style={{ maxWidth: "520px", paddingBottom: "6px" }}>
                     <button onClick={async () => {
                         if (vitality < EXPLORE_COST) { showToast(`活力不足`); return; }
+                        // 中毒：下次探索活力+1且检定必败，然后失去标签
+                        let poisonActive = false;
+                        if (playerState?.tags?.includes("中毒")) {
+                          poisonActive = true;
+                          showToast("☠️ 中毒：本次探索检定必败且活力消耗+1！");
+                          // 消耗中毒标签
+                          try { const { removeTag } = await import("@/lib/player-state"); await removeTag(groupKey, "中毒"); } catch {}
+                          setPlayerState(prev => prev ? { ...prev, tags: prev.tags.filter(t => t !== "中毒") } : prev);
+                        }
                         // 纸醉金迷：每日首次探索免活力，检定必败
                         let firstExplore = false;
                         if (playerState?.tags?.includes("纸醉金迷")) {
@@ -658,9 +667,11 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                           }
                         }
                         if (!firstExplore) {
-                          await saveVitality(vitality - EXPLORE_COST);
+                          const cost = EXPLORE_COST + (poisonActive ? 1 : 0);
+                          if (vitality < cost) { showToast(`活力不足（需${cost}点）`); return; }
+                          await saveVitality(vitality - cost);
                         }
-                        setPaperDrunkActive(firstExplore);
+                        setPaperDrunkActive(firstExplore || poisonActive);
                         if (overviewRegion === "demacia" && playerState) {
                           const today2 = new Date().toISOString().split("T")[0];
                           const raw = await getProgress(groupKey, `daily-events-${today2}`);
@@ -705,6 +716,14 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             forceFail={paperDrunkActive}
             vitality={vitality}
             maxVitality={maxVitality}
+            onRedirect={(eventId) => {
+              const target = ALL_EVENTS.find(e => e.id === eventId);
+              if (target) {
+                setEventImage(target.image || "/events/德玛西亚_01.png");
+                setCurrentEvent(target);
+                setPaperDrunkActive(false);
+              }
+            }}
             onResult={async (outcome, choiceIndex, success) => {
               return await applyOutcome(outcome, choiceIndex, success);
             }}
