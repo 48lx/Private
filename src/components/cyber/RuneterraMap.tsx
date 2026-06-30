@@ -31,7 +31,6 @@ const REGIONS: Region[] = [
   { id: "shurima",    name: "恕瑞玛",     x: 33.8, y: 65.5, w: 24,   h: 22,   color: "#f39c12" },
   { id: "shadow",     name: "暗影岛",     x: 86.9, y: 71.6, w: 8.3,  h: 11.2, color: "#2c3e50", locked: true },
   { id: "targon",     name: "巨神峰",     x: 27.3, y: 75.6, w: 5.9,  h: 6.6,  color: "#b8860b", locked: true },
-  { id: "bandle",     name: "班德尔城",   x: 56,   y: 64,   w: 10,   h: 12,   color: "#9b59b6", locked: true },
 ];
 
 // 相邻关系
@@ -47,7 +46,6 @@ const ADJACENCY: Record<string, string[]> = {
   shadow:     ["bilgewater", "ixtal"],
   shurima:    ["ixtal", "targon", "zaun", "noxus"],
   targon:     ["shurima"],
-  bandle:     ["piltover", "ixtal", "bilgewater"],
 };
 
 const START_REGION = "demacia";
@@ -226,7 +224,6 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   };
 
   const moveCost = useMemo(() => BASE_MOVE_COST + (playerState?.items?.some(i => i.itemId === "沉重的铠甲" && i.qty > 0) ? 1 : 0), [playerState]);
-  const hasSpringStone = useMemo(() => playerState?.items?.some(i => i.itemId === "魔力泉水石" && i.qty > 0), [playerState]);
   const adjacentSet = useMemo(() => {
     return new Set(ADJACENCY[currentRegion] || []);
   }, [currentRegion]);
@@ -317,9 +314,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   };
 
   const handleRegionClick = async (region: Region) => {
-    // 魔力泉水石解锁班德尔城
-    const isLocked = region.locked && !(region.id === "bandle" && hasSpringStone);
-    if (isLocked) {
+    if (region.locked) {
       showToast("暂未开放");
       return;
     }
@@ -350,6 +345,11 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       if (vitality < cost) { showToast(`活力不足（需${cost}点）`); return; }
       if (hasCharm) {
         await removeItem(groupKey, "矿工护身符", 1);
+        // 实时更新本地状态，防止下次移动仍判定有护身符
+        setPlayerState(prev => prev ? {
+          ...prev,
+          items: prev.items.map(i => i.itemId === "矿工护身符" ? { ...i, qty: i.qty - 1 } : i).filter(i => i.qty > 0)
+        } : prev);
         showToast(`🍀 矿工护身符抵消了移动消耗！`);
       }
       await setProgress(groupKey, "map-region", rid);
@@ -481,7 +481,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                     : isHovered ? `inset 0 0 50px ${region.color}20`
                     : "none",
                   borderRadius: "4px",
-                  filter: (region.locked && !(region.id === "bandle" && hasSpringStone)) ? "grayscale(0.7)" : canReach ? "none" : "brightness(0.5)",
+                  filter: region.locked ? "grayscale(0.7)" : canReach ? "none" : "brightness(0.5)",
                   zIndex: isHovered ? 10 : 1,
                   cursor: "pointer",
                   userSelect: "none",
@@ -495,22 +495,22 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                     <span className="font-heading block font-bold"
                       style={{
                         fontSize: "22px",
-                        color: (region.locked && !(region.id === "bandle" && hasSpringStone)) ? "rgba(150,150,160,0.35)"
+                        color: region.locked ? "rgba(150,150,160,0.35)"
                           : isCurrent ? "#00ff88"
                           : region.color,
-                        textShadow: isHovered && !(region.locked && !(region.id === "bandle" && hasSpringStone)) && !isCurrent
+                        textShadow: isHovered && !region.locked && !isCurrent
                           ? `0 0 18px ${region.color}cc, 0 0 36px ${region.color}66`
                           : isCurrent ? "0 0 12px rgba(0,255,136,0.6)" : "none",
                         letterSpacing: "0.08em",
                       }}>
                       {region.name}
                     </span>
-                    {(region.locked && !(region.id === "bandle" && hasSpringStone)) && (
+                    {region.locked && (
                       <span className="font-mono block mt-1" style={{ fontSize: 10, color: "rgba(200,200,200,0.3)" }}>
                         暂未开放
                       </span>
                     )}
-                    {isHovered && !(region.locked && !(region.id === "bandle" && hasSpringStone)) && !isCurrent && !canReach && (
+                    {isHovered && !region.locked && !isCurrent && !canReach && (
                       <span className="font-mono block mt-1" style={{ fontSize: 9, color: "rgba(255,255,255,0.25)" }}>
                         无法直接到达
                       </span>
@@ -521,7 +521,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                         <span className="font-mono" style={{ fontSize: 8, color: "rgba(0,255,136,0.4)" }}>当前位置</span>
                       </div>
                     )}
-                    {isHovered && canReach && !isCurrent && !(region.locked && !(region.id === "bandle" && hasSpringStone)) && (
+                    {isHovered && canReach && !isCurrent && !region.locked && (
                       <span className="font-mono block mt-1" style={{ fontSize: 9, color: region.color + "88" }}>
                         {region.id === currentRegion ? `探索 -${EXPLORE_COST}⚡` : `前往 -${moveCost}⚡`}
                       </span>

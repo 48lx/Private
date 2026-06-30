@@ -424,7 +424,7 @@ export const demaciaEvents: GameEvent[] = [
       {
         label: "拿出「灭国魔女·拉克丝」卡片，说用魔法轰开",
         check: { hasCard: "gold_拉克丝_灭国魔女" },
-        success: { addItems: ["骑士的护腕"], attrDelta: { 力量: 1 }, message: "骑士看到卡片，吓得从地上弹射起步，铠甲卡扣直接崩开。他一路尖叫着「黑暗魔法！救命！」跑得无影无踪，连一个护腕掉了都没发现。" },
+        success: { addItems: ["骑士的护腕"], attrDelta: { 敏捷: 1 }, message: "骑士看到卡片，吓得从地上弹射起步，铠甲卡扣直接崩开。他一路尖叫着「黑暗魔法！救命！」跑得无影无踪，连一个护腕掉了都没发现。" },
       },
     ],
   },
