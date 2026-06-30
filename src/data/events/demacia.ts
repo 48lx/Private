@@ -546,7 +546,7 @@ export const demaciaEvents: GameEvent[] = [
     region: "demacia",
     type: "hero",
     weight: 0,
-    require: { items: ["魔力泉水石"] },
+    require: { items: ["魔力泉水石"], notTags: ["初尝禁果"] },
     name: "提莫队长的蘑菇快递",
     image: "/events/德玛西亚_02.png",
     desc: "井盖猛地弹开，一股彩色烟雾喷涌而出。烟雾散去后，井盖上多了一个扎着蝴蝶结的包裹，附着一张提莫队长的照片，背面写着：「送给我在德玛西亚的人类朋友。别吃太多，会变小。PS：此包裹已通过班德尔城质检，安全无毒——大概。」你往前走了两步，竟被空气绊倒了，经验丰富的你马上意识到，是提莫队长「阻挡」了你的去路。",

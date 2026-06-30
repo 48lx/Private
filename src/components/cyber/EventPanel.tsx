@@ -121,8 +121,18 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     const attrApplied = await onResult(r.outcome, index, r.success);
     // 跳转到其他事件
     if (r.outcome.redirectTo && onRedirect) {
+      // 重置防重复点击锁，让新事件可操作
+      outcomeApplied.current = false;
       if (r.outcome.redirectTo === "__random_bandle__") {
-        const bandleEvents = demaciaEvents.filter(e => e.id.startsWith("bandle-"));
+        // 按玩家状态过滤可用的班德尔事件
+        const bandleEvents = demaciaEvents.filter(e => {
+          if (!e.id.startsWith("bandle-")) return false;
+          if (!e.require) return true;
+          if (e.require.tags && !e.require.tags.every((t: string) => playerState.tags.includes(t))) return false;
+          if (e.require.notTags && e.require.notTags.some((t: string) => playerState.tags.includes(t))) return false;
+          if (e.require.items && !e.require.items.every((i: string) => playerState.items.some(s => s.itemId === i && s.qty > 0))) return false;
+          return true;
+        });
         if (bandleEvents.length > 0) {
           const picked = bandleEvents[Math.floor(Math.random() * bandleEvents.length)];
           onRedirect(picked.id);
