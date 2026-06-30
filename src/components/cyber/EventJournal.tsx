@@ -7,18 +7,18 @@ import { ALL_CARDS } from "@/lib/cards";
 import { getPlayerState } from "@/lib/player-state";
 
 const ALL_ITEMS = [
-  { id: "矿工护身符", name: "矿工护身符", icon: "⛏️", location: "禁魔石矿洞的倒霉矿工", effect: "跨区移动时自动消耗，抵消本次活力消耗" },
-  { id: "禁魔石之心表面纹路", name: "禁魔石之心表面纹路", icon: "💎", location: "禁魔石矿洞的倒霉矿工", effect: "秘宝线索" },
-  { id: "叽叽的口哨", name: "叽叽的口哨", icon: "🪈", location: "会说话的石像鬼", effect: "事件专用道具" },
-  { id: "大胃王绶带", name: "大胃王绶带", icon: "🎗️", location: "美食节·大胃王比赛", effect: "活力上限+2" },
-  { id: "大胃王挑战邀请函", name: "大胃王挑战邀请函", icon: "✉️", location: "美食节IV", effect: "事件专用道具" },
-  { id: "白玫瑰", name: "白玫瑰", icon: "🌹", location: "不想当兵的男孩", effect: "事件专用道具" },
-  { id: "沉重的铠甲", name: "沉重的铠甲", icon: "🛡️", location: "倒霉骑士的铠甲", effect: "活力上限+2，移动消耗+1" },
-  { id: "骑士的护腕", name: "骑士的护腕", icon: "🧤", location: "倒霉骑士的铠甲", effect: "敏捷+1" },
-  { id: "魔力泉水石", name: "魔力泉水石", icon: "💧", location: "泉水边的许愿少女", effect: "事件专用道具" },
-  { id: "鸡蛋", name: "鸡蛋", icon: "🥚", location: "训龙骑士的「龙」", effect: "主动使用：活力+4" },
-  { id: "诺克萨斯的旧盾", name: "诺克萨斯的旧盾", icon: "⚔️", location: "不愿安息的盾牌", effect: "解锁波比英雄事件" },
-  { id: "战地日记残页", name: "战地日记残页", icon: "📜", location: "不愿安息的盾牌", effect: "德玛西亚趣味事件权重-1" },
+  { id: "矿工护身符", name: "矿工护身符", icon: "⛏️", region: "德玛西亚", event: "禁魔石矿洞的倒霉矿工", effect: "跨区移动时自动消耗，抵消本次活力消耗" },
+  { id: "禁魔石之心表面纹路", name: "禁魔石之心表面纹路", icon: "💎", region: "德玛西亚", event: "禁魔石矿洞的倒霉矿工", effect: "秘宝线索" },
+  { id: "叽叽的口哨", name: "叽叽的口哨", icon: "🪈", region: "德玛西亚", event: "会说话的石像鬼", effect: "事件专用道具" },
+  { id: "大胃王绶带", name: "大胃王绶带", icon: "🎗️", region: "德玛西亚", event: "美食节·大胃王比赛", effect: "活力上限+2" },
+  { id: "大胃王挑战邀请函", name: "大胃王挑战邀请函", icon: "✉️", region: "德玛西亚", event: "美食节IV", effect: "事件专用道具" },
+  { id: "白玫瑰", name: "白玫瑰", icon: "🌹", region: "德玛西亚", event: "不想当兵的男孩", effect: "事件专用道具" },
+  { id: "沉重的铠甲", name: "沉重的铠甲", icon: "🛡️", region: "德玛西亚", event: "倒霉骑士的铠甲", effect: "活力上限+2，移动消耗+1" },
+  { id: "骑士的护腕", name: "骑士的护腕", icon: "🧤", region: "德玛西亚", event: "倒霉骑士的铠甲", effect: "敏捷+1" },
+  { id: "魔力泉水石", name: "魔力泉水石", icon: "💧", region: "德玛西亚", event: "泉水边的许愿少女", effect: "事件专用道具" },
+  { id: "鸡蛋", name: "鸡蛋", icon: "🥚", region: "德玛西亚", event: "训龙骑士的「龙」", effect: "主动使用：活力+4" },
+  { id: "诺克萨斯的旧盾", name: "诺克萨斯的旧盾", icon: "⚔️", region: "德玛西亚", event: "不愿安息的盾牌", effect: "解锁波比英雄事件" },
+  { id: "战地日记残页", name: "战地日记残页", icon: "📜", region: "德玛西亚", event: "不愿安息的盾牌", effect: "德玛西亚趣味事件权重-1" },
 ];
 
 interface SeenEntry {
@@ -33,6 +33,7 @@ export default function EventJournal({ groupKey }: Props) {
   const [seenEvents, setSeenEvents] = useState<Record<string, SeenEntry>>({});
   const [tab, setTab] = useState<"events" | "items">("events");
   const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(new Set());
+  const [selectedItem, setSelectedItem] = useState<typeof ALL_ITEMS[0] | null>(null);
 
   const load = async () => {
     if (!groupKey) return;
@@ -242,20 +243,21 @@ export default function EventJournal({ groupKey }: Props) {
                     {ALL_ITEMS.map(item => {
                       const owned = ownedItemIds.has(item.id);
                       return (
-                        <div key={item.id} className="p-3 border rounded text-center group relative transition-all"
+                        <div key={item.id} className="p-3 border rounded text-center transition-all cursor-pointer hover:scale-110"
                           style={{
                             borderColor: owned ? "rgba(255,215,0,0.2)" : "rgba(255,255,255,0.05)",
                             background: owned ? "rgba(255,215,0,0.04)" : "rgba(0,0,0,0.15)",
                             opacity: owned ? 1 : 0.4,
                           }}
-                          title={owned ? item.effect : `获取：${item.location}`}>
+                          onClick={() => setSelectedItem(item)}
+                          title="点击查看详情">
                           <div className="text-2xl mb-1.5" style={{ filter: owned ? "none" : "grayscale(0.8)" }}>{item.icon}</div>
                           <div className="font-mono text-xs" style={{ color: owned ? "rgba(255,215,0,0.8)" : "rgba(200,200,208,0.3)" }}>
                             {item.name}
                           </div>
                           <div className="font-mono text-[10px] mt-1 leading-tight"
                             style={{ color: owned ? "rgba(200,200,208,0.35)" : "rgba(200,200,208,0.18)" }}>
-                            {owned ? item.effect : item.location}
+                            {owned ? item.effect : `${item.region}地区获取`}
                           </div>
                         </div>
                       );
@@ -265,6 +267,28 @@ export default function EventJournal({ groupKey }: Props) {
               )}
             </div>
           </div>
+
+          {/* 物品详情弹窗 */}
+          {selectedItem && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center"
+              style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)" }}
+              onClick={() => setSelectedItem(null)}>
+              <div className="flex flex-col items-center p-6 border rounded-lg max-w-xs w-[80vw]"
+                style={{ borderColor: "rgba(255,215,0,0.2)", background: "rgba(10,5,20,0.95)" }}
+                onClick={e => e.stopPropagation()}>
+                <div className="text-6xl mb-4">{selectedItem.icon}</div>
+                <div className="font-mono text-lg mb-2" style={{ color: "#ffd700" }}>{selectedItem.name}</div>
+                <div className="font-mono text-sm text-center leading-relaxed" style={{ color: "rgba(200,200,208,0.6)" }}>
+                  {ownedItemIds.has(selectedItem.id) ? selectedItem.effect : `${selectedItem.region}地区 · ${selectedItem.event}`}
+                </div>
+                <button onClick={() => setSelectedItem(null)}
+                  className="font-mono text-sm mt-4 px-6 py-2 border rounded"
+                  style={{ borderColor: "rgba(255,255,255,0.1)", color: "rgba(200,200,208,0.4)" }}>
+                  关闭
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
