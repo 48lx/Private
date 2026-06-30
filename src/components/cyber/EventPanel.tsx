@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef } from "react";
 import { GameEvent, EventType, EventOutcome } from "@/lib/event-types";
 import { PlayerState } from "@/lib/player-state";
-import { executeChoice, getAvailableChoices, MAGIC_CARDS, LUX_CARDS } from "@/lib/event-engine";
+import { executeChoice, getAvailableChoices, MAGIC_CARDS, LUX_CARDS, DRAGON_CARDS } from "@/lib/event-engine";
 import { ALL_CARDS, REVELATION_CARDS } from "@/lib/cards";
 
 const REGION_IMAGES: Record<string, string[]> = {
@@ -40,9 +40,11 @@ interface Props {
   fixedImage: string;
   cardCollection: { card_id: string; count: number }[];
   forceFail?: boolean;
+  vitality?: number;
+  maxVitality?: number;
 }
 
-export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage, cardCollection, forceFail }: Props) {
+export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage, cardCollection, forceFail, vitality, maxVitality }: Props) {
   const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string; attrApplied: boolean; outcome: EventOutcome } | null>(null);
   const [cardSlot, setCardSlot] = useState<string | null>(null);
   const outcomeApplied = useRef(false);
@@ -105,6 +107,10 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     if (c.check?.consumeCard && cardSlot) {
       r.outcome.removeCards = [...(r.outcome.removeCards || []), cardSlot];
     }
+    // 消耗道具
+    if (c.check?.consumeItem) {
+      r.outcome.removeItems = [...(r.outcome.removeItems || []), c.check.consumeItem];
+    }
     outcomeApplied.current = true;
     const attrApplied = await onResult(r.outcome, index, r.success);
     setResult({
@@ -155,6 +161,10 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
                 const labels: Record<string, string> = { 力量: "力", 智力: "智", 敏捷: "敏", 魅力: "魅" };
                 return <span key={k}><span style={{ color: "rgba(200,200,208,0.3)" }}>{labels[k]}</span> <span style={{ color: colors[k] }}>{attrs[k]}</span></span>;
               })}
+              {vitality !== undefined && (
+                <><span style={{ color: "rgba(200,200,208,0.15)" }}>|</span>
+                <span><span style={{ color: "rgba(200,200,208,0.3)" }}>⚡</span> <span style={{ color: "#00ff88" }}>{vitality}{maxVitality !== undefined ? `/${maxVitality}` : ""}</span></span></>
+              )}
               <span style={{ color: "rgba(200,200,208,0.15)" }}>|</span>
               <span><span style={{ color: "rgba(200,200,208,0.3)" }}>🪙</span> <span style={{ color: "#ffd700" }}>{tokens}</span></span>
             </div>
@@ -199,6 +209,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
             const PLACEHOLDER_LABELS: Record<string, string> = {
               "__revelation__": "启示录专辑卡",
               "__magic__": "魔法卡牌(灭国魔女/启示录/善意虚影)",
+              "__dragon__": "龙族卡牌(索尔/希瓦娜/斯莫德)",
               "__lux__": "拉克丝卡牌(光辉女郎/善意虚影)",
             };
             let allNeeded: string[] = [];
@@ -207,6 +218,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
               if (id === "__revelation__") { allNeeded.push(...REVELATION_CARDS); placeholderLabel = placeholderLabel || PLACEHOLDER_LABELS[id]; }
               else if (id === "__magic__") { allNeeded.push(...MAGIC_CARDS); placeholderLabel = placeholderLabel || PLACEHOLDER_LABELS[id]; }
               else if (id === "__lux__") { allNeeded.push(...LUX_CARDS); placeholderLabel = placeholderLabel || PLACEHOLDER_LABELS[id]; }
+              else if (id === "__dragon__") { allNeeded.push(...DRAGON_CARDS); placeholderLabel = placeholderLabel || PLACEHOLDER_LABELS[id]; }
               else { allNeeded.push(id); }
             }
             allNeeded = [...new Set(allNeeded)];

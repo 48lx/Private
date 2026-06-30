@@ -41,7 +41,8 @@ export interface EventOutcome {
   removeTags?: string[];
   // 道具
   addItems?: string[];
-  clueItems?: string[];       // 线索道具（重复获取分解为500代币，普通道具300）
+  removeItems?: string[];     // 失去的道具
+  clueItems?: string[];       // 线索道具（重复获取分解为500金币，普通道具300）
   // 线索
   addClues?: ClueReward[];
   // 卡牌

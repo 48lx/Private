@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import gsap from "gsap";
-import { getGroupKey, getProgress } from "@/lib/card-storage";
+import { getGroupKey, getProgress, setProgress } from "@/lib/card-storage";
 import { getPlayerState, PlayerAttrs, InventoryItem, adjustAttrs, removeItem } from "@/lib/player-state";
 
 type Tab = "items" | "clues" | "tags";
@@ -35,6 +35,9 @@ export default function InventoryPanel() {
     "魔力泉水石": "事件专用道具",
     "大胃王挑战邀请函": "事件专用道具",
     "白玫瑰": "事件专用道具",
+    "鸡蛋": "主动使用：活力+4",
+    "诺克萨斯的旧盾": "事件专用道具（解锁波比英雄事件）",
+    "战地日记残页": "提升在德玛西亚遇到高质量事件的概率",
   };
 
   const getItemDesc = (itemId: string): string => {
@@ -54,6 +57,20 @@ export default function InventoryPanel() {
       const ok = await removeItem(gk, itemId, 1);
       if (!ok) return;
       await adjustAttrs(gk, { [attr]: delta });
+      await load();
+      return;
+    }
+    // 鸡蛋：主动使用+4活力（不超过上限）
+    if (itemId === "鸡蛋") {
+      const ok = await removeItem(gk, itemId, 1);
+      if (!ok) return;
+      const today = new Date().toISOString().split("T")[0];
+      const vRaw = await getProgress(gk, "map-vitality");
+      if (vRaw) {
+        const vd = JSON.parse(vRaw);
+        const newV = Math.min(vd.max || 8, (vd.v || 0) + 4);
+        await setProgress(gk, "map-vitality", JSON.stringify({ v: newV, max: vd.max || 8, date: today }));
+      }
       await load();
       return;
     }

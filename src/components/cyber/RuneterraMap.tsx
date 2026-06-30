@@ -113,20 +113,37 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     if (tokenDelta > 0) writes.push(addTokens(groupKey, tokenDelta));
     else if (tokenDelta < 0) writes.push(spendTokens(groupKey, -tokenDelta));
 
-    // 活力
+    // 活力（999=补满到上限，不超出）
     if (outcome.vitality) {
-      const v = Math.max(0, vitality + outcome.vitality);
+      let v: number;
+      if (outcome.vitality >= 999) {
+        v = maxVitality;
+      } else {
+        v = Math.max(0, vitality + outcome.vitality);
+      }
       writes.push(setProgress(groupKey, "map-vitality", JSON.stringify({ v, max: maxVitality, date: today })));
       setVitality(v);
     }
+    // 失去道具（消费/移除）
+    const consumedItem = outcome.removeItems?.[0] || "";
+    if (consumedItem) {
+      writes.push(removeItem(groupKey, consumedItem, 1));
+    }
 
-    // 属性（需先检查进度，独立读写）
+    // 属性（正收益仅首次，负收益可重复）
     if (outcome.attrDelta) {
-      const attrKey = `ev-attr-${currentEvent?.id || "unknown"}-${choiceIndex}`;
-      const already = await getProgress(groupKey, attrKey);
-      if (already !== "1") {
+      const hasPositive = Object.values(outcome.attrDelta).some(v => (v || 0) > 0);
+      if (hasPositive) {
+        const attrKey = `ev-attr-${currentEvent?.id || "unknown"}-${choiceIndex}`;
+        const already = await getProgress(groupKey, attrKey);
+        if (already !== "1") {
+          writes.push(adjustAttrs(groupKey, outcome.attrDelta));
+          writes.push(setProgress(groupKey, attrKey, "1"));
+          attrApplied = true;
+        }
+      } else {
+        // 纯负面：始终生效
         writes.push(adjustAttrs(groupKey, outcome.attrDelta));
-        writes.push(setProgress(groupKey, attrKey, "1"));
         attrApplied = true;
       }
     }
@@ -667,7 +684,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                       }}
                         className="font-mono text-base w-full py-3 border transition-all hover:scale-[1.02]"
                         style={{ borderColor: "rgba(255,215,0,0.3)", color: "#ffd700", background: "rgba(0,0,0,0.35)" }}>
-                        {vitality >= EXPLORE_COST ? `${overviewExplored ? "继续" : "开始"}探索（-${EXPLORE_COST}⚡）` : "活力不足"}
+                        {vitality >= EXPLORE_COST ? `${overviewExplored ? "继续" : "开始"}探索（⚡${vitality}/${maxVitality} -${EXPLORE_COST}）` : `活力不足（⚡${vitality}/${maxVitality}）`}
                       </button>
                     </div>
                   </div>
@@ -686,6 +703,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             fixedImage={eventImage}
             cardCollection={cardCollection}
             forceFail={paperDrunkActive}
+            vitality={vitality}
+            maxVitality={maxVitality}
             onResult={async (outcome, choiceIndex, success) => {
               return await applyOutcome(outcome, choiceIndex, success);
             }}

@@ -455,4 +455,63 @@ export const demaciaEvents: GameEvent[] = [
       },
     ],
   },
+  // ─── 训龙骑士的"龙" ───
+  {
+    id: "demacia-dragon-scam",
+    region: "demacia",
+    type: "fun",
+    weight: 8,
+    name: "训龙骑士的「龙」",
+    image: "/events/德玛西亚_01.png",
+    desc: "一个自称是「训龙骑士」的人，站在一个巨大的木箱上大声吆喝，说只要付钱就能观看他驯服来自北方的巨龙。你看到木箱的缝隙里，钻出了一根鸡毛。",
+    choices: [
+      {
+        label: "付钱观看（-300金币）",
+        check: { costTokens: 300 },
+        success: { tokens: -300, vitality: 5, message: "你付了钱，骑士猛地打开箱子，里面是一只被染成红色、贴着纸翅膀的公鸡。它愤怒地啄了骑士一口，然后飞走了。骑士追着鸡跑了，留你一个人在原地。其他观众笑得前仰后合，你觉得这钱花得不亏，真是太好笑了。" },
+      },
+      {
+        label: "拆穿他的骗局（智力≥12）",
+        check: { attrs: { 智力: 12 } },
+        success: { addItems: ["鸡蛋"], message: "你当众指出箱子里的声音是鸡叫，骑士慌了，狡辩说这是龙的幼崽。你让他打开箱子，结果那只「龙」跳出来，在众人面前下了个蛋。骑士在哄笑声中灰溜溜地跑了，人群把鸡蛋送给了你。" },
+        failure: { tokens: -800, attrDelta: { 魅力: -1 }, message: "你和他争辩，但他比你还能说，把你绕晕了。最后你反而被他说服，又多掏了500块买了「龙骑士协会」的会员卡。" },
+      },
+      {
+        label: "拿出「龙族」卡片（希瓦娜/斯莫德/索尔）",
+        check: { hasCard: "__dragon__" },
+        success: { tokens: 1800, message: "你亮出真龙英雄的卡片。箱子里面的公鸡感受到了龙威，吓得一声不吭。骑士脸色铁青，以为你是什么大人物，赶紧给你塞了一把金币，求你高抬贵手。" },
+      },
+    ],
+  },
+  // ─── 不愿安息的盾牌 ───
+  {
+    id: "demacia-poppy-shield",
+    region: "demacia",
+    type: "clue",
+    weight: 6,
+    vitalityCost: 2,
+    name: "不愿安息的盾牌",
+    image: "/events/德玛西亚_03.png",
+    desc: "在一处古老的战场遗迹，你发现了一块半埋在土里的旧盾牌。它看似平凡无奇，但每到整点时刻，就会自动发出微弱的「铛铛」声，仿佛在回应着什么。",
+    choices: [
+      {
+        label: "挖出盾牌（力≥17）",
+        check: { attrs: { 力量: 17 } },
+        success: { addItems: ["诺克萨斯的旧盾"], message: "你挖出盾牌，发现它的背面刻着「波比，我们会回来」的字迹。当你擦拭干净时，盾牌不再响了，而是微微发热，指向了北方的山脉。" },
+        failure: { vitality: -3, message: "你挖到一半，土堆塌方把你埋了半截身子，脚还扭了。动静引来了附近的野兽，你只得放弃。" },
+      },
+      {
+        label: "静静聆听它的节奏（智≥17）",
+        check: { attrs: { 智力: 17 } },
+        success: { addItems: ["战地日记残页"], message: "你闭上眼，发现这节奏和德玛西亚进军曲的鼓点完全一致，但节奏倒放。你顺着反方向探索，发现了一棵空心古树，里面藏着一个日记本。" },
+        failure: { vitality: -2, message: "你听得太入迷，被这悲凉的节奏感染，意志消沉。" },
+      },
+      {
+        label: "找块石头把它埋得严实点",
+        hideCheck: { hasItem: "白玫瑰" },
+        check: { hasItem: "白玫瑰", consumeItem: "白玫瑰" },
+        success: { vitality: 999, attrDelta: { 智力: 2 }, removeItems: ["白玫瑰"], message: "死者为大，你不希望有人打扰它，并献上了一朵白玫瑰。这份对亡者的尊重似乎被感觉到了，白玫瑰散发出磅礴的能量。" },
+      },
+    ],
+  },
 ];

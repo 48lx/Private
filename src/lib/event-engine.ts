@@ -7,6 +7,8 @@ import { ALL_CARDS, REVELATION_CARDS } from "./cards";
 
 // 禁魔石共鸣反应 — 魔法相关卡牌
 export const MAGIC_CARDS = ["gold_拉克丝_灭国魔女", "max_邓紫棋_启示录", "gold_拉克丝_善意虚影"];
+// 龙族相关卡牌
+export const DRAGON_CARDS = ["champ-aurelionsol", "champ-shyvana", "champ-smolder"];
 // 拉克丝相关卡牌
 export const LUX_CARDS = ["champ-lux", "gold_拉克丝_善意虚影"];
 
@@ -32,10 +34,12 @@ export function pickEvent(
 
   if (available.length === 0) return null;
 
-  const totalWeight = available.reduce((sum, e) => sum + e.weight, 0);
+  // 战地日记残页：德玛西亚趣味事件权重-1
+  const hasDiary = playerState.items.some(i => i.itemId === "战地日记残页" && i.qty > 0);
+  const totalWeight = available.reduce((sum, e) => sum + (hasDiary && e.region === "demacia" && e.type === "fun" ? Math.max(0, e.weight - 1) : e.weight), 0);
   let r = Math.random() * totalWeight;
   for (const e of available) {
-    r -= e.weight;
+    r -= (hasDiary && e.region === "demacia" && e.type === "fun" ? Math.max(0, e.weight - 1) : e.weight);
     if (r <= 0) return e;
   }
   return available[available.length - 1];
@@ -145,11 +149,13 @@ export function getAvailableChoices(
       if (check.hasCard === "__revelation__") required = REVELATION_CARDS;
       else if (check.hasCard === "__magic__") required = MAGIC_CARDS;
       else if (check.hasCard === "__lux__") required = LUX_CARDS;
+      else if (check.hasCard === "__dragon__") required = DRAGON_CARDS;
       else required = [check.hasCard];
       if (!cardSlot || !required.includes(cardSlot)) {
         hardReasons.push(
           check.hasCard === "__revelation__" ? "需要启示录专辑卡"
           : check.hasCard === "__magic__" ? "需要魔法卡牌(灭国魔女/启示录/善意虚影)"
+          : check.hasCard === "__dragon__" ? "需要龙族卡牌(索尔/希瓦娜/斯莫德)"
           : check.hasCard === "__lux__" ? "需要拉克丝卡牌(光辉女郎/善意虚影)"
           : `需要卡牌:${check.hasCard}`
         );
