@@ -31,6 +31,7 @@ const REGIONS: Region[] = [
   { id: "shurima",    name: "恕瑞玛",     x: 33.8, y: 65.5, w: 24,   h: 22,   color: "#f39c12" },
   { id: "shadow",     name: "暗影岛",     x: 86.9, y: 71.6, w: 8.3,  h: 11.2, color: "#2c3e50", locked: true },
   { id: "targon",     name: "巨神峰",     x: 27.3, y: 75.6, w: 5.9,  h: 6.6,  color: "#b8860b", locked: true },
+  { id: "bandle",     name: "班德尔城",   x: 56,   y: 64,   w: 10,   h: 12,   color: "#9b59b6", locked: true },
 ];
 
 // 相邻关系
@@ -46,11 +47,12 @@ const ADJACENCY: Record<string, string[]> = {
   shadow:     ["bilgewater", "ixtal"],
   shurima:    ["ixtal", "targon", "zaun", "noxus"],
   targon:     ["shurima"],
+  bandle:     ["piltover", "ixtal", "bilgewater"],
 };
 
 const START_REGION = "demacia";
 const EXPLORE_COST = 2;
-const MOVE_COST = 1;
+const BASE_MOVE_COST = 1;
 
 interface Props {
   groupKey: string;
@@ -218,11 +220,13 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     setAttrs(a);
     setTokenBalance(t);
     setCardCollection(coll);
-    if (vRaw) { const vd = JSON.parse(vRaw); setVitality(vd.v); const hasSash2 = items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0; setMaxVitality(Math.max(vd.max || 8, 8 + hasSash2)); }
+    if (vRaw) { const vd = JSON.parse(vRaw); setVitality(vd.v); const bonusMax2 = (items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0) + (items.some(i => i.itemId === "沉重的铠甲" && i.qty > 0) ? 2 : 0); setMaxVitality(Math.max(vd.max || 8, 8 + bonusMax2)); }
     setPlayerState({ attrs: a, tags, items });
     return attrApplied;
   };
 
+  const moveCost = useMemo(() => BASE_MOVE_COST + (playerState?.items?.some(i => i.itemId === "沉重的铠甲" && i.qty > 0) ? 1 : 0), [playerState]);
+  const hasSpringStone = useMemo(() => playerState?.items?.some(i => i.itemId === "魔力泉水石" && i.qty > 0), [playerState]);
   const adjacentSet = useMemo(() => {
     return new Set(ADJACENCY[currentRegion] || []);
   }, [currentRegion]);
@@ -256,8 +260,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
         vData = { v: 8 + extraMax2, max: 8 + extraMax2, date: today };
       }
       setVitality(vData.v);
-      // max 自修复：≥8，有大胃王绶带则≥10，不重复叠加
-      { const hasSash = items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0; const correctMax = Math.max(vData.max || 8, 8 + hasSash); setMaxVitality(correctMax); if (correctMax !== (vData.max || 8)) { vData.max = correctMax; await setProgress(groupKey, "map-vitality", JSON.stringify(vData)); } }
+      // max 自修复：≥8 + 道具加成（大胃王绶带+2, 沉重铠甲+2），不重复叠加
+      { const bonusMax = (items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0) + (items.some(i => i.itemId === "沉重的铠甲" && i.qty > 0) ? 2 : 0); const correctMax = Math.max(vData.max || 8, 8 + bonusMax); setMaxVitality(correctMax); if (correctMax !== (vData.max || 8)) { vData.max = correctMax; await setProgress(groupKey, "map-vitality", JSON.stringify(vData)); } }
       // 位置
       const region = await getProgress(groupKey, "map-region");
       if (region && REGIONS.some(r => r.id === region)) setCurrentRegion(region);
@@ -313,7 +317,9 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   };
 
   const handleRegionClick = async (region: Region) => {
-    if (region.locked) {
+    // 魔力泉水石解锁班德尔城
+    const isLocked = region.locked && !(region.id === "bandle" && hasSpringStone);
+    if (isLocked) {
       showToast("暂未开放");
       return;
     }
@@ -340,7 +346,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     if (adjacentSet.has(rid)) {
       // 矿工护身符：抵消本次移动消耗
       const hasCharm = playerState?.items?.some(i => i.itemId === "矿工护身符" && i.qty > 0);
-      const cost = hasCharm ? 0 : MOVE_COST;
+      const cost = hasCharm ? 0 : moveCost;
       if (vitality < cost) { showToast(`活力不足（需${cost}点）`); return; }
       if (hasCharm) {
         await removeItem(groupKey, "矿工护身符", 1);
@@ -360,7 +366,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     // 不相邻 → 计算最快路径
     const path = findShortestPath(currentRegion, rid);
     if (!path) { showToast(`无法到达${region.name}`); return; }
-    const totalCost = path.length * MOVE_COST;
+    const totalCost = path.length * moveCost;
     const curName = REGIONS.find(r => r.id === currentRegion)?.name || currentRegion;
     const regionNames = path.map(id => REGIONS.find(r => r.id === id)?.name || id).join(" → ");
     if (!confirm(`前往 ${region.name}\n路径：${curName} → ${regionNames}\n消耗 ${totalCost} 活力（${path.length} 次移动）`)) return;
@@ -475,7 +481,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                     : isHovered ? `inset 0 0 50px ${region.color}20`
                     : "none",
                   borderRadius: "4px",
-                  filter: region.locked ? "grayscale(0.7)" : canReach ? "none" : "brightness(0.5)",
+                  filter: (region.locked && !(region.id === "bandle" && hasSpringStone)) ? "grayscale(0.7)" : canReach ? "none" : "brightness(0.5)",
                   zIndex: isHovered ? 10 : 1,
                   cursor: "pointer",
                   userSelect: "none",
@@ -489,22 +495,22 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                     <span className="font-heading block font-bold"
                       style={{
                         fontSize: "22px",
-                        color: region.locked ? "rgba(150,150,160,0.35)"
+                        color: (region.locked && !(region.id === "bandle" && hasSpringStone)) ? "rgba(150,150,160,0.35)"
                           : isCurrent ? "#00ff88"
                           : region.color,
-                        textShadow: isHovered && !region.locked && !isCurrent
+                        textShadow: isHovered && !(region.locked && !(region.id === "bandle" && hasSpringStone)) && !isCurrent
                           ? `0 0 18px ${region.color}cc, 0 0 36px ${region.color}66`
                           : isCurrent ? "0 0 12px rgba(0,255,136,0.6)" : "none",
                         letterSpacing: "0.08em",
                       }}>
                       {region.name}
                     </span>
-                    {region.locked && (
+                    {(region.locked && !(region.id === "bandle" && hasSpringStone)) && (
                       <span className="font-mono block mt-1" style={{ fontSize: 10, color: "rgba(200,200,200,0.3)" }}>
                         暂未开放
                       </span>
                     )}
-                    {isHovered && !region.locked && !isCurrent && !canReach && (
+                    {isHovered && !(region.locked && !(region.id === "bandle" && hasSpringStone)) && !isCurrent && !canReach && (
                       <span className="font-mono block mt-1" style={{ fontSize: 9, color: "rgba(255,255,255,0.25)" }}>
                         无法直接到达
                       </span>
@@ -515,9 +521,9 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                         <span className="font-mono" style={{ fontSize: 8, color: "rgba(0,255,136,0.4)" }}>当前位置</span>
                       </div>
                     )}
-                    {isHovered && canReach && !isCurrent && !region.locked && (
+                    {isHovered && canReach && !isCurrent && !(region.locked && !(region.id === "bandle" && hasSpringStone)) && (
                       <span className="font-mono block mt-1" style={{ fontSize: 9, color: region.color + "88" }}>
-                        {region.id === currentRegion ? `探索 -${EXPLORE_COST}⚡` : `前往 -${MOVE_COST}⚡`}
+                        {region.id === currentRegion ? `探索 -${EXPLORE_COST}⚡` : `前往 -${moveCost}⚡`}
                       </span>
                     )}
                   </div>
@@ -530,7 +536,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
           <div className="absolute bottom-3 left-3 font-mono text-xs flex gap-4"
             style={{ color: "rgba(200,200,208,0.2)", background: "rgba(5,5,16,0.7)", padding: "4px 8px", borderRadius: 3 }}>
             <span>🔍 探索 -{EXPLORE_COST}⚡</span>
-            <span>🚶 移动 -{MOVE_COST}⚡</span>
+            <span>🚶 移动 -{BASE_MOVE_COST}⚡</span>
           </div>
         </div>
 

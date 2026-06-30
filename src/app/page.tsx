@@ -133,7 +133,8 @@ export default function Home() {
                   const { getItems } = await import("@/lib/player-state");
                   const items = await getItems(gk);
                   const hasSash = items.some((i: any) => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0;
-                  const correctMax = 8 + hasSash;
+                  const hasArmor = items.some((i: any) => i.itemId === "沉重的铠甲" && i.qty > 0) ? 2 : 0;
+                  const correctMax = 8 + hasSash + hasArmor;
                   const vRaw = await getProgress(gk, "map-vitality");
                   const oldV = vRaw ? JSON.parse(vRaw).v : correctMax;
                   const newV = Math.max(oldV, correctMax);
