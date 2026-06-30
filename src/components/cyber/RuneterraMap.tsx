@@ -113,11 +113,11 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     if (tokenDelta > 0) writes.push(addTokens(groupKey, tokenDelta));
     else if (tokenDelta < 0) writes.push(spendTokens(groupKey, -tokenDelta));
 
-    // 活力（999=补满到上限，不超出）
+    // 活力（999=补满到上限，不低于当前值）
     if (outcome.vitality) {
       let v: number;
       if (outcome.vitality >= 999) {
-        v = maxVitality;
+        v = Math.max(vitality, maxVitality);
       } else {
         v = Math.max(0, vitality + outcome.vitality);
       }

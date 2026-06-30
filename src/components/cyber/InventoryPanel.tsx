@@ -62,12 +62,16 @@ export default function InventoryPanel() {
     }
     // 鸡蛋：主动使用+4活力（不超过上限）
     if (itemId === "鸡蛋") {
-      const ok = await removeItem(gk, itemId, 1);
-      if (!ok) return;
       const today = new Date().toISOString().split("T")[0];
       const vRaw = await getProgress(gk, "map-vitality");
       if (vRaw) {
         const vd = JSON.parse(vRaw);
+        if ((vd.v || 0) >= (vd.max || 8)) {
+          alert("活力已满，无法使用鸡蛋");
+          return;
+        }
+        const ok = await removeItem(gk, itemId, 1);
+        if (!ok) return;
         const newV = Math.min(vd.max || 8, (vd.v || 0) + 4);
         await setProgress(gk, "map-vitality", JSON.stringify({ v: newV, max: vd.max || 8, date: today }));
       }

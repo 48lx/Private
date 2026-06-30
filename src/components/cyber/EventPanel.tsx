@@ -295,6 +295,9 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
                   {c.choice.check?.consumeCard && (
                     <span className="block text-xs mt-1" style={{ color: "rgba(255,140,80,0.6)" }}>⚠️ 选择后将消耗卡槽中的卡牌</span>
                   )}
+                  {c.choice.check?.consumeItem && (
+                    <span className="block text-xs mt-1" style={{ color: "rgba(255,140,80,0.6)" }}>⚠️ 需要并消耗道具「{c.choice.check.consumeItem}」</span>
+                  )}
                   {c.disabled && c.reason && (
                     <span className="block text-xs mt-1" style={{ color: "rgba(255,51,85,0.4)" }}>需要 {c.reason}</span>
                   )}
