@@ -684,7 +684,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                       }}
                         className="font-mono text-base w-full py-3 border transition-all hover:scale-[1.02]"
                         style={{ borderColor: "rgba(255,215,0,0.3)", color: "#ffd700", background: "rgba(0,0,0,0.35)" }}>
-                        {vitality >= EXPLORE_COST ? `${overviewExplored ? "继续" : "开始"}探索（⚡${vitality}/${maxVitality} -${EXPLORE_COST}）` : `活力不足（⚡${vitality}/${maxVitality}）`}
+                        {vitality >= EXPLORE_COST ? `${overviewExplored ? "继续" : "开始"}探索（⚡${vitality}/${maxVitality}）` : `活力不足（⚡${vitality}/${maxVitality}）`}
                       </button>
                     </div>
                   </div>

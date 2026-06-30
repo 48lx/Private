@@ -1,9 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getGroupKey, getProgress, setProgress } from "@/lib/card-storage";
 import { demaciaEvents } from "@/data/events/demacia";
 import { ALL_CARDS } from "@/lib/cards";
+import { getPlayerState } from "@/lib/player-state";
+
+const ALL_ITEMS = [
+  { id: "矿工护身符", name: "矿工护身符", icon: "⛏️", location: "禁魔石矿洞的倒霉矿工", effect: "跨区移动时自动消耗，抵消本次活力消耗" },
+  { id: "禁魔石之心表面纹路", name: "禁魔石之心表面纹路", icon: "💎", location: "禁魔石矿洞的倒霉矿工", effect: "秘宝线索" },
+  { id: "叽叽的口哨", name: "叽叽的口哨", icon: "🪈", location: "会说话的石像鬼", effect: "事件专用道具" },
+  { id: "大胃王绶带", name: "大胃王绶带", icon: "🎗️", location: "美食节·大胃王比赛", effect: "活力上限+2" },
+  { id: "大胃王挑战邀请函", name: "大胃王挑战邀请函", icon: "✉️", location: "美食节IV", effect: "事件专用道具" },
+  { id: "白玫瑰", name: "白玫瑰", icon: "🌹", location: "不想当兵的男孩", effect: "事件专用道具" },
+  { id: "沉重的铠甲", name: "沉重的铠甲", icon: "🛡️", location: "倒霉骑士的铠甲", effect: "活力上限+2，移动消耗+1" },
+  { id: "骑士的护腕", name: "骑士的护腕", icon: "🧤", location: "倒霉骑士的铠甲", effect: "敏捷+1" },
+  { id: "魔力泉水石", name: "魔力泉水石", icon: "💧", location: "泉水边的许愿少女", effect: "事件专用道具" },
+  { id: "鸡蛋", name: "鸡蛋", icon: "🥚", location: "训龙骑士的「龙」", effect: "主动使用：活力+4" },
+  { id: "诺克萨斯的旧盾", name: "诺克萨斯的旧盾", icon: "⚔️", location: "不愿安息的盾牌", effect: "解锁波比英雄事件" },
+  { id: "战地日记残页", name: "战地日记残页", icon: "📜", location: "不愿安息的盾牌", effect: "德玛西亚趣味事件权重-1" },
+];
 
 interface SeenEntry {
   name: string; weight: number;
@@ -15,19 +31,26 @@ interface Props { groupKey: string; }
 export default function EventJournal({ groupKey }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [seenEvents, setSeenEvents] = useState<Record<string, SeenEntry>>({});
+  const [tab, setTab] = useState<"events" | "items">("events");
+  const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(new Set());
 
   const load = async () => {
     if (!groupKey) return;
+    // 事件
     const raw = await getProgress(groupKey, "seen-events");
-    if (!raw) { setSeenEvents({}); return; }
-    const parsed = JSON.parse(raw);
-    // 兼容旧格式：lastChoice/lastMsg → choices数组
-    for (const k of Object.keys(parsed)) {
-      if (parsed[k].lastChoice !== undefined && !parsed[k].choices) {
-        parsed[k].choices = [{ index: parsed[k].lastChoice, msg: parsed[k].lastMsg || "" }];
+    if (!raw) { setSeenEvents({}); }
+    else {
+      const parsed = JSON.parse(raw);
+      for (const k of Object.keys(parsed)) {
+        if (parsed[k].lastChoice !== undefined && !parsed[k].choices) {
+          parsed[k].choices = [{ index: parsed[k].lastChoice, msg: parsed[k].lastMsg || "" }];
+        }
       }
+      setSeenEvents(parsed);
     }
-    setSeenEvents(parsed);
+    // 物品
+    const state = await getPlayerState(groupKey);
+    setOwnedItemIds(new Set(state.items.filter(i => i.qty > 0).map(i => i.itemId)));
   };
 
   useEffect(() => { if (isOpen) load(); }, [isOpen, groupKey]);
@@ -121,13 +144,21 @@ export default function EventJournal({ groupKey }: Props) {
             <div className="flex-1 flex flex-col">
               <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                 <div className="flex items-center gap-3">
-                  <h3 className="font-heading text-base tracking-[0.1em]" style={{ color: "#ffd700" }}>📜 事件图鉴</h3>
-                  <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.2)" }}>{visibleEvents.length} 个</span>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setTab("events")} className="font-heading text-base tracking-[0.1em]"
+                      style={{ color: tab === "events" ? "#ffd700" : "rgba(200,200,208,0.25)" }}>📜 事件</button>
+                    <button onClick={() => setTab("items")} className="font-heading text-base tracking-[0.1em]"
+                      style={{ color: tab === "items" ? "#ffd700" : "rgba(200,200,208,0.25)" }}>📦 物品</button>
+                    <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.2)" }}>
+                      {tab === "events" ? `${Object.keys(seenEvents).length}/${allEvents.length}` : `${ownedItemIds.size}/${ALL_ITEMS.length}`}
+                    </span>
+                  </div>
                 </div>
                 <button onClick={() => setIsOpen(false)} className="font-mono text-lg" style={{ color: "rgba(200,200,208,0.3)" }}>✕</button>
               </div>
 
-              <div className="flex border-b px-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              {tab === "events" && <>
+                <div className="flex border-b px-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                 {eventTypes.map(t => (
                   <button key={t} onClick={() => setFilterType(t)}
                     className="font-mono text-xs px-3 py-2 transition-colors"
@@ -202,6 +233,36 @@ export default function EventJournal({ groupKey }: Props) {
                 );
               })}
               </div>
+              </>}
+
+              {/* 物品图鉴 */}
+              {tab === "items" && (
+                <div className="flex-1 overflow-y-auto p-4" style={{ scrollbarWidth: "thin" }}>
+                  <div className="grid grid-cols-4 gap-3">
+                    {ALL_ITEMS.map(item => {
+                      const owned = ownedItemIds.has(item.id);
+                      return (
+                        <div key={item.id} className="p-3 border rounded text-center group relative transition-all"
+                          style={{
+                            borderColor: owned ? "rgba(255,215,0,0.2)" : "rgba(255,255,255,0.05)",
+                            background: owned ? "rgba(255,215,0,0.04)" : "rgba(0,0,0,0.15)",
+                            opacity: owned ? 1 : 0.4,
+                          }}
+                          title={owned ? item.effect : `获取：${item.location}`}>
+                          <div className="text-2xl mb-1.5" style={{ filter: owned ? "none" : "grayscale(0.8)" }}>{item.icon}</div>
+                          <div className="font-mono text-xs" style={{ color: owned ? "rgba(255,215,0,0.8)" : "rgba(200,200,208,0.3)" }}>
+                            {item.name}
+                          </div>
+                          <div className="font-mono text-[10px] mt-1 leading-tight"
+                            style={{ color: owned ? "rgba(200,200,208,0.35)" : "rgba(200,200,208,0.18)" }}>
+                            {owned ? item.effect : item.location}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
