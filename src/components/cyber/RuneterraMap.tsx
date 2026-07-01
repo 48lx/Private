@@ -399,7 +399,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       if (hasSugar) {
         const bandleHere = ALL_EVENTS.filter(e => e.id.startsWith("bandle-") && e.region === rid);
         if (bandleHere.length > 0) {
-          const picked = bandleHere[Math.floor(Math.random() * bandleHere.length)];
+          const totalW2 = bandleHere.reduce((s,e) => s + e.weight, 0);
+          let r2 = Math.random() * totalW2;
+          let picked = bandleHere[0];
+          for (const e of bandleHere) { r2 -= e.weight; if (r2 <= 0) { picked = e; break; } }
           setEventImage(picked.image || "/events/德玛西亚_01.png");
           setCurrentEvent(picked);
           setHasReroll(false);
