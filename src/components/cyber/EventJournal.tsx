@@ -156,7 +156,7 @@ export default function EventJournal({ groupKey }: Props) {
                       style={{ color: tab === "items" ? "#ffd700" : "rgba(200,200,208,0.25)" }}>📦 物品</button>
                     <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.2)" }}>
                       {tab === "events"
-                        ? `${allEvents.filter(e => (filterRegion === "bandle" ? e.id.startsWith("bandle-") : e.region === filterRegion) && seenEvents[e.id]).length}/${allEvents.filter(e => filterRegion === "bandle" ? e.id.startsWith("bandle-") : e.region === filterRegion).length}`
+                        ? `${allEvents.filter(e => (filterRegion === "bandle" ? e.id.startsWith("bandle-") : e.region === filterRegion) && (filterType === "all" || e.type === filterType || (filterType === "clue" && e.id === "bandle-poppy")) && seenEvents[e.id]).length}/${allEvents.filter(e => (filterRegion === "bandle" ? e.id.startsWith("bandle-") : e.region === filterRegion) && (filterType === "all" || e.type === filterType || (filterType === "clue" && e.id === "bandle-poppy"))).length}`
                         : `${ownedItemIds.size}/${ALL_ITEMS.length}`}
                     </span>
                   </div>

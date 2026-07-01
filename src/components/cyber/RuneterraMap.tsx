@@ -652,7 +652,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                                 />
                               )
                             ) : type === "B" || type === "D" ? (
-                              <span style={{ fontSize: "10px", color: "#ffd700", fontWeight: "bold", padding: "2px", wordBreak: "break-all", lineHeight: 1.2, textAlign: "center" }}>{clue}</span>
+                              <span style={{ fontSize: "11px", color: "#ffd700", fontWeight: "bold", padding: "2px" }}>{clue}</span>
                             ) : (
                               <span style={{ fontSize: "20px", color: "#ffd700" }}>✓</span>
                             )
