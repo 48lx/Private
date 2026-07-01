@@ -98,7 +98,7 @@ export default function EventJournal({ groupKey }: Props) {
   };
 
   const allEvents = [...demaciaEvents];
-  const regions = [...new Set(allEvents.map(e => e.region))];
+  const regions = [...new Set([...allEvents.map(e => e.region), "bandle"])];
   const eventTypes = ["all", "fun", "clue", "side", "hero"] as const;
 
   const [filterRegion, setFilterRegion] = useState<string>("demacia");
@@ -106,7 +106,7 @@ export default function EventJournal({ groupKey }: Props) {
 
   const visibleEvents = allEvents.filter(ev => {
     if (!seenEvents[ev.id]) return false;
-    if (filterRegion && ev.region !== filterRegion) return false;
+    if (filterRegion === "bandle" ? !ev.id.startsWith("bandle-") : filterRegion && ev.region !== filterRegion) return false;
     if (filterType !== "all" && ev.type !== filterType) return false;
     return true;
   });
@@ -131,8 +131,8 @@ export default function EventJournal({ groupKey }: Props) {
               </div>
               <div className="flex-1 overflow-y-auto py-1" style={{ scrollbarWidth: "thin" }}>
                 {regions.map(r => {
-                  const name = r === "demacia" ? "德玛西亚" : r;
-                  const count = allEvents.filter(e => e.region === r && seenEvents[e.id]).length;
+                  const name = r === "demacia" ? "德玛西亚" : r === "bandle" ? "班德尔城" : r;
+                  const count = allEvents.filter(e => (r === "bandle" ? e.id.startsWith("bandle-") : e.region === r) && seenEvents[e.id]).length;
                   return (
                     <button key={r} onClick={() => setFilterRegion(r)}
                       className="w-full text-left font-mono text-xs px-3 py-2 transition-colors"

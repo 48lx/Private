@@ -78,6 +78,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [paperDrunkActive, setPaperDrunkActive] = useState(false);
   const exploringRef = useRef(false);
+  const [hasReroll, setHasReroll] = useState(false);
   const [cardCollection, setCardCollection] = useState<{ card_id: string; count: number }[]>([]);
 
   const ALL_EVENTS = [...demaciaEvents];
@@ -674,16 +675,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                         }
                         if (!firstExplore) {
                           const cost = EXPLORE_COST + (poisonActive ? 1 : 0);
-                          if (freeReroll === "1") {
-                            showToast("🔇 消音垫：本次探索免活力！");
-                            await setProgress(groupKey, "free-reroll", "");
-                          } else if (vitality < cost) {
-                            showToast(`活力不足（需${cost}点）`);
-                            return;
-                          } else {
-                            await saveVitality(vitality - cost);
-                          }
+                          if (vitality < cost) { showToast(`活力不足（需${cost}点）`); return; }
+                          await saveVitality(vitality - cost);
                         }
+                        setHasReroll(freeReroll === "1");
                         setPaperDrunkActive(firstExplore || poisonActive);
                         if (overviewRegion === "demacia" && playerState) {
                           const today2 = new Date().toISOString().split("T")[0];
@@ -728,6 +723,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             fixedImage={eventImage}
             cardCollection={cardCollection}
             forceFail={paperDrunkActive}
+            hasReroll={hasReroll}
             vitality={vitality}
             maxVitality={maxVitality}
             onRedirect={async (eventId) => {
@@ -756,6 +752,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             onClose={() => {
               setCurrentEvent(null);
               setOverviewExplored(true);
+              setHasReroll(false);
             }}
           />
         )}

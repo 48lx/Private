@@ -25,6 +25,8 @@ export function pickEvent(
 
   const available = events.filter(e => {
     if (e.region !== region) return false;
+    // 班德尔城事件仅通过井盖redirect触发，不进入常规池
+    if (e.id.startsWith("bandle-")) return false;
     // 跳过今天已触发的
     if (triggered.includes(e.id)) return false;
     // 检查前置条件

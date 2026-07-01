@@ -40,12 +40,13 @@ interface Props {
   fixedImage: string;
   cardCollection: { card_id: string; count: number }[];
   forceFail?: boolean;
+  hasReroll?: boolean;
   vitality?: number;
   maxVitality?: number;
   onRedirect?: (eventId: string) => void;
 }
 
-export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage, cardCollection, forceFail, vitality, maxVitality, onRedirect }: Props) {
+export default function EventPanel({ event, playerState, onResult, onClose, attrs, tokens, fixedImage, cardCollection, forceFail, hasReroll, vitality, maxVitality, onRedirect }: Props) {
   const [result, setResult] = useState<{ choiceIndex: number; success: boolean; message: string; attrApplied: boolean; outcome: EventOutcome } | null>(null);
   const [cardSlot, setCardSlot] = useState<string | null>(null);
   const outcomeApplied = useRef(false);
@@ -284,6 +285,18 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
 
           {/* Choices / Result */}
           <div className="flex-1 flex flex-col justify-end" style={{ gap: "0.75rem", paddingBottom: "1.25rem" }}>
+            {/* 消音垫：无视本次事件 */}
+            {hasReroll && !result && (
+              <button onClick={async () => {
+                const gk = (await import("@/lib/card-storage")).getGroupKey();
+                if (gk) await (await import("@/lib/card-storage")).setProgress(gk, "free-reroll", "");
+                onClose();
+              }}
+                className="font-mono text-sm p-3 border rounded text-center transition-all hover:scale-[1.02]"
+                style={{ borderColor: "rgba(100,200,255,0.3)", background: "rgba(100,200,255,0.05)", color: "#64c8ff" }}>
+                🔇 无视此事件（消音垫）
+              </button>
+            )}
             {result ? (() => {
               // 使用实际执行后的 outcome（含动态金币等处理），仅属性显示受 attrApplied 控制
               const displayOutcome = result.attrApplied ? result.outcome : { ...result.outcome, attrDelta: undefined };
