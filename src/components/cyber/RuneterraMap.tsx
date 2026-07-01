@@ -157,13 +157,16 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       }
     }
 
-    // 线索（重复→500金币）
+    // 线索（更新数据；首次或数据变化给500金币）
     if (outcome.addClues) for (const cl of outcome.addClues) {
       const clueKey = `clue-${cl.region}-${cl.type}`;
       const existing = await getProgress(groupKey, clueKey);
-      if (existing) {
+      if (existing && existing !== cl.data) {
+        // 数据更新（如文本修正），直接覆盖
+        writes.push(setProgress(groupKey, clueKey, cl.data));
+      } else if (existing) {
         tokenDelta += 500;
-        showToast(`已拥有线索「${cl.type}」，自动分解为500金币`);
+        showToast(`已拥有线索，自动分解为500金币`);
       } else {
         writes.push(setProgress(groupKey, clueKey, cl.data));
       }
@@ -702,7 +705,14 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                         const used = await getProgress(groupKey, `whistle-${today}`);
                         if (used === "1") { showToast("今日已使用过附魔口哨套"); return; }
                         await setProgress(groupKey, `whistle-${today}`, "1");
-                        const bandleEvents = ALL_EVENTS.filter(e => e.id.startsWith("bandle-"));
+                        const bandleEvents = ALL_EVENTS.filter(e => {
+                          if (!e.id.startsWith("bandle-")) return false;
+                          if (!e.require) return true;
+                          if (e.require.tags && !e.require.tags.every(t => playerState!.tags.includes(t))) return false;
+                          if (e.require.notTags && e.require.notTags.some(t => playerState!.tags.includes(t))) return false;
+                          if (e.require.items && !e.require.items.every(i => playerState!.items.some(s => s.itemId === i && s.qty > 0))) return false;
+                          return true;
+                        });
                         if (bandleEvents.length > 0) {
                           const picked = bandleEvents[Math.floor(Math.random() * bandleEvents.length)];
                           setEventImage(picked.image || "/events/德玛西亚_01.png");
