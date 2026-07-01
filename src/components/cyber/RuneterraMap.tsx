@@ -243,7 +243,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     setAttrs(a);
     setTokenBalance(t);
     setCardCollection(coll);
-    if (vRaw) { const vd = JSON.parse(vRaw); setVitality(vd.v); const bonusMax2 = (items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0) + (items.some(i => i.itemId === "沉重的铠甲" && i.qty > 0) ? 2 : 0); setMaxVitality(Math.max(vd.max || 8, 8 + bonusMax2)); }
+    if (vRaw) { const vd = JSON.parse(vRaw); setVitality(vd.v); const strBonus2 = Math.floor((a.力量 || 0) / 10); const bonusMax2 = (items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0) + (items.some(i => i.itemId === "沉重的铠甲" && i.qty > 0) ? 2 : 0) + strBonus2; setMaxVitality(Math.max(vd.max || 8, 8 + bonusMax2)); }
     setPlayerState({ attrs: a, tags, items });
     return attrApplied;
   };
@@ -283,7 +283,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       }
       setVitality(vData.v);
       // max 自修复：≥8 + 道具加成（大胃王绶带+2, 沉重铠甲+2），不重复叠加
-      { const bonusMax = (items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0) + (items.some(i => i.itemId === "沉重的铠甲" && i.qty > 0) ? 2 : 0); const correctMax = Math.max(vData.max || 8, 8 + bonusMax); setMaxVitality(correctMax); if (correctMax !== (vData.max || 8)) { vData.max = correctMax; await setProgress(groupKey, "map-vitality", JSON.stringify(vData)); } }
+      { const strBonus = Math.floor((attrs.力量 || 0) / 10); const bonusMax = (items.some(i => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0) + (items.some(i => i.itemId === "沉重的铠甲" && i.qty > 0) ? 2 : 0) + strBonus; const correctMax = Math.max(vData.max || 8, 8 + bonusMax); setMaxVitality(correctMax); if (correctMax !== (vData.max || 8)) { vData.max = correctMax; await setProgress(groupKey, "map-vitality", JSON.stringify(vData)); } }
       // 位置
       const region = await getProgress(groupKey, "map-region");
       if (region && REGIONS.some(r => r.id === region)) setCurrentRegion(region);
@@ -367,7 +367,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       // 矿工护身符：抵消本次移动消耗
       const hasCharm = playerState?.items?.some(i => i.itemId === "矿工护身符" && i.qty > 0);
       const hasSugar = await getProgress(groupKey, "sugar-active") === "1";
-      const cost = (hasCharm || hasSugar) ? 0 : moveCost;
+      // 敏捷：敏捷×1%概率免疫活力消耗（至多60%）
+      const agi = playerState?.attrs?.敏捷 || 0;
+      const agiDodge = !hasCharm && !hasSugar && Math.random() < Math.min(agi * 0.01, 0.6);
+      const cost = (hasCharm || hasSugar || agiDodge) ? 0 : moveCost;
       if (vitality < cost) { showToast(`活力不足（需${cost}点）`); return; }
       if (hasCharm) {
         await removeItem(groupKey, "矿工护身符", 1);
@@ -381,10 +384,13 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
         await setProgress(groupKey, "sugar-active", "");
         showToast("🍬 约德尔变形糖：免活力移动！");
       }
+      if (agiDodge) showToast(`💨 敏捷身法：免活力移动！（${agi}敏）`);
       await setProgress(groupKey, "map-region", rid);
       setCurrentRegion(rid);
-      if (!hasCharm && !hasSugar) await saveVitality(vitality - cost);
-      if (!hasCharm && !hasSugar) showToast(`🚶 前往 ${region.name}（-${cost}活力）`);
+      // 标记地区移动（魅力金币用）
+      await setProgress(groupKey, "just-moved", "1");
+      if (!hasCharm && !hasSugar && !agiDodge) await saveVitality(vitality - cost);
+      if (!hasCharm && !hasSugar && !agiDodge) showToast(`🚶 前往 ${region.name}（-${cost}活力）`);
       // 变形糖：触发当地班德尔事件
       if (hasSugar) {
         const bandleHere = ALL_EVENTS.filter(e => e.id.startsWith("bandle-") && e.region === rid);
@@ -407,14 +413,18 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     const path = findShortestPath(currentRegion, rid);
     if (!path) { showToast(`无法到达${region.name}`); return; }
     const hasSugarBFS = await getProgress(groupKey, "sugar-active") === "1";
-    const totalCost = hasSugarBFS ? 0 : path.length * moveCost;
+    const agiBFS = playerState?.attrs?.敏捷 || 0;
+    const agiDodgeBFS = !hasSugarBFS && Math.random() < Math.min(agiBFS * 0.01, 0.6);
+    const totalCost = (hasSugarBFS || agiDodgeBFS) ? 0 : path.length * moveCost;
     const curName = REGIONS.find(r => r.id === currentRegion)?.name || currentRegion;
     const regionNames = path.map(id => REGIONS.find(r => r.id === id)?.name || id).join(" → ");
-    if (!hasSugarBFS && !confirm(`前往 ${region.name}\n路径：${curName} → ${regionNames}\n消耗 ${totalCost} 活力（${path.length} 次移动）`)) return;
+    if (!hasSugarBFS && !agiDodgeBFS && !confirm(`前往 ${region.name}\n路径：${curName} → ${regionNames}\n消耗 ${totalCost} 活力（${path.length} 次移动）`)) return;
     if (vitality < totalCost) { showToast(`活力不足（需${totalCost}点）`); return; }
     await setProgress(groupKey, "map-region", rid);
     setCurrentRegion(rid);
-    if (!hasSugarBFS) await saveVitality(vitality - totalCost);
+    await setProgress(groupKey, "just-moved", "1");
+    if (!hasSugarBFS && !agiDodgeBFS) await saveVitality(vitality - totalCost);
+    if (agiDodgeBFS) showToast(`💨 敏捷身法：免活力移动！（${agiBFS}敏）`);
     if (hasSugarBFS) {
       await setProgress(groupKey, "sugar-active", "");
       showToast("🍬 约德尔变形糖：免活力移动！");
@@ -720,6 +730,17 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                           const dailyLog: DailyLog = raw ? JSON.parse(raw) : { date: today2, triggeredEvents: [], vitalityUsed: 0 };
                           const picked = pickEvent(overviewRegion, ALL_EVENTS, playerState, dailyLog);
                           if (picked) {
+                            // 魅力：地区移动后首次事件获得20×魅力金币
+                            const justMoved = await getProgress(groupKey, "just-moved");
+                            if (justMoved === "1") {
+                              await setProgress(groupKey, "just-moved", "");
+                              const charmBonus = 20 * (playerState.attrs.魅力 || 0);
+                              if (charmBonus > 0) {
+                                const { addTokens } = await import("@/lib/card-storage");
+                                await addTokens(groupKey, charmBonus);
+                                showToast(`✨ 魅力加成：+${charmBonus}金币`);
+                              }
+                            }
                             dailyLog.triggeredEvents.push(picked.id);
                             await setProgress(groupKey, `daily-events-${today2}`, JSON.stringify(dailyLog));
                             // 记录事件到日志

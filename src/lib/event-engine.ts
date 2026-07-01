@@ -36,12 +36,21 @@ export function pickEvent(
 
   if (available.length === 0) return null;
 
-  // 战地日记残页：德玛西亚趣味事件权重-1
+  // 战地日记残页：德玛西亚趣味事件权重-1；智力：每10点线索事件权重+1
   const hasDiary = playerState.items.some(i => i.itemId === "战地日记残页" && i.qty > 0);
-  const totalWeight = available.reduce((sum, e) => sum + (hasDiary && e.region === "demacia" && e.type === "fun" ? Math.max(0, e.weight - 1) : e.weight), 0);
+  const intBonus = Math.floor((playerState.attrs.智力 || 0) / 10);
+  const totalWeight = available.reduce((sum, e) => {
+    let w = e.weight;
+    if (hasDiary && e.region === "demacia" && e.type === "fun") w = Math.max(0, w - 1);
+    if (e.type === "clue") w += intBonus;
+    return sum + w;
+  }, 0);
   let r = Math.random() * totalWeight;
   for (const e of available) {
-    r -= (hasDiary && e.region === "demacia" && e.type === "fun" ? Math.max(0, e.weight - 1) : e.weight);
+    let w = e.weight;
+    if (hasDiary && e.region === "demacia" && e.type === "fun") w = Math.max(0, w - 1);
+    if (e.type === "clue") w += intBonus;
+    r -= w;
     if (r <= 0) return e;
   }
   return available[available.length - 1];

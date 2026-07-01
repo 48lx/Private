@@ -37,6 +37,7 @@ export default function EventJournal({ groupKey }: Props) {
   const [tab, setTab] = useState<"events" | "items">("events");
   const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(new Set());
   const [selectedItem, setSelectedItem] = useState<typeof ALL_ITEMS[0] | null>(null);
+  const [playerAttrs, setPlayerAttrs] = useState<{ 力量: number; 智力: number; 敏捷: number; 魅力: number }>({ 力量: 0, 智力: 0, 敏捷: 0, 魅力: 0 });
 
   const load = async () => {
     if (!groupKey) return;
@@ -55,6 +56,7 @@ export default function EventJournal({ groupKey }: Props) {
     // 物品（排除属性果实）
     const state = await getPlayerState(groupKey);
     const fruitSet = new Set(["力量+1","智力+1","敏捷+1","魅力+1","力量-1","智力-1","敏捷-1","魅力-1"]);
+    setPlayerAttrs(state.attrs);
     setOwnedItemIds(new Set(state.items.filter(i => i.qty > 0 && !fruitSet.has(i.itemId)).map(i => i.itemId)));
   };
 
@@ -186,7 +188,13 @@ export default function EventJournal({ groupKey }: Props) {
                     <div className="flex items-center gap-2 mb-2">
                       <span className="font-mono text-xs px-1.5 py-0.5 border rounded" style={{ color: "#ffd700", borderColor: "rgba(255,215,0,0.3)", background: "rgba(255,215,0,0.06)" }}>{ev.type}</span>
                       <span className="font-heading text-base" style={{ color: "#ffd700" }}>✦ {ev.name}</span>
-                      <span className="font-mono text-xs ml-auto" style={{ color: "rgba(200,200,208,0.25)" }}>权重 {ev.weight}</span>
+                      {(() => {
+                        let w = ev.weight;
+                        const hasDiary = ownedItemIds.has("战地日记残页");
+                        if (hasDiary && ev.region === "demacia" && ev.type === "fun") w = Math.max(0, w - 1);
+                        if (ev.type === "clue") w += Math.floor((playerAttrs.智力 || 0) / 10);
+                        return <span className="font-mono text-xs ml-auto" style={{ color: w !== ev.weight ? "rgba(255,200,100,0.4)" : "rgba(200,200,208,0.25)" }}>权重 {w}{w !== ev.weight ? "*" : ""}</span>;
+                      })()}
                       <button onClick={() => resetEvent(ev.id)}
                         className="font-mono text-[10px] px-1.5 py-0.5 border"
                         style={{ color: "rgba(255,51,85,0.4)", borderColor: "rgba(255,51,85,0.15)" }}>🔄</button>

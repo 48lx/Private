@@ -132,9 +132,12 @@ export default function Home() {
                   // 2. 活力补满（不低于当前值，修正暴增max）
                   const { getItems } = await import("@/lib/player-state");
                   const items = await getItems(gk);
+                  const { getAttrs } = await import("@/lib/player-state");
+                  const attrs = await getAttrs(gk);
+                  const strBonus = Math.floor((attrs.力量 || 0) / 10);
                   const hasSash = items.some((i: any) => i.itemId === "大胃王绶带" && i.qty > 0) ? 2 : 0;
                   const hasArmor = items.some((i: any) => i.itemId === "沉重的铠甲" && i.qty > 0) ? 2 : 0;
-                  const correctMax = 8 + hasSash + hasArmor;
+                  const correctMax = 8 + hasSash + hasArmor + strBonus;
                   const vRaw = await getProgress(gk, "map-vitality");
                   const oldV = vRaw ? JSON.parse(vRaw).v : correctMax;
                   const newV = Math.max(oldV, correctMax);
