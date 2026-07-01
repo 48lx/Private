@@ -5,6 +5,7 @@ import { GameEvent, EventType, EventOutcome } from "@/lib/event-types";
 import { PlayerState } from "@/lib/player-state";
 import { executeChoice, getAvailableChoices, MAGIC_CARDS, LUX_CARDS, DRAGON_CARDS } from "@/lib/event-engine";
 import { ALL_CARDS, REVELATION_CARDS } from "@/lib/cards";
+import InventoryPanel from "./InventoryPanel";
 import { demaciaEvents } from "@/data/events/demacia";
 const REGION_IMAGES: Record<string, string[]> = {
   demacia: [
@@ -203,6 +204,7 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
                 style={{ color: TYPE_COLORS[event.type], borderColor: TYPE_COLORS[event.type] + "44", background: TYPE_COLORS[event.type] + "11" }}>
                 {TYPE_LABELS[event.type]}
               </span>
+              <InventoryPanel />
               <button onClick={() => { try { window.dispatchEvent(new Event("open-event-journal")); } catch {} }}
                 className="font-mono text-xs px-2 py-0.5 border rounded opacity-60 hover:opacity-100 transition-opacity"
                 style={{ color: "rgba(200,200,208,0.5)", borderColor: "rgba(200,200,208,0.12)" }}>

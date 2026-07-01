@@ -79,6 +79,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [paperDrunkActive, setPaperDrunkActive] = useState(false);
   const exploringRef = useRef(false);
   const [hasReroll, setHasReroll] = useState(false);
+  const [showAttrInfo, setShowAttrInfo] = useState(false);
   const [cardCollection, setCardCollection] = useState<{ card_id: string; count: number }[]>([]);
 
   const ALL_EVENTS = [...demaciaEvents];
@@ -487,6 +488,8 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.3)" }}>
               📍 {REGIONS.find(r => r.id === currentRegion)?.name || ""}
             </span>
+            <button onClick={() => setShowAttrInfo(true)} className="font-mono text-xs px-2 py-1 border opacity-50 hover:opacity-100 transition-opacity"
+              style={{ color: "rgba(200,200,208,0.4)", borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}>📊 属性</button>
             <InventoryPanel />
             {groupKey && <EventJournal groupKey={groupKey} />}
             <button onClick={onClose} className="font-mono text-xl hover:scale-110 transition-transform"
@@ -620,9 +623,12 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                 )}
                 {/* Content centered over background */}
                 <div className="relative z-10 flex flex-col items-center h-full p-6">
-                  <button onClick={() => setShowOverview(false)}
-                    className="absolute top-3 right-3 z-20 font-mono text-xl hover:scale-110"
-                    style={{ color: "rgba(255,255,255,0.5)" }}>✕</button>
+                  <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+                    <InventoryPanel />
+                    <button onClick={() => setShowOverview(false)}
+                      className="font-mono text-xl hover:scale-110"
+                      style={{ color: "rgba(255,255,255,0.5)" }}>✕</button>
+                  </div>
 
                   {/* TOP: 5 clue slots */}
                   <div className="grid grid-cols-5 gap-3 w-full" style={{ maxWidth: "520px", paddingTop: "6px" }}>
@@ -688,6 +694,28 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                     </div>
                   </div>
 
+                  {/* 附魔口哨套按钮 */}
+                  {overviewRegion === "demacia" && playerState?.items?.some(i => i.itemId === "附魔口哨套" && i.qty > 0) && (
+                    <div className="w-full mb-2" style={{ maxWidth: "520px" }}>
+                      <button onClick={async () => {
+                        const today = new Date().toISOString().split("T")[0];
+                        const used = await getProgress(groupKey, `whistle-${today}`);
+                        if (used === "1") { showToast("今日已使用过附魔口哨套"); return; }
+                        await setProgress(groupKey, `whistle-${today}`, "1");
+                        const bandleEvents = ALL_EVENTS.filter(e => e.id.startsWith("bandle-"));
+                        if (bandleEvents.length > 0) {
+                          const picked = bandleEvents[Math.floor(Math.random() * bandleEvents.length)];
+                          setEventImage(picked.image || "/events/德玛西亚_01.png");
+                          setCurrentEvent(picked);
+                          setPaperDrunkActive(false);
+                        }
+                      }}
+                        className="font-mono text-sm w-full py-2 border transition-all hover:scale-[1.02]"
+                        style={{ borderColor: "rgba(200,100,255,0.3)", background: "rgba(200,100,255,0.05)", color: "#c864ff" }}>
+                        🎵 吹响口哨（每日限一次）
+                      </button>
+                    </div>
+                  )}
                   {/* BOTTOM: Explore button */}
                   <div className="w-full" style={{ maxWidth: "520px", paddingBottom: "6px" }}>
                     <button onClick={async () => {
@@ -843,6 +871,37 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             <button onClick={() => setLightboxImage(null)}
               className="absolute top-4 right-4 font-mono text-2xl hover:scale-110"
               style={{ color: "rgba(255,255,255,0.5)" }}>✕</button>
+          </div>
+        )}
+
+        {/* 属性加成说明弹窗 */}
+        {showAttrInfo && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.8)" }} onClick={() => setShowAttrInfo(false)}>
+            <div className="p-6 border rounded max-w-sm w-[90vw]" onClick={e => e.stopPropagation()}
+              style={{ borderColor: "rgba(255,215,0,0.2)", background: "rgba(10,5,20,0.95)" }}>
+              <h3 className="font-heading text-lg mb-4 tracking-[0.1em]" style={{ color: "#ffd700" }}>📊 属性加成</h3>
+              {(["力量","智力","敏捷","魅力"] as const).map(k => {
+                const v = attrs[k];
+                const colors: Record<string,string> = { 力量: "#ff6666", 智力: "#6699ff", 敏捷: "#66ff66", 魅力: "#ff88ff" };
+                const desc: Record<string,string> = {
+                  力量: `每10点活力上限+1 · 当前+${Math.floor(v/10)}上限（基础8→${8+Math.floor(v/10)}）`,
+                  智力: `每10点线索事件权重+1 · 当前权重+${Math.floor(v/10)}`,
+                  敏捷: `每点1%概率免移动消耗（至多60%）· 当前${Math.min(v,60)}%`,
+                  魅力: `移后首次事件获20×魅力金币 · 当前+${v*20}金币`,
+                };
+                return (
+                  <div key={k} className="mb-3 p-3 border rounded" style={{ borderColor: colors[k]+"22", background: colors[k]+"08" }}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-mono text-sm" style={{ color: colors[k] }}>{k}</span>
+                      <span className="font-mono text-lg" style={{ color: colors[k] }}>{v}</span>
+                    </div>
+                    <p className="font-mono text-xs leading-relaxed" style={{ color: "rgba(200,200,208,0.5)" }}>{desc[k]}</p>
+                  </div>
+                );
+              })}
+              <button onClick={() => setShowAttrInfo(false)} className="font-mono text-sm w-full py-2 border rounded mt-2"
+                style={{ borderColor: "rgba(255,255,255,0.1)", color: "rgba(200,200,208,0.4)" }}>关闭</button>
+            </div>
           </div>
         )}
       </div>

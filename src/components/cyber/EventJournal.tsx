@@ -22,6 +22,7 @@ const ALL_ITEMS = [
   { id: "约德尔变形糖", name: "约德尔变形糖", icon: "🍬", region: "班德尔城", event: "提莫队长的蘑菇快递II", effect: "下一次跨区移动免活力且触发班德尔城事件" },
   { id: "蘑菇披萨", name: "蘑菇披萨", icon: "🍕", region: "班德尔城", event: "迷路的班德尔城外卖员", effect: "主动使用：活力+5" },
   { id: "消音垫", name: "消音垫", icon: "🔇", region: "班德尔城", event: "班德尔城噪音投诉处理员", effect: "下一次探索免活力重roll事件" },
+  { id: "附魔口哨套", name: "附魔口哨套", icon: "🎵", region: "班德尔城", event: "叽叽的谢礼", effect: "在德玛西亚探索页使用，触发随机班德尔事件（每日限一次）" },
 ];
 
 interface SeenEntry {

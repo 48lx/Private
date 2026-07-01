@@ -41,6 +41,7 @@ export default function InventoryPanel() {
     "约德尔变形糖": "使用后变成约德尔人，下一次跨地区移动免活力且触发班德尔城事件",
     "蘑菇披萨": "主动使用：活力+5",
     "消音垫": "使用后下一次探索获得额外选项「无视」，免活力重roll一次探索",
+    "附魔口哨套": "在德玛西亚探索页使用，触发随机班德尔事件（每日限一次）",
   };
 
   const getItemDesc = (itemId: string): string => {
