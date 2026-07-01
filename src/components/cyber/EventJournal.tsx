@@ -107,7 +107,7 @@ export default function EventJournal({ groupKey }: Props) {
   const visibleEvents = allEvents.filter(ev => {
     if (!seenEvents[ev.id]) return false;
     if (filterRegion === "bandle" ? !ev.id.startsWith("bandle-") : filterRegion && ev.region !== filterRegion) return false;
-    if (filterType !== "all" && ev.type !== filterType) return false;
+    if (filterType !== "all" && ev.type !== filterType && !(filterType === "clue" && ev.id === "bandle-poppy")) return false;
     return true;
   });
 
@@ -155,7 +155,9 @@ export default function EventJournal({ groupKey }: Props) {
                     <button onClick={() => setTab("items")} className="font-heading text-base tracking-[0.1em]"
                       style={{ color: tab === "items" ? "#ffd700" : "rgba(200,200,208,0.25)" }}>📦 物品</button>
                     <span className="font-mono text-xs" style={{ color: "rgba(200,200,208,0.2)" }}>
-                      {tab === "events" ? `${Object.keys(seenEvents).length}/${allEvents.length}` : `${ownedItemIds.size}/${ALL_ITEMS.length}`}
+                      {tab === "events"
+                        ? `${allEvents.filter(e => (filterRegion === "bandle" ? e.id.startsWith("bandle-") : e.region === filterRegion) && seenEvents[e.id]).length}/${allEvents.filter(e => filterRegion === "bandle" ? e.id.startsWith("bandle-") : e.region === filterRegion).length}`
+                        : `${ownedItemIds.size}/${ALL_ITEMS.length}`}
                     </span>
                   </div>
                 </div>

@@ -95,6 +95,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     // 道具重复检查（本地判断，不用网络）
     const allAddItems = [...(outcome.addItems || []), ...(outcome.clueItems || [])];
     const clueSet = new Set(outcome.clueItems || []);
+    const stackableSet = new Set(["约德尔变形糖", "蘑菇披萨", "鸡蛋"]); // 食品类可叠加
     for (let itemId of allAddItems) {
       if (itemId === "__random_attr__") {
         const attr = ["力量","智力","敏捷","魅力"][Math.floor(Math.random() * 4)] as keyof PlayerAttrs;
@@ -103,9 +104,14 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
       }
       const existing = playerState?.items?.find(i => i.itemId === itemId);
       if (existing && existing.qty > 0) {
-        const amount = clueSet.has(itemId) ? 500 : 300;
-        tokenDelta += amount;
-        showToast(`已拥有「${itemId}」，自动分解为${amount}金币`);
+        if (stackableSet.has(itemId)) {
+          // 可叠加道具，直接加数量
+          writes.push(addItem(groupKey, itemId));
+        } else {
+          const amount = clueSet.has(itemId) ? 500 : 300;
+          tokenDelta += amount;
+          showToast(`已拥有「${itemId}」，自动分解为${amount}金币`);
+        }
       } else {
         writes.push(addItem(groupKey, itemId));
       }
@@ -360,21 +366,36 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     if (adjacentSet.has(rid)) {
       // 矿工护身符：抵消本次移动消耗
       const hasCharm = playerState?.items?.some(i => i.itemId === "矿工护身符" && i.qty > 0);
-      const cost = hasCharm ? 0 : moveCost;
+      const hasSugar = await getProgress(groupKey, "sugar-active") === "1";
+      const cost = (hasCharm || hasSugar) ? 0 : moveCost;
       if (vitality < cost) { showToast(`活力不足（需${cost}点）`); return; }
       if (hasCharm) {
         await removeItem(groupKey, "矿工护身符", 1);
-        // 实时更新本地状态，防止下次移动仍判定有护身符
         setPlayerState(prev => prev ? {
           ...prev,
           items: prev.items.map(i => i.itemId === "矿工护身符" ? { ...i, qty: i.qty - 1 } : i).filter(i => i.qty > 0)
         } : prev);
         showToast(`🍀 矿工护身符抵消了移动消耗！`);
       }
+      if (hasSugar) {
+        await setProgress(groupKey, "sugar-active", "");
+        showToast("🍬 约德尔变形糖：免活力移动！");
+      }
       await setProgress(groupKey, "map-region", rid);
       setCurrentRegion(rid);
-      await saveVitality(vitality - cost);
-      if (!hasCharm) showToast(`🚶 前往 ${region.name}（-${cost}活力）`);
+      if (!hasCharm && !hasSugar) await saveVitality(vitality - cost);
+      if (!hasCharm && !hasSugar) showToast(`🚶 前往 ${region.name}（-${cost}活力）`);
+      // 变形糖：触发当地班德尔事件
+      if (hasSugar) {
+        const bandleHere = ALL_EVENTS.filter(e => e.id.startsWith("bandle-") && e.region === rid);
+        if (bandleHere.length > 0) {
+          const picked = bandleHere[Math.floor(Math.random() * bandleHere.length)];
+          setEventImage(picked.image || "/events/德玛西亚_01.png");
+          setCurrentEvent(picked);
+          setHasReroll(false);
+          return;
+        }
+      }
       setOverviewRegion(rid);
       setOverviewExplored(false);
       setOverviewImage("/events/德玛西亚_04.png");
@@ -385,14 +406,27 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     // 不相邻 → 计算最快路径
     const path = findShortestPath(currentRegion, rid);
     if (!path) { showToast(`无法到达${region.name}`); return; }
-    const totalCost = path.length * moveCost;
+    const hasSugarBFS = await getProgress(groupKey, "sugar-active") === "1";
+    const totalCost = hasSugarBFS ? 0 : path.length * moveCost;
     const curName = REGIONS.find(r => r.id === currentRegion)?.name || currentRegion;
     const regionNames = path.map(id => REGIONS.find(r => r.id === id)?.name || id).join(" → ");
-    if (!confirm(`前往 ${region.name}\n路径：${curName} → ${regionNames}\n消耗 ${totalCost} 活力（${path.length} 次移动）`)) return;
+    if (!hasSugarBFS && !confirm(`前往 ${region.name}\n路径：${curName} → ${regionNames}\n消耗 ${totalCost} 活力（${path.length} 次移动）`)) return;
     if (vitality < totalCost) { showToast(`活力不足（需${totalCost}点）`); return; }
     await setProgress(groupKey, "map-region", rid);
     setCurrentRegion(rid);
-    await saveVitality(vitality - totalCost);
+    if (!hasSugarBFS) await saveVitality(vitality - totalCost);
+    if (hasSugarBFS) {
+      await setProgress(groupKey, "sugar-active", "");
+      showToast("🍬 约德尔变形糖：免活力移动！");
+      const bandleHere = ALL_EVENTS.filter(e => e.id.startsWith("bandle-") && e.region === rid);
+      if (bandleHere.length > 0) {
+        const picked = bandleHere[Math.floor(Math.random() * bandleHere.length)];
+        setEventImage(picked.image || "/events/德玛西亚_01.png");
+        setCurrentEvent(picked);
+        setHasReroll(false);
+        return;
+      }
+    }
     showToast(`🚶 前往 ${region.name}（-${totalCost}活力）`);
     setOverviewRegion(rid);
     setOverviewExplored(false);
@@ -618,7 +652,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                                 />
                               )
                             ) : type === "B" || type === "D" ? (
-                              <span style={{ fontSize: "11px", color: "#ffd700", fontWeight: "bold", padding: "2px" }}>{clue}</span>
+                              <span style={{ fontSize: "10px", color: "#ffd700", fontWeight: "bold", padding: "2px", wordBreak: "break-all", lineHeight: 1.2, textAlign: "center" }}>{clue}</span>
                             ) : (
                               <span style={{ fontSize: "20px", color: "#ffd700" }}>✓</span>
                             )
