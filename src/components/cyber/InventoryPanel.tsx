@@ -63,6 +63,15 @@ export default function InventoryPanel() {
       await load();
       return;
     }
+    // 消音垫：下一次探索免活力重roll
+    if (itemId === "消音垫") {
+      const ok = await removeItem(gk, itemId, 1);
+      if (!ok) return;
+      await setProgress(gk, "free-reroll", "1");
+      alert("消音垫已使用！下一次探索获得免费重roll机会。");
+      await load();
+      return;
+    }
     // 鸡蛋：主动使用+4活力（不超过上限）
     if (itemId === "鸡蛋") {
       const today = new Date().toISOString().split("T")[0];

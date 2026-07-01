@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { getProgress, setProgress, addTokens, spendTokens, addCardsBulk, getTokens, getCollection } from "@/lib/card-storage";
 import { getAttrs, getTags, getItems, adjustAttrs, addTag, removeTag, addItem, removeItem, PlayerAttrs, PlayerState } from "@/lib/player-state";
 import { pickEvent } from "@/lib/event-engine";
@@ -77,6 +77,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
   const [overviewClues, setOverviewClues] = useState<(string | null)[]>(Array(5).fill(null));
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [paperDrunkActive, setPaperDrunkActive] = useState(false);
+  const exploringRef = useRef(false);
   const [cardCollection, setCardCollection] = useState<{ card_id: string; count: number }[]>([]);
 
   const ALL_EVENTS = [...demaciaEvents];
@@ -645,7 +646,12 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                   {/* BOTTOM: Explore button */}
                   <div className="w-full" style={{ maxWidth: "520px", paddingBottom: "6px" }}>
                     <button onClick={async () => {
+                        if (exploringRef.current) return;
+                        exploringRef.current = true;
+                        try {
                         if (vitality < EXPLORE_COST) { showToast(`活力不足`); return; }
+                        // 消音垫：免费重roll
+                        const freeReroll = await getProgress(groupKey, "free-reroll");
                         // 中毒：下次探索活力+1且检定必败，然后失去标签
                         let poisonActive = false;
                         if (playerState?.tags?.includes("中毒")) {
@@ -668,8 +674,15 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                         }
                         if (!firstExplore) {
                           const cost = EXPLORE_COST + (poisonActive ? 1 : 0);
-                          if (vitality < cost) { showToast(`活力不足（需${cost}点）`); return; }
-                          await saveVitality(vitality - cost);
+                          if (freeReroll === "1") {
+                            showToast("🔇 消音垫：本次探索免活力！");
+                            await setProgress(groupKey, "free-reroll", "");
+                          } else if (vitality < cost) {
+                            showToast(`活力不足（需${cost}点）`);
+                            return;
+                          } else {
+                            await saveVitality(vitality - cost);
+                          }
                         }
                         setPaperDrunkActive(firstExplore || poisonActive);
                         if (overviewRegion === "demacia" && playerState) {
@@ -692,6 +705,7 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                           }
                         }
                         showToast("该地区暂无可用事件");
+                        } finally { exploringRef.current = false; }
                       }}
                         className="font-mono text-base w-full py-3 border transition-all hover:scale-[1.02]"
                         style={{ borderColor: "rgba(255,215,0,0.3)", color: "#ffd700", background: "rgba(0,0,0,0.35)" }}>
@@ -716,9 +730,21 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
             forceFail={paperDrunkActive}
             vitality={vitality}
             maxVitality={maxVitality}
-            onRedirect={(eventId) => {
+            onRedirect={async (eventId) => {
               const target = ALL_EVENTS.find(e => e.id === eventId);
               if (target) {
+                // 记录到图鉴和每日日志
+                const today2 = new Date().toISOString().split("T")[0];
+                const seenKey = "seen-events";
+                const seenRaw = await getProgress(groupKey, seenKey);
+                const seen: Record<string, any> = seenRaw ? JSON.parse(seenRaw) : {};
+                if (!seen[target.id]) seen[target.id] = { name: target.name, weight: target.weight, choices: [] };
+                await setProgress(groupKey, seenKey, JSON.stringify(seen));
+                // 加入当日触发列表
+                const raw = await getProgress(groupKey, `daily-events-${today2}`);
+                const dailyLog: DailyLog = raw ? JSON.parse(raw) : { date: today2, triggeredEvents: [], vitalityUsed: 0 };
+                dailyLog.triggeredEvents.push(target.id);
+                await setProgress(groupKey, `daily-events-${today2}`, JSON.stringify(dailyLog));
                 setEventImage(target.image || "/events/德玛西亚_01.png");
                 setCurrentEvent(target);
                 setPaperDrunkActive(false);
