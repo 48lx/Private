@@ -193,11 +193,13 @@ export default function EventJournal({ groupKey }: Props) {
                       <span className="font-heading text-base" style={{ color: "#ffd700" }}>✦ {ev.name}</span>
                       {(() => {
                         let w = ev.weight;
+                        const isBandle = ev.id.startsWith("bandle-");
                         const hasDiary = ownedItemIds.has("战地日记残页");
                         const hasFioraNote = ownedItemIds.has("剑姬的情报记录");
                         const hasGarenNote = ownedItemIds.has("盖伦的情报记录");
-                        if (hasDiary && ev.region === "demacia" && ev.type === "fun") w = Math.max(0, w - 1);
-                        if (ev.type === "clue") w += Math.floor((playerAttrs.智力 || 0) / 10);
+                        // 班德尔事件仅显示池内权重，不受探索池修正
+                        if (!isBandle && hasDiary && ev.region === "demacia" && ev.type === "fun") w = Math.max(0, w - 1);
+                        if (!isBandle && ev.type === "clue") w += Math.floor((playerAttrs.智力 || 0) / 10);
                         if (hasFioraNote && (ev.id === "bandle-poppy" || ev.id === "demacia-garen-patrol")) w += 2;
                         if (hasGarenNote && ev.id.startsWith("demacia-") && ev.type === "hero" && (ev.name.includes("加里奥") || ev.desc.includes("加里奥"))) w += 1;
                         return <span className="font-mono text-xs ml-auto" style={{ color: w !== ev.weight ? "rgba(255,200,100,0.4)" : "rgba(200,200,208,0.25)" }}>权重 {w}{w !== ev.weight ? "*" : ""}</span>;
