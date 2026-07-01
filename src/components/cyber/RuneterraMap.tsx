@@ -714,7 +714,10 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
                           return true;
                         });
                         if (bandleEvents.length > 0) {
-                          const picked = bandleEvents[Math.floor(Math.random() * bandleEvents.length)];
+                          const totalW = bandleEvents.reduce((s, e) => s + e.weight, 0);
+                          let r = Math.random() * totalW;
+                          let picked = bandleEvents[0];
+                          for (const e of bandleEvents) { r -= e.weight; if (r <= 0) { picked = e; break; } }
                           setEventImage(picked.image || "/events/德玛西亚_01.png");
                           setCurrentEvent(picked);
                           setPaperDrunkActive(false);
