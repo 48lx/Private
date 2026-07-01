@@ -698,14 +698,12 @@ export const demaciaEvents: GameEvent[] = [
     choices: [
       {
         label: "报名上课（-200金币，敏≥17）",
-        hideCheck: { hasTag: "学有所成" },
         check: { attrs: { 敏捷: 17 }, costTokens: 200 },
         success: { attrDelta: { 敏捷: 1 }, addTags: ["学有所成"], message: "你学了一下午劳伦特剑术。菲奥娜很严格，但你进步很大。" },
         failure: { vitality: -1, message: "你跟不上节奏，菲奥娜说你不够专注。她退了钱让你下次再来。" },
       },
       {
         label: "敬而远之",
-        hideCheck: { hasTag: "学有所成" },
         success: { message: "你虽然很欣赏剑姬的剑术，但当下还有更要紧的任务在等着你。" },
       },
       {
@@ -745,7 +743,6 @@ export const demaciaEvents: GameEvent[] = [
     choices: [
       {
         label: "向他请教剑术（力≥18）",
-        hideCheck: { hasTag: "德玛西亚之力" },
         check: { attrs: { 力量: 18 } },
         success: { attrDelta: { 力量: 1 }, addTags: ["德玛西亚之力"], message: "盖伦没有拒绝，在路边用木剑和你过了几招。他的力量大得惊人，但你学到了一些发力技巧。" },
         failure: { vitality: -1, message: "你三招就被打倒。盖伦把你拉起来，说还需要练习。你被摔得浑身酸痛。" },

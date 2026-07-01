@@ -119,8 +119,11 @@ export default function EventPanel({ event, playerState, onResult, onClose, attr
     if (c.check?.consumeItem) {
       r.outcome.removeItems = [...(r.outcome.removeItems || []), c.check.consumeItem];
     }
+    // altChoices 索引偏移100，与图鉴记录对齐
+    const isAlt = event.altRequire && event.altChoices && choices[0] === event.altChoices[0];
+    const recordIndex = isAlt ? index + 100 : index;
     outcomeApplied.current = true;
-    const attrApplied = await onResult(r.outcome, index, r.success);
+    const attrApplied = await onResult(r.outcome, recordIndex, r.success);
     // 跳转到其他事件
     if (r.outcome.redirectTo && onRedirect) {
       // 重置防重复点击锁，让新事件可操作
