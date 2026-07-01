@@ -36,13 +36,17 @@ export function pickEvent(
 
   if (available.length === 0) return null;
 
-  // 战地日记残页：德玛西亚趣味事件权重-1；智力：每10点线索事件权重+1
+  // 道具/属性权重修正
   const hasDiary = playerState.items.some(i => i.itemId === "战地日记残页" && i.qty > 0);
+  const hasFioraNote = playerState.items.some(i => i.itemId === "剑姬的情报记录" && i.qty > 0);
+  const hasGarenNote = playerState.items.some(i => i.itemId === "盖伦的情报记录" && i.qty > 0);
   const intBonus = Math.floor((playerState.attrs.智力 || 0) / 10);
   const totalWeight = available.reduce((sum, e) => {
     let w = e.weight;
     if (hasDiary && e.region === "demacia" && e.type === "fun") w = Math.max(0, w - 1);
     if (e.type === "clue") w += intBonus;
+    if (hasFioraNote && (e.id === "bandle-poppy" || e.id === "demacia-garen-patrol")) w += 2;
+    if (hasGarenNote && e.id.startsWith("demacia-") && e.type === "hero" && (e.name.includes("加里奥") || e.desc.includes("加里奥"))) w += 1;
     return sum + w;
   }, 0);
   let r = Math.random() * totalWeight;
@@ -50,6 +54,8 @@ export function pickEvent(
     let w = e.weight;
     if (hasDiary && e.region === "demacia" && e.type === "fun") w = Math.max(0, w - 1);
     if (e.type === "clue") w += intBonus;
+    if (hasFioraNote && (e.id === "bandle-poppy" || e.id === "demacia-garen-patrol")) w += 2;
+    if (hasGarenNote && e.id.startsWith("demacia-") && e.type === "hero" && (e.name.includes("加里奥") || e.desc.includes("加里奥"))) w += 1;
     r -= w;
     if (r <= 0) return e;
   }

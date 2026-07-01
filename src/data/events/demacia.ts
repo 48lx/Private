@@ -686,4 +686,95 @@ export const demaciaEvents: GameEvent[] = [
       },
     ],
   },
+  // ─── 菲奥娜的剑术课 ───
+  {
+    id: "demacia-fiora-lesson",
+    region: "demacia",
+    type: "hero",
+    weight: 6,
+    name: "菲奥娜的剑术课",
+    image: "/events/德玛西亚_01.png",
+    desc: "劳伦特家族的后院里，菲奥娜正在训练她的学生。她看到你在门口张望，用剑尖点了点你：「想学？进来。不想学？别挡光。」",
+    choices: [
+      {
+        label: "报名上课（-200金币，敏≥17）",
+        hideCheck: { hasTag: "学有所成" },
+        check: { attrs: { 敏捷: 17 }, costTokens: 200 },
+        success: { attrDelta: { 敏捷: 1 }, addTags: ["学有所成"], message: "你学了一下午劳伦特剑术。菲奥娜很严格，但你进步很大。" },
+        failure: { vitality: -1, message: "你跟不上节奏，菲奥娜说你不够专注。她退了钱让你下次再来。" },
+      },
+      {
+        label: "敬而远之",
+        hideCheck: { hasTag: "学有所成" },
+        success: { message: "你虽然很欣赏剑姬的剑术，但当下还有更要紧的任务在等着你。" },
+      },
+      {
+        label: "展示「无双剑姬·菲奥娜」卡片",
+        check: { hasCard: "champ-fiora" },
+        success: { tokens: 200, vitality: 4, message: "菲奥娜接过卡片，仔细看了看，说画得不错，但她本人更美。她心情大好，免费给你上了半小时课。" },
+      },
+    ],
+    altRequire: { tags: ["学有所成"] },
+    altChoices: [
+      {
+        label: "展示「无双剑姬·菲奥娜」卡片",
+        check: { hasCard: "champ-fiora" },
+        success: { tokens: 200, vitality: 4, message: "菲奥娜接过卡片，仔细看了看，说画得不错，但她本人更美。她心情大好，免费给你上了半小时课。" },
+      },
+      {
+        label: "敬而远之",
+        success: { message: "你虽然很欣赏剑姬的剑术，但当下还有更要紧的任务在等着你。" },
+      },
+      {
+        label: "「你知道禁魔石之心吗？」（魅≥14）",
+        check: { attrs: { 魅力: 14 }, costTokens: 300 },
+        success: { addItems: ["剑姬的情报记录"], message: "菲奥娜停下手中的剑，说她对此有所耳闻。她听说禁魔石之心的力量曾在大魔法战争中被用来抵御诺克萨斯的法师军团，但具体位置只有更古老的德玛西亚家族才知晓。她建议你去问波比或者盖伦。" },
+        failure: { vitality: -2, message: "菲奥娜并没有理睬你的问话，继续耐心地给学员们指导剑术。" },
+      },
+    ],
+  },
+  // ─── 巡逻中的盖伦 ───
+  {
+    id: "demacia-garen-patrol",
+    region: "demacia",
+    type: "hero",
+    weight: 4,
+    name: "巡逻中的盖伦",
+    image: "/events/德玛西亚_03.png",
+    desc: "你在雄都的大道上遇到了正在巡逻的盖伦本人。他步伐沉稳，表情严肃，但看到你时微微点头致意。",
+    choices: [
+      {
+        label: "向他请教剑术（力≥18）",
+        hideCheck: { hasTag: "德玛西亚之力" },
+        check: { attrs: { 力量: 18 } },
+        success: { attrDelta: { 力量: 1 }, addTags: ["德玛西亚之力"], message: "盖伦没有拒绝，在路边用木剑和你过了几招。他的力量大得惊人，但你学到了一些发力技巧。" },
+        failure: { vitality: -1, message: "你三招就被打倒。盖伦把你拉起来，说还需要练习。你被摔得浑身酸痛。" },
+      },
+      {
+        label: "「德玛西亚，万众一心」",
+        success: { tokens: 4000, attrDelta: { 魅力: -1 }, vitality: -1, message: "他对你很是赞赏，把手中刚刚获得的战利品丢给了你，沉重的战力把你压得一踉跄，摔在地上。" },
+      },
+      {
+        label: "看也没看一眼，从他身旁走开",
+        success: { vitality: -3, message: "盖伦派遣了几个人来向你询问调查，你花了好一阵功夫才获得信任。" },
+      },
+    ],
+    altRequire: { tags: ["德玛西亚之力"] },
+    altChoices: [
+      {
+        label: "「德玛西亚，万众一心」",
+        success: { tokens: 4000, attrDelta: { 魅力: -1 }, vitality: -1, message: "他对你很是赞赏，把手中刚刚获得的战利品丢给了你，沉重的战力把你压得一踉跄，摔在地上。" },
+      },
+      {
+        label: "看也没看一眼，从他身旁走开",
+        success: { vitality: -3, message: "盖伦派遣了几个人来向你询问调查，你花了好一阵功夫才获得信任。" },
+      },
+      {
+        label: "「我想与加里奥说几句话」（力≥24）",
+        check: { attrs: { 力量: 24 } },
+        success: { addItems: ["盖伦的情报记录"], message: "「虽然我不清楚你找加里奥有什么事情，但我的直觉告诉我你值得信赖。他就在那边的山丘上，希望你能得到你想要的答案。」" },
+        failure: { vitality: -1, attrDelta: { 力量: -1 }, message: "「我很喜欢赵总管的一句话，犯我德邦者，虽远必诛。希望你能老实本分，做好你分内的事。」你感受到了盖伦的威压。" },
+      },
+    ],
+  },
 ];

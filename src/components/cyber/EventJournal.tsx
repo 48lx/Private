@@ -23,6 +23,8 @@ const ALL_ITEMS = [
   { id: "蘑菇披萨", name: "蘑菇披萨", icon: "🍕", region: "班德尔城", event: "迷路的班德尔城外卖员", effect: "主动使用：活力+5" },
   { id: "消音垫", name: "消音垫", icon: "🔇", region: "班德尔城", event: "班德尔城噪音投诉处理员", effect: "下一次探索免活力重roll事件" },
   { id: "附魔口哨套", name: "附魔口哨套", icon: "🎵", region: "班德尔城", event: "叽叽的谢礼", effect: "在德玛西亚探索页使用，触发随机班德尔事件（每日限一次）" },
+  { id: "剑姬的情报记录", name: "剑姬的情报记录", icon: "📋", region: "德玛西亚", event: "菲奥娜的剑术课", effect: "波比与盖伦的英雄事件权重+2" },
+  { id: "盖伦的情报记录", name: "盖伦的情报记录", icon: "📜", region: "德玛西亚", event: "巡逻中的盖伦", effect: "加里奥相关英雄事件权重+1" },
 ];
 
 interface SeenEntry {
