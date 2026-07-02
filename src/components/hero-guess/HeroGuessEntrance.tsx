@@ -48,7 +48,7 @@ export default function HeroGuessEntrance() {
             opacity: bothBright ? 1 : stdSolved ? 1 : 0.3,
             transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
           }}>
-          <img src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Khazix_0.jpg" alt="" draggable={false}
+          <img src="/splash/Khazix_0.jpg" alt="" draggable={false}
             style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "88% 72%", transform: "scale(1.35)" }}/>
           <div className="absolute inset-0 pointer-events-none" style={{
             background: "radial-gradient(ellipse at 55% 25%, rgba(0,240,255,0.3) 0%, transparent 50%)",
@@ -83,7 +83,7 @@ export default function HeroGuessEntrance() {
             opacity: bothBright ? 1 : uziSolved ? 1 : 0.3,
             transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
           }}>
-          <img src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Aatrox_0.jpg" alt="" draggable={false}
+          <img src="/splash/Aatrox_0.jpg" alt="" draggable={false}
             style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "71% 72%", transform: "scaleX(-1) scale(1.05)" }}/>
           <div className="absolute inset-0 pointer-events-none" style={{
             background: "radial-gradient(ellipse at 45% 25%, rgba(216,0,255,0.3) 0%, transparent 50%)",

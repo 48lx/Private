@@ -14,19 +14,19 @@ const DEFAULT_SETS = [
   {
     name: "诺克萨斯",
     skins: [
-      "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Darius_0.jpg",
-      "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Katarina_0.jpg",
-      "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Ambessa_0.jpg",
-      "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Swain_0.jpg",
+      "/splash/Darius_0.jpg",
+      "/splash/Katarina_0.jpg",
+      "/splash/Ambessa_0.jpg",
+      "/splash/Swain_0.jpg",
     ],
   },
   {
     name: "艾欧尼亚",
     skins: [
-      "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Sett_0.jpg",
-      "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Yasuo_0.jpg",
-      "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Yone_0.jpg",
-      "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Irelia_0.jpg",
+      "/splash/Sett_0.jpg",
+      "/splash/Yasuo_0.jpg",
+      "/splash/Yone_0.jpg",
+      "/splash/Irelia_0.jpg",
     ],
   },
   {
