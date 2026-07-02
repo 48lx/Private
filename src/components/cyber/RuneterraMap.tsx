@@ -138,6 +138,17 @@ export default function RuneterraMap({ groupKey, onClose, onRegionClick }: Props
     if (consumedItem) {
       writes.push(removeItem(groupKey, consumedItem, 1));
     }
+    // 永久图鉴：记录所有曾获得过的道具
+    if (outcome.addItems?.length || outcome.clueItems?.length) {
+      const newIds = [...(outcome.addItems || []), ...(outcome.clueItems || [])].filter(id => id !== "__random_attr__");
+      if (newIds.length > 0) {
+        const seenKey = "seen-items";
+        const seenRaw = await getProgress(groupKey, seenKey);
+        const seen: string[] = seenRaw ? JSON.parse(seenRaw) : [];
+        for (const id of newIds) { if (!seen.includes(id)) seen.push(id); }
+        writes.push(setProgress(groupKey, seenKey, JSON.stringify(seen)));
+      }
+    }
 
     // 属性（正收益仅首次，负收益可重复）
     if (outcome.attrDelta) {

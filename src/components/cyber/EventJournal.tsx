@@ -39,6 +39,7 @@ export default function EventJournal({ groupKey }: Props) {
   const [seenEvents, setSeenEvents] = useState<Record<string, SeenEntry>>({});
   const [tab, setTab] = useState<"events" | "items">("events");
   const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(new Set());
+  const [seenItemIds, setSeenItemIds] = useState<Set<string>>(new Set()); // 永久图鉴
   const [selectedItem, setSelectedItem] = useState<typeof ALL_ITEMS[0] | null>(null);
   const [playerAttrs, setPlayerAttrs] = useState<{ 力量: number; 智力: number; 敏捷: number; 魅力: number }>({ 力量: 0, 智力: 0, 敏捷: 0, 魅力: 0 });
 
@@ -61,6 +62,10 @@ export default function EventJournal({ groupKey }: Props) {
     const fruitSet = new Set(["力量+1","智力+1","敏捷+1","魅力+1","力量-1","智力-1","敏捷-1","魅力-1"]);
     setPlayerAttrs(state.attrs);
     setOwnedItemIds(new Set(state.items.filter(i => i.qty > 0 && !fruitSet.has(i.itemId)).map(i => i.itemId)));
+    // 永久图鉴：所有曾经拥有过的道具
+    const seenRaw = await getProgress(groupKey, "seen-items");
+    const seenIds: string[] = seenRaw ? JSON.parse(seenRaw) : [];
+    setSeenItemIds(new Set(seenIds));
   };
 
   useEffect(() => { if (isOpen) load(); }, [isOpen, groupKey]);
@@ -264,7 +269,7 @@ export default function EventJournal({ groupKey }: Props) {
                 <div className="flex-1 overflow-y-auto p-4" style={{ scrollbarWidth: "thin" }}>
                   <div className="grid grid-cols-4 gap-3">
                     {ALL_ITEMS.map(item => {
-                      const owned = ownedItemIds.has(item.id);
+                      const owned = seenItemIds.has(item.id);
                       return (
                         <div key={item.id} className="p-3 border rounded text-center transition-all cursor-pointer hover:scale-110"
                           style={{
@@ -302,7 +307,7 @@ export default function EventJournal({ groupKey }: Props) {
                 <div className="text-6xl mb-4">{selectedItem.icon}</div>
                 <div className="font-mono text-lg mb-2" style={{ color: "#ffd700" }}>{selectedItem.name}</div>
                 <div className="font-mono text-sm text-center leading-relaxed" style={{ color: "rgba(200,200,208,0.6)" }}>
-                  {ownedItemIds.has(selectedItem.id) ? selectedItem.effect : `${selectedItem.region}地区 · ${selectedItem.event}`}
+                  {seenItemIds.has(selectedItem.id) ? selectedItem.effect : `${selectedItem.region}地区 · ${selectedItem.event}`}
                 </div>
                 <button onClick={() => setSelectedItem(null)}
                   className="font-mono text-sm mt-4 px-6 py-2 border rounded"
